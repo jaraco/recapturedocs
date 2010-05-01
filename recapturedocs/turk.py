@@ -26,7 +26,7 @@ def make_turk_recognition_job_from_pdf():
 		print("failed", file=sys.stderr)
 		raise SystemExit(res)
 
-	os.remove(os.path.join(dest, 'doc_data.txt'))
+	os.remove('doc_data.txt')
 	files = glob(os.path.join(dest, insert_before_extension(name, '*')))
 	files = map(os.path.basename, files)
 	job = open(os.path.join(dest, 'job.txt'), 'w')
