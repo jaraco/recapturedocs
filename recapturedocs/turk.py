@@ -35,5 +35,32 @@ def make_turk_recognition_job_from_pdf():
 		hostname = socket.getfqdn()
 		print(lf('http://{hostname}/pages/{file}'), file=job)
 
+def get_connection(access_key='0ZWJV1BMM1Q6GXJ9J2G2'):
+	from boto.mturk.connection import MTurkConnection
+	import keyring
+	secret_key = keyring.get_password('AWS', access_key)
+	return MTurkConnection(access_key, secret_key, is_secure=True,
+		host='mechanicalturk.sandbox.amazonaws.com', debug=True)
+
+def get_question():
+	from boto.mturk.question import Question, FreeTextAnswer, QuestionContent
+	c = QuestionContent()
+	c.append('foo', 'How many movies have you watched this month?')
+	a = FreeTextAnswer()
+	q = Question('movies', c, a)
+	return q
+
+def register_hit():
+	conn = get_connection()
+	from boto.mturk.price import Price
+	type_params = dict(
+		title="Movie Survey",
+		description="This is a survey to find out how many movies you have watched recently.",
+		#keywords='movies,subjective',
+		reward=Price(0.05),
+		)
+		
+	return conn.create_hit(question=get_question(), **type_params)
+
 if __name__ == '__main__':
 	make_turk_recognition_job_from_pdf()
