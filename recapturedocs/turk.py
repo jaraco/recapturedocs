@@ -62,7 +62,7 @@ def get_connection():
 def get_questions():
 	from boto.mturk.question import (
 		Overview, FormattedContent, Question, FreeTextAnswer,
-		QuestionContent, List, QuestionForm,
+		QuestionContent, List, QuestionForm, AnswerSpecification,
 		)
 	form = QuestionForm()
 	o = Overview()
@@ -83,19 +83,21 @@ def get_questions():
 		'<a href="{url}">link to the page</a> to save the file or open '
 		'it in a separate window (using right-click and Save Link As or '
 		'Save Target As).'.format(**vars())))
-	#form.append(o)
+	form.append(o)
 	
 	c = QuestionContent()
 	c.append_field("Text", "Type the content of the page here")
-	a = FreeTextAnswer()
+	a = AnswerSpecification(FreeTextAnswer())
 	q = Question('content', c, a)
 	form.append(q)
 	
 	c = QuestionContent()
 	c.append_field('Text', 'If you have any comments or questions, please include them here.')
-	a = FreeTextAnswer()
+	a = AnswerSpecification(FreeTextAnswer())
 	q = Question('comment', c, a)
-	#form.append(q)
+	form.append(q)
+	
+	form.validate()
 	return form
 
 def register_hit():
@@ -120,4 +122,4 @@ via a link though.]</iframe></p>
 
 if __name__ == '__main__':
 	#make_turk_recognition_job_from_pdf()
-	register_hit()
+	res = register_hit()
