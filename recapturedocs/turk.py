@@ -59,47 +59,6 @@ def get_connection():
 		debug=True,
 		)
 
-def get_questions():
-	from boto.mturk.question import (
-		Overview, FormattedContent, Question, FreeTextAnswer,
-		QuestionContent, List, QuestionForm, AnswerSpecification,
-		)
-	form = QuestionForm()
-	o = Overview()
-	o.append_field('Title', 'Type a Page')
-	o.append_field('Text', 'You will read a scanned page and retype its textual contents. Here are some tips.')
-	instructions = List([
-		'You will need a PDF viewer. If you do not already have a PDF viewer, you can &lt;a href="http://get.adobe.com/reader/"&gt;download Adobe Reader&lt;/a&gt;',
-		'Please use your best judgement for including hand-written notes.',
-		'If you encounter something that is unrecognizable or unclear, do your best, then include three exclamation marks (!!!) to indicate that a problem occurred.',
-		'Please use exact capitalization spacing and punctuation.',
-		'In general, do not worry about formatting. Type each paragraph without carriage returns, and include a single carriage return between paragraphs.',
-		'If you encounter tables, type each row on the same line using the pipe (|) to separate columns.',
-		])
-	o.append(instructions)
-	url="http://drake.jaraco.com/docs/"
-	o.append(FormattedContent(
-		'The page is displayed below. If you prefer, you can use a '
-		'<a href="{url}">link to the page</a> to save the file or open '
-		'it in a separate window (using right-click and Save Link As or '
-		'Save Target As).'.format(**vars())))
-	form.append(o)
-	
-	c = QuestionContent()
-	c.append_field("Text", "Type the content of the page here")
-	a = AnswerSpecification(FreeTextAnswer())
-	q = Question('content', c, a)
-	form.append(q)
-	
-	c = QuestionContent()
-	c.append_field('Text', 'If you have any comments or questions, please include them here.')
-	a = AnswerSpecification(FreeTextAnswer())
-	q = Question('comment', c, a)
-	form.append(q)
-	
-	form.validate()
-	return form
-
 def register_hit():
 	conn = get_connection()
 	from boto.mturk.price import Price
@@ -108,12 +67,55 @@ def register_hit():
 		description="You will read a scanned page and retype its textual contents.",
 		#keywords='typing,page,rekey',
 		reward=Price(1.0),
-		questions = get_questions(),
+		questions = RetypePageHIT.get_questions(),
 		)
 		
 	return conn.create_hit(**type_params)
 
-template = """
+class RetypePageHIT:
+	@staticmethod
+	def get_questions():
+		from boto.mturk.question import (
+			Overview, FormattedContent, Question, FreeTextAnswer,
+			QuestionContent, List, QuestionForm, AnswerSpecification,
+			)
+		form = QuestionForm()
+		o = Overview()
+		o.append_field('Title', 'Type a Page')
+		o.append_field('Text', 'You will read a scanned page and retype its textual contents. Here are some tips.')
+		instructions = List([
+			'You will need a PDF viewer. If you do not already have a PDF viewer, you can &lt;a href="http://get.adobe.com/reader/"&gt;download Adobe Reader&lt;/a&gt;',
+			'Please use your best judgement for including hand-written notes.',
+			'If you encounter something that is unrecognizable or unclear, do your best, then include three exclamation marks (!!!) to indicate that a problem occurred.',
+			'Please use exact capitalization spacing and punctuation.',
+			'In general, do not worry about formatting. Type each paragraph without carriage returns, and include a single carriage return between paragraphs.',
+			'If you encounter tables, type each row on the same line using the pipe (|) to separate columns.',
+			])
+		o.append(instructions)
+		url="http://drake.jaraco.com/docs/"
+		o.append(FormattedContent(
+			'The page is displayed below. If you prefer, you can use a '
+			'<a href="{url}">link to the page</a> to save the file or open '
+			'it in a separate window (using right-click and Save Link As or '
+			'Save Target As).'.format(**vars())))
+		form.append(o)
+		
+		c = QuestionContent()
+		c.append_field("Text", "Type the content of the page here")
+		a = AnswerSpecification(FreeTextAnswer())
+		q = Question('content', c, a)
+		form.append(q)
+		
+		c = QuestionContent()
+		c.append_field('Text', 'If you have any comments or questions, please include them here.')
+		a = AnswerSpecification(FreeTextAnswer())
+		q = Question('comment', c, a)
+		form.append(q)
+		
+		form.validate()
+		return form
+
+template = """		
 <p><iframe width="100%" height="50%" src="${PAGE_URL}">[Your browser does <em>not</em> support <code>iframe</code>,
 or has been configured not to display inline frames.
 You can access <a href="${PAGE_URL}">the document</a>
