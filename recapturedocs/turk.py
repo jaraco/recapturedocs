@@ -130,7 +130,12 @@ class Server:
 
 def start_server():
 	import cherrypy
-	cherrypy.quickstart(Server())
+	config = {
+		'global' : {
+		'server.socket_host': '::0'
+		},
+	}
+	cherrypy.quickstart(Server(), config=config)
 
 if __name__ == '__main__':
 	#make_turk_recognition_job_from_pdf()
