@@ -122,6 +122,16 @@ You can access <a href="${PAGE_URL}">the document</a>
 via a link though.]</iframe></p>
 """
 
+
+class Server:
+	def index(self, hitId, assignmentId):
+		return '<div>Hit ID is %(hitId)s</div><div>Assignment ID is %(assignmentId)s</div>' % vars()
+	index.exposed = True
+
+def start_server():
+	import cherrypy
+	cherrypy.quickstart(Server())
+
 if __name__ == '__main__':
 	#make_turk_recognition_job_from_pdf()
 	res = register_hit()
