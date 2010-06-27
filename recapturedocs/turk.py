@@ -1,40 +1,20 @@
-from __future__ import print_function
+from __future__ import print_function, absolute_import
 import os
 import sys
 import optparse
 import subprocess
 import socket
+import tempfile
+import functools
+import pkg_resources
+import mimetypes
 from glob import glob
 from optparse import OptionParser
-from jaraco.filesystem import insert_before_extension
+from jaraco.filesystem import insert_before_extension, DirectoryStack
 from jaraco.util.string import local_format as lf
 
-def make_turk_recognition_job_from_pdf():
-	options, args = OptionParser().parse_args()
-	infile = args.pop()
-
-	dest = '/inetpub/wwwroot/pages'
-	if not os.path.isdir(dest):
-		os.makedirs(dest)
-
-	name = os.path.basename(infile)
-	page_fmt = insert_before_extension(name, '-%002d')
-	dest_name = os.path.join(dest, page_fmt)
-
-	cmd = ['pdftk', infile, 'burst', 'output', dest_name]
-	res = subprocess.Popen(cmd).wait()
-	if res != 0:
-		print("failed", file=sys.stderr)
-		raise SystemExit(res)
-
-	os.remove('doc_data.txt')
-	files = glob(os.path.join(dest, insert_before_extension(name, '*')))
-	files = map(os.path.basename, files)
-	job = open(os.path.join(dest, 'job.txt'), 'w')
-	print("PAGE_URL", file=job)
-	for file in files:
-		hostname = socket.getfqdn()
-		print(lf('http://{hostname}/pages/{file}'), file=job)
+class ConversionError(BaseException):
+	pass
 
 def save_credentials(access_key, secret_key):
 	import keyring
@@ -128,37 +108,73 @@ class RetypePageHIT:
 		form.validate()
 		return form
 
-template = """
-<h1>Type a Page</h1>
-<p>Please re-type the content of the PDF page (a link is provided below). Please note,</p>
-<ul>
-    <li>You will need a PDF viewer. If you do not already have a PDF viewer, you can <a href="http://get.adobe.com/reader/">download Adobe Reader</a>.</li>
-    <li>Please use your best judgement for including hand-written notes.</li>
-    <li>If you encounter something that's unrecognizable or unclear, do your best, then include three exclamation marks (!!!) to indicate that a problem occurred.</li>
-    <li>Please use exact capitalization spacing and punctuation.</li>
-    <li>In general, do not worry about formatting. Type each paragraph without carriage returns, and include a single carriage return between paragraphs.</li>
-    <li>If you encounter tables, type each row on the same line using the pipe (|) to separate columns.</li>
-</ul>
-<p>The page is displayed below. If you prefer, you can use a <a href="{page_url}">link to the page</a> to save the file or open it in a separate window (using right-click and Save Link As or Save Target As).</p>
-<p><iframe width="100%" height="50%" src="{page_url}">[Your browser does <em>not</em> support <code>iframe</code>,
-or has been configured not to display inline frames.
-You can access <a href="{page_url}">the document</a>
-via a link though.]</iframe></p>
-<p>Type the content of the page here.</p>
-<form action="http://www.mturk.com/mturk/externalSubmit" method="POST">
-	<field type="hidden" value="{assignmentId}" name="assignmentId" />
-	<p><textarea rows="15" cols="80" name="content"></textarea></p>
-	<p>If you have any comments or questions, please include them here.</p>
-	<p><textarea rows="3" cols="80" name="comment"></textarea></p>
-</form>
-"""
+local_resource = functools.partial(pkg_resources.resource_stream, __name__)
+template = local_resource('retype page template.xhtml').read()
 
+class ConversionJob(object):
+	def __init__(self, file, content_type, filename=None):
+		self.file = file
+		self.content_type = content_type
+		self.filename = filename
+
+	def do_split_pdf(self):
+		assert self.content_type == 'application/pdf'
+		self.files = self.split_pdf(self.file, self.filename)
+
+	@classmethod
+	def _from_file(cls_, filename):
+		content_type, encoding = mimetypes.guess_type(filename)
+		return cls_(open(filename, 'rb'), content_type, filename)
+
+	def register_hit(self):
+		self.hit = RetypePageHIT()
+		res = self.hit.register()
+		assert res.status == True
+
+	@staticmethod
+	def split_pdf(source_stream, filename):
+		page_fmt = insert_before_extension(filename, '-%002d')
+		dest_dir = tempfile.mkdtemp()
+
+		stack = DirectoryStack()
+		with stack.context(dest_dir):
+			cmd = ['pdftk', '-', 'burst', 'output', page_fmt]
+			proc = subprocess.Popen(cmd)
+			proc.communicate(source_stream)
+			# pdftk always generates doc_data.txt in the current directory
+			os.remove('doc_data.txt')
+			if proc.returncode != 0:
+				raise ConversionError("Error splitting file")
+			
+			output_filenames = glob(insert_before_extension(filename, '*'))
+			files = map(ConversionJob.load_and_remove, output_filenames)
+		os.rmdir(dest_dir)
+		return files
+
+	@staticmethod
+	def load_and_remove(filename):
+		with open(filename, 'rb') as f:
+			data = f.read()
+		os.remove(filename)
+		return data
 
 class Server:
-	def index(self, hitId, assignmentId):
+	def __init__(self):
+		self.jobs = list()
+
+	def index(self):
+		return 'coming soon'
+
+	def upload(self, file):
+		job = ConversionJob(file.file, file.content_type, file.filename)
+		job.run()
+		self.jobs.append(job)
+
+	index.exposed = True
+	def process(self, hitId, assignmentId):
 		page_url = 'http://tbd'
 		return template.format(**vars())
-	index.exposed = True
+	process.exposed = True
 
 def start_server():
 	import cherrypy
@@ -175,9 +191,6 @@ def handle_command_line():
 	if 'serve' in args:
 		start_server()
 		raise SystemExit(0)
-	hit = RetypePageHIT()
-	res = hit.register()
-	assert res.status == True
 
 if __name__ == '__main__':
 	handle_command_line()
