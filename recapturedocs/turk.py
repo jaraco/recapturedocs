@@ -9,7 +9,9 @@ import functools
 import pkg_resources
 import mimetypes
 from glob import glob
+from textwrap import dedent
 from optparse import OptionParser
+
 from jaraco.filesystem import insert_before_extension, DirectoryStack
 from jaraco.util.string import local_format as lf
 
@@ -47,16 +49,18 @@ class RetypePageHIT:
 		type_params = dict(
 			title="Type a Page",
 			description="You will read a scanned page and retype its textual contents.",
-			keywords='typing page rekey'.split(),
+			keywords='typing page rekey retype'.split(),
 			reward=Price(1.0),
 			)
 			
-		return conn.create_hit(question=self.get_external_question(), **type_params)
+		res = conn.create_hit(question=self.get_external_question(), **type_params)
+		self.registration_result = res
+		return res
 
 	@staticmethod
 	def get_external_question():
 		from boto.mturk.question import ExternalQuestion
-		external_url = 'http://drake.jaraco.com:8080/'
+		external_url = 'http://drake.jaraco.com:8080/process'
 		return ExternalQuestion(external_url=external_url, frame_height=600)
 		conn = get_connection()
 
@@ -126,10 +130,15 @@ class ConversionJob(object):
 		content_type, encoding = mimetypes.guess_type(filename)
 		return cls_(open(filename, 'rb'), content_type, filename)
 
-	def register_hit(self):
-		self.hit = RetypePageHIT()
-		res = self.hit.register()
-		assert res.status == True
+	def register_hits(self):
+		self.hits = [RetypePageHIT() for file in self.files]
+		for hit in self.hits:
+			hit.register()
+		assert all(hit.registration_result.status == True for hit in self.hits)
+
+	def run(self):
+		self.do_split_pdf()
+		self.register_hits()
 
 	@staticmethod
 	def split_pdf(source_stream, filename):
@@ -139,8 +148,8 @@ class ConversionJob(object):
 		stack = DirectoryStack()
 		with stack.context(dest_dir):
 			cmd = ['pdftk', '-', 'burst', 'output', page_fmt]
-			proc = subprocess.Popen(cmd)
-			proc.communicate(source_stream)
+			proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
+			proc.communicate(source_stream.read())
 			# pdftk always generates doc_data.txt in the current directory
 			os.remove('doc_data.txt')
 			if proc.returncode != 0:
@@ -158,23 +167,45 @@ class ConversionJob(object):
 		os.remove(filename)
 		return data
 
-class Server:
-	def __init__(self):
-		self.jobs = list()
-
+class JobServer(list):
 	def index(self):
 		return 'coming soon'
+	index.exposed = True
+
+	def test_upload(self):
+		return dedent("""
+			<form method='POST' enctype='multipart/form-data'
+				action='upload'>
+			File to upload: <input type="file" name="file"></input><br />
+			<br />
+			<input type="submit" value="Press"></input> to upload the file!
+			</form>
+			""").strip()
+	test_upload.exposed = True
 
 	def upload(self, file):
-		job = ConversionJob(file.file, file.content_type, file.filename)
+		job = ConversionJob(file.file, str(file.content_type), file.filename)
 		job.run()
-		self.jobs.append(job)
+		self.append(job)
+		nhits = len(job.hits)
+		return lf('File was uploaded and created {nhits} hits')
+	upload.exposed = True
 
-	index.exposed = True
 	def process(self, hitId, assignmentId):
-		page_url = 'http://tbd'
-		return template.format(**vars())
+		page_url = lf('/image/{hitId}')
+		return lf(template)
 	process.exposed = True
+
+	def image(self, hitId):
+		# find the appropriate image
+		for job in self:
+			for file, hit in zip(job.files, job.hits):
+				continue # todo: hit.id below is not correct
+				if hit.id == hitId:
+					cherrypy.response.headers['Content-Type'] = 'application/pdf'
+					return file
+		return lf('<div>File not found for hitId {hitId}</div>')
+	image.exposed = True
 
 def start_server():
 	import cherrypy
@@ -183,7 +214,7 @@ def start_server():
 		'server.socket_host': '::0'
 		},
 	}
-	cherrypy.quickstart(Server(), config=config)
+	cherrypy.quickstart(JobServer(), config=config)
 
 def handle_command_line():
 	parser = optparse.OptionParser()
