@@ -58,20 +58,23 @@ class RetypePageHIT:
 		return res
 
 	@staticmethod
-	def get_external_question():
+	def get_external_question(hostname=None):
 		from boto.mturk.question import ExternalQuestion
-		external_url = 'http://drake.jaraco.com:8080/process'
+		hostname = hostname or socket.getfqdn()
+		port_number = cherrypy.server.port
+		external_url = lf('http://{hostname}:{port_number}/process')
 		return ExternalQuestion(external_url=external_url, frame_height=600)
-		conn = get_connection()
 
 	@staticmethod
-	def get_questions():
+	def get_questions(hostname=None):
 		"""
 		This techniuque attempts to use the amazon mturk api to construct
 		a QuestionForm suitable for performing the operation. Unfortunately,
 		it appears Amazon does not support inline PDF content.
 		http://developer.amazonwebservices.com/connect/thread.jspa?threadID=48210&tstart=0
 		"""
+		hostname = hostname or socket.getfqdn()
+		port_number = cherrypy.server.port
 		from boto.mturk.question import (
 			Overview, FormattedContent, Question, FreeTextAnswer,
 			QuestionContent, List, QuestionForm, AnswerSpecification,
@@ -89,7 +92,7 @@ class RetypePageHIT:
 			'If you encounter tables, type each row on the same line using the pipe (|) to separate columns.',
 			])
 		o.append(instructions)
-		url="http://drake.jaraco.com/docs/"
+		url="http://{hostname}:{port_number}/process/"
 		o.append(FormattedContent(
 			'The page is displayed below. If you prefer, you can use a '
 			'<a href="{url}">link to the page</a> to save the file or open '
@@ -201,7 +204,7 @@ class JobServer(list):
 		for job in self:
 			for file, hit in zip(job.files, job.hits):
 				continue # todo: hit.id below is not correct
-				if hit.id == hitId:
+				if hit.HITId == hitId:
 					cherrypy.response.headers['Content-Type'] = 'application/pdf'
 					return file
 		return lf('<div>File not found for hitId {hitId}</div>')
