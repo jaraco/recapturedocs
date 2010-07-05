@@ -11,6 +11,7 @@ import mimetypes
 from glob import glob
 from textwrap import dedent
 from optparse import OptionParser
+from contextlib import contextmanager
 
 from jaraco.filesystem import insert_before_extension, DirectoryStack
 from jaraco.util.string import local_format as lf
@@ -57,11 +58,18 @@ class RetypePageHIT:
 		self.registration_result = res
 		return res
 
+	def matches(self, hit_id):
+		"Returns true if this HIT matches the supplied hit id"
+		return (
+			len(self.registration_result) == 1 and
+			self.registration_result[0].HITId == hit_id
+			)
+
 	@staticmethod
 	def get_external_question(hostname=None):
 		from boto.mturk.question import ExternalQuestion
 		hostname = hostname or socket.getfqdn()
-		port_number = cherrypy.server.port
+		port_number = cherrypy.server.socket_port
 		external_url = lf('http://{hostname}:{port_number}/process')
 		return ExternalQuestion(external_url=external_url, frame_height=600)
 
@@ -74,7 +82,7 @@ class RetypePageHIT:
 		http://developer.amazonwebservices.com/connect/thread.jspa?threadID=48210&tstart=0
 		"""
 		hostname = hostname or socket.getfqdn()
-		port_number = cherrypy.server.port
+		port_number = cherrypy.server.socket_port
 		from boto.mturk.question import (
 			Overview, FormattedContent, Question, FreeTextAnswer,
 			QuestionContent, List, QuestionForm, AnswerSpecification,
@@ -194,7 +202,7 @@ class JobServer(list):
 		return lf('File was uploaded and created {nhits} hits')
 	upload.exposed = True
 
-	def process(self, hitId, assignmentId):
+	def process(self, hitId, assignmentId, workerId=None, turkSubmitTo=None, **kwargs):
 		page_url = lf('/image/{hitId}')
 		return lf(template)
 	process.exposed = True
@@ -203,28 +211,48 @@ class JobServer(list):
 		# find the appropriate image
 		for job in self:
 			for file, hit in zip(job.files, job.hits):
-				continue # todo: hit.id below is not correct
-				if hit.HITId == hitId:
+				if hit.matches(hitId):
 					cherrypy.response.headers['Content-Type'] = 'application/pdf'
 					return file
 		return lf('<div>File not found for hitId {hitId}</div>')
 	image.exposed = True
 
-def start_server():
+def run_server():
+	global cherrypy
 	import cherrypy
 	config = {
 		'global' : {
-		'server.socket_host': '::0'
+			'server.socket_host': '::0',
+			'server.production': True,
 		},
 	}
 	cherrypy.quickstart(JobServer(), config=config)
+
+@contextmanager
+def start_server():
+	global cherrypy, server
+	import cherrypy
+	config = {
+		'server.socket_host': '::0',
+		'autoreload.on': False,
+		'log.screen': False,
+	}
+	cherrypy.config.update(config)
+	server = JobServer()
+	cherrypy.tree.mount(server, '/')
+	cherrypy.server.start()
+	yield server
+	cherrypy.server.stop()
 
 def handle_command_line():
 	parser = optparse.OptionParser()
 	options, args = parser.parse_args()
 	if 'serve' in args:
-		start_server()
+		run_server()
 		raise SystemExit(0)
+	if 'interact' in args:
+		with start_server():
+			import code; code.interact(local=globals())
 
 if __name__ == '__main__':
 	handle_command_line()
