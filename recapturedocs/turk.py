@@ -199,7 +199,8 @@ class JobServer(list):
 		job.run()
 		self.append(job)
 		nhits = len(job.hits)
-		return lf('File was uploaded and created {nhits} hits')
+		type_id = job.hits[0].registration_result[0].HITTypeId
+		return lf('<div>File was uploaded and created {nhits} hits</div><div>To work this hit now, go <a href="https://workersandbox.mturk.com/mturk/preview?groupId={type_id}">here</a></div>')
 	upload.exposed = True
 
 	def process(self, hitId, assignmentId, workerId=None, turkSubmitTo=None, **kwargs):
