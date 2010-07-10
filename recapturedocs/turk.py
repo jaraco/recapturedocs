@@ -8,6 +8,7 @@ import tempfile
 import functools
 import pkg_resources
 import mimetypes
+import hashlib
 from glob import glob
 from textwrap import dedent
 from optparse import OptionParser
@@ -15,6 +16,7 @@ from contextlib import contextmanager
 
 from jaraco.filesystem import insert_before_extension, DirectoryStack
 from jaraco.util.string import local_format as lf
+from jaraco.util.iter_ import one
 
 class ConversionError(BaseException):
 	pass
@@ -58,12 +60,35 @@ class RetypePageHIT:
 		self.registration_result = res
 		return res
 
-	def matches(self, hit_id):
-		"Returns true if this HIT matches the supplied hit id"
-		return (
-			len(self.registration_result) == 1 and
-			self.registration_result[0].HITId == hit_id
+	@property
+	def id(self):
+		if not len(self.registration_result) == 1: return None
+		return self.registration_result[0].HITId
+
+	def is_complete(self):
+		conn = get_connection()
+		assignments = conn.get_assignments(self.id)
+		some_results = int(assignments.NumResults) >= 1
+		complete_status = ('Submitted', 'Approved')
+		self.assignments_cache = assignments
+		return all(
+			assignment.AssignmentStatus in complete_status
+			for assignment in assignments)
+
+	def get_data(self):
+		assert self.is_complete()
+		assignments = self.assignments_cache
+		assignment = one(assignments)
+		answers_set = one(assignment.answers)
+		answer = dict(
+			(answer.QuestionIdentifier, answer.FreeText)
+			for answer in answers_set
 			)
+		return answer['content']
+
+	def matches(self, id):
+		"Returns true if this HIT matches the supplied hit id"
+		return self.id == id
 
 	@staticmethod
 	def get_external_question(hostname=None):
@@ -147,6 +172,19 @@ class ConversionJob(object):
 			hit.register()
 		assert all(hit.registration_result.status == True for hit in self.hits)
 
+	@property
+	def id(self):
+		if not hasattr(self, 'hits'): return None
+		hitids = (hit.id for hit in self.hits)
+		hitids_cat = ''.join(hitids)
+		return hashlib.md5(hitids_cat).hexdigest()
+
+	def is_complete(self):
+		return all(hit.is_complete() for hit in self.hits)
+
+	def get_data(self):
+		return '\n\nPAGE\n\n'.join(hit.get_data() for hit in self.hits)
+
 	def run(self):
 		self.do_split_pdf()
 		self.register_hits()
@@ -200,13 +238,25 @@ class JobServer(list):
 		self.append(job)
 		nhits = len(job.hits)
 		type_id = job.hits[0].registration_result[0].HITTypeId
-		return lf('<div>File was uploaded and created {nhits} hits</div><div>To work this hit now, go <a href="https://workersandbox.mturk.com/mturk/preview?groupId={type_id}">here</a></div>')
+		return lf(dedent("""
+			<div>File was uploaded and created {nhits} hits.</div>
+			<div><a target="_blank" href="https://workersandbox.mturk.com/mturk/preview?groupId={type_id}">Work this hit now</a></div>
+			<div>When done, you should be able to <a target="_blank" href="get_results?job_id={job.id}">get the results from here</a>.</div>
+			""").lstrip())
 	upload.exposed = True
 
 	def process(self, hitId, assignmentId, workerId=None, turkSubmitTo=None, **kwargs):
 		page_url = lf('/image/{hitId}')
 		return lf(template)
 	process.exposed = True
+
+	def get_results(self, job_id):
+		jobs = dict((job.id, job) for job in self)
+		job = jobs[job_id]
+		if not job.is_complete():
+			return '<div>Job not complete</div>'
+		return job.get_data()
+	get_results.exposed = True
 
 	def image(self, hitId):
 		# find the appropriate image
