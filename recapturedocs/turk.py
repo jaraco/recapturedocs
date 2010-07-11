@@ -18,6 +18,18 @@ from jaraco.filesystem import insert_before_extension, DirectoryStack
 from jaraco.util.string import local_format as lf
 from jaraco.util.iter_ import one
 
+todo = """
+Simple front-end aesthetic improvements
+Job persistence
+Payment system
+Add new and pending page
+Automatically approve submitted work
+Sanity checks on submitted work
+Per-page rejection
+Rich text editor
+Support for non-standard documents
+"""
+
 class ConversionError(BaseException):
 	pass
 
