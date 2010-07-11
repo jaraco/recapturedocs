@@ -30,5 +30,7 @@ setup(name = name,
 		dependency_links = [
 		],
 		tests_require=[
+			'py >= 1.3.2',
 		],
+		test_suite='py.test',
 	)

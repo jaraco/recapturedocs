@@ -210,6 +210,7 @@ class ConversionJob(object):
 
 	@staticmethod
 	def split_pdf(source_stream, filename):
+		# todo: use PyPDF http://pybrary.net/pyPdf/
 		page_fmt = insert_before_extension(filename, '-%002d')
 		dest_dir = tempfile.mkdtemp()
 
