@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 name = 'recapturedocs'
 
 setup(name = name,
-		version = '1.0',
+		version = '1.0dev',
 		description = 'Library for RecaptureDocs.com',
 		author = 'Jason R. Coombs',
 		author_email = 'jaraco@jaraco.com',
@@ -21,6 +21,8 @@ setup(name = name,
 				],
 		},
 		install_requires=[
+			'cherrypy >= 3.2.0rc1',
+			'boto == 2.0-jaraco', # http://bitbucket.org/jaraco/boto
 			#'PyPDF >= 1.12',
 		],
 		extras_require = {
