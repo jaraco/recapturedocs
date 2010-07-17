@@ -312,6 +312,7 @@ def start_server():
 	import cherrypy
 	config = {
 		'server.socket_host': '::0',
+		'server.socket_port': 8000,
 		'autoreload.on': False,
 		'log.screen': False,
 	}
