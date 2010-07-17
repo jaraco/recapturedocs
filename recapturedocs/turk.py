@@ -9,6 +9,7 @@ import functools
 import pkg_resources
 import mimetypes
 import hashlib
+import genshi
 from glob import glob
 from textwrap import dedent
 from optparse import OptionParser
@@ -235,8 +236,12 @@ class ConversionJob(object):
 		return data
 
 class JobServer(list):
+	from genshi.template import TemplateLoader, loader
+	tl = TemplateLoader([loader.package(__name__, 'view')])
+
 	def index(self):
-		return 'coming soon'
+		tmpl = self.tl.load('main.xhtml')
+		return tmpl.generate(message='Coming soon...').render('xhtml')
 	index.exposed = True
 
 	def test_upload(self):
