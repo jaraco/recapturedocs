@@ -28,6 +28,13 @@ Sanity checks on submitted work
 Per-page rejection
 Rich text editor
 Support for non-standard documents
+Privacy Enhancements
+Partial Page support
+"""
+
+completed_features = """
+document upload
+document processing
 """
 
 class ConversionError(BaseException):
@@ -161,7 +168,6 @@ class RetypePageHIT:
 		return form
 
 local_resource = functools.partial(pkg_resources.resource_stream, __name__)
-template = local_resource('retype page template.xhtml').read()
 
 class ConversionJob(object):
 	def __init__(self, file, content_type, filename=None):
@@ -258,8 +264,12 @@ class JobServer(list):
 	upload.exposed = True
 
 	def process(self, hitId, assignmentId, workerId=None, turkSubmitTo=None, **kwargs):
+		"""
+		Fulfill a request of a client who's been sent from AMT. This
+		will be rendered in an iFrame, so don't use the template.
+		"""
 		page_url = lf('/image/{hitId}')
-		return lf(template)
+		return lf(local_resource('view/retype page.xhtml').read())
 	process.exposed = True
 
 	def get_results(self, job_id):
