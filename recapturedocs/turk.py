@@ -295,42 +295,42 @@ class JobServer(list):
 		return lf('<div>File not found for hitId {hitId}</div>')
 	image.exposed = True
 
-def run_server():
-	global cherrypy
-	import cherrypy
-	config = {
-		'global' : {
-			'server.socket_host': '::0',
-			'server.production': True,
-		},
-	}
-	cherrypy.quickstart(JobServer(), config=config)
-
 @contextmanager
-def start_server():
+def start_server(*configs):
 	global cherrypy, server
 	import cherrypy
-	config = {
-		'server.socket_host': '::0',
-		'server.socket_port': 8000,
-		'autoreload.on': False,
-		'log.screen': False,
-	}
-	cherrypy.config.update(config)
+	map(cherrypy.config.update, configs)
+	cherrypy.config.setdefault('server.socket_host', '::0')
 	server = JobServer()
-	cherrypy.tree.mount(server, '/')
-	cherrypy.server.start()
+	if hasattr(cherrypy.engine, "signal_handler"):
+		cherrypy.engine.signal_handler.subscribe()
+	if hasattr(cherrypy.engine, "console_control_handler"):
+		cherrypy.engine.console_control_handler.subscribe()
+	app = cherrypy.tree.mount(server, '/')
+	map(app.merge, configs)
+	cherrypy.engine.start()
 	yield server
-	cherrypy.server.stop()
+	cherrypy.engine.exit()
 
 def handle_command_line():
 	parser = optparse.OptionParser()
 	options, args = parser.parse_args()
-	if 'serve' in args:
-		run_server()
+	cmd = args.pop(0)
+	configs = args
+	if 'serve' == cmd:
+		with start_server(*configs):
+			cherrypy.engine.block()
 		raise SystemExit(0)
-	if 'interact' in args:
-		with start_server():
+	if 'interact' == cmd:
+		# change some config that's problemmatic in interactive mode
+		config = {
+			'global':
+				{
+				'autoreload.on': False,
+				'log.screen': False,
+				}
+			}
+		with start_server(config, *configs):
 			import code; code.interact(local=globals())
 
 if __name__ == '__main__':
