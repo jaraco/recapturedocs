@@ -354,7 +354,8 @@ def get_log_directory():
 def daemon(*configs):
 	import cherrypy
 	from cherrypy.process.plugins import Daemonizer
-	d = Daemonizer(cherrypy.engine)
+	log = open(os.path.join(get_log_directory(), 'log.txt'), 'w')
+	d = Daemonizer(cherrypy.engine, stdout=log)
 	d.subscribe()
 	with start_server(*configs):
 		cherrypy.engine.block()
