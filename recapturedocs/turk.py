@@ -9,18 +9,20 @@ import functools
 import pkg_resources
 import mimetypes
 import hashlib
-import genshi
+from cStringIO import StringIO
 from glob import glob
 from textwrap import dedent
 from optparse import OptionParser
 from contextlib import contextmanager
+
+import genshi
+from pyPdf import PdfFileReader, PdfFileWriter
 
 from jaraco.filesystem import insert_before_extension, DirectoryStack
 from jaraco.util.string import local_format as lf
 from jaraco.util.iter_ import one
 
 todo = """
-Native PDF handling (PyPDF)
 Simple front-end aesthetic improvements
 Job persistence
 Payment system
@@ -35,6 +37,7 @@ Partial Page support
 """
 
 completed_features = """
+Native PDF handling (PyPDF)
 Run as daemon
 document upload
 document processing
@@ -212,31 +215,14 @@ class ConversionJob(object):
 
 	@staticmethod
 	def split_pdf(source_stream, filename):
-		# todo: use PyPDF http://pybrary.net/pyPdf/
-		page_fmt = insert_before_extension(filename, '-%002d')
-		dest_dir = tempfile.mkdtemp()
-
-		stack = DirectoryStack()
-		with stack.context(dest_dir):
-			cmd = ['pdftk', '-', 'burst', 'output', page_fmt]
-			proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
-			proc.communicate(source_stream.read())
-			# pdftk always generates doc_data.txt in the current directory
-			os.remove('doc_data.txt')
-			if proc.returncode != 0:
-				raise ConversionError("Error splitting file")
-			
-			output_filenames = glob(insert_before_extension(filename, '*'))
-			files = map(ConversionJob.load_and_remove, output_filenames)
-		os.rmdir(dest_dir)
-		return files
-
-	@staticmethod
-	def load_and_remove(filename):
-		with open(filename, 'rb') as f:
-			data = f.read()
-		os.remove(filename)
-		return data
+		input = PdfFileReader(source_stream)
+		def get_page_data(page):
+			output = PdfFileWriter()
+			output.addPage(page)
+			stream = StringIO()
+			output.write(stream)
+			return stream.getvalue()
+		return map(get_page_data, input.pages)
 
 class JobServer(list):
 	from genshi.template import TemplateLoader, loader
