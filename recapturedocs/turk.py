@@ -20,6 +20,7 @@ from jaraco.util.string import local_format as lf
 from jaraco.util.iter_ import one
 
 todo = """
+Native PDF handling (PyPDF)
 Simple front-end aesthetic improvements
 Job persistence
 Payment system
