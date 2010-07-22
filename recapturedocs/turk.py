@@ -339,6 +339,8 @@ def handle_command_line():
 		from cherrypy.process.plugins import Daemonizer
 		d = Daemonizer(cherrypy.engine)
 		d.subscribe()
+		with start_server(*configs):
+			cherrypy.engine.block()
 
 if __name__ == '__main__':
 	handle_command_line()
