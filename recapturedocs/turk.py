@@ -21,7 +21,6 @@ from jaraco.util.iter_ import one
 
 todo = """
 Simple front-end aesthetic improvements
-Run as daemon
 Job persistence
 Payment system
 Add new and pending page
@@ -35,6 +34,7 @@ Partial Page support
 """
 
 completed_features = """
+Run as daemon
 document upload
 document processing
 """
