@@ -331,6 +331,26 @@ def interact(*configs):
 	with start_server(config, *configs):
 		import code; code.interact(local=globals())
 
+def get_log_directory():
+	candidate = os.path.join(sys.prefix, 'var')
+	if os.path.isdir(candidate):
+		return candidate
+	def ensure_exists(func):
+		@functools.wraps(func)
+		def make_if_not_present(dir):
+			if not os.isdir(dir):
+				os.makedirs(dir)
+			return dir
+		return ensure_exists
+	@ensure_exists
+	def get_log_root_win32():
+		return os.path.join(os.environ['SYSTEMROOT'], 'System32', 'LogFiles', 'RecaptureDocs')
+	@ensure_exists
+	def get_log_root_linux2():
+		return '/var/recapturedocs'
+	getter = locals()['get_log_root_'+sys.platform]
+	return getter()
+
 def daemon(*configs):
 	import cherrypy
 	from cherrypy.process.plugins import Daemonizer
