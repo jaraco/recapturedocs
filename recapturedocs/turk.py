@@ -317,7 +317,7 @@ def start_server(*configs):
 def handle_command_line():
 	parser = optparse.OptionParser()
 	options, args = parser.parse_args()
-	cmd, = args
+	cmd = args.pop(0)
 	configs = args
 	if 'serve' == cmd:
 		with start_server(*configs):
