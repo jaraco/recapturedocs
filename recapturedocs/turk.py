@@ -314,33 +314,38 @@ def start_server(*configs):
 	yield server
 	cherrypy.engine.exit()
 
+def serve(*configs):
+	with start_server(*configs):
+		cherrypy.engine.block()
+	raise SystemExit(0)
+
+def interact(*configs):
+	# change some config that's problemmatic in interactive mode
+	config = {
+		'global':
+			{
+			'autoreload.on': False,
+			'log.screen': False,
+			}
+		}
+	with start_server(config, *configs):
+		import code; code.interact(local=globals())
+
+def daemon(*configs):
+	import cherrypy
+	from cherrypy.process.plugins import Daemonizer
+	d = Daemonizer(cherrypy.engine)
+	d.subscribe()
+	with start_server(*configs):
+		cherrypy.engine.block()
+	
 def handle_command_line():
 	parser = optparse.OptionParser()
 	options, args = parser.parse_args()
 	cmd = args.pop(0)
 	configs = args
-	if 'serve' == cmd:
-		with start_server(*configs):
-			cherrypy.engine.block()
-		raise SystemExit(0)
-	if 'interact' == cmd:
-		# change some config that's problemmatic in interactive mode
-		config = {
-			'global':
-				{
-				'autoreload.on': False,
-				'log.screen': False,
-				}
-			}
-		with start_server(config, *configs):
-			import code; code.interact(local=globals())
-	if 'daemon' == cmd:
-		import cherrypy
-		from cherrypy.process.plugins import Daemonizer
-		d = Daemonizer(cherrypy.engine)
-		d.subscribe()
-		with start_server(*configs):
-			cherrypy.engine.block()
+	if cmd in globals():
+		globals()[cmd](*configs)
 
 if __name__ == '__main__':
 	handle_command_line()
