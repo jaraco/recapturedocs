@@ -21,6 +21,7 @@ from jaraco.util.iter_ import one
 
 todo = """
 Simple front-end aesthetic improvements
+Run as daemon
 Job persistence
 Payment system
 Add new and pending page
@@ -316,7 +317,7 @@ def start_server(*configs):
 def handle_command_line():
 	parser = optparse.OptionParser()
 	options, args = parser.parse_args()
-	cmd = args.pop(0)
+	cmd, = args
 	configs = args
 	if 'serve' == cmd:
 		with start_server(*configs):
@@ -333,6 +334,11 @@ def handle_command_line():
 			}
 		with start_server(config, *configs):
 			import code; code.interact(local=globals())
+	if 'daemon' == cmd:
+		import cherrypy
+		from cherrypy.process.plugins import Daemonizer
+		d = Daemonizer(cherrypy.engine)
+		d.subscribe()
 
 if __name__ == '__main__':
 	handle_command_line()
