@@ -337,11 +337,12 @@ def get_log_directory():
 		return candidate
 	def ensure_exists(func):
 		@functools.wraps(func)
-		def make_if_not_present(dir):
-			if not os.isdir(dir):
+		def make_if_not_present():
+			dir = func()
+			if not os.path.isdir(dir):
 				os.makedirs(dir)
 			return dir
-		return ensure_exists
+		return make_if_not_present
 	@ensure_exists
 	def get_log_root_win32():
 		return os.path.join(os.environ['SYSTEMROOT'], 'System32', 'LogFiles', 'RecaptureDocs')
@@ -354,8 +355,9 @@ def get_log_directory():
 def daemon(*configs):
 	import cherrypy
 	from cherrypy.process.plugins import Daemonizer
-	log = open(os.path.join(get_log_directory(), 'log.txt'), 'w')
-	d = Daemonizer(cherrypy.engine, stdout=log)
+	log = os.path.join(get_log_directory(), 'log.txt')
+	error = os.path.join(get_log_directory(), 'error.txt')
+	d = Daemonizer(cherrypy.engine, stdout=log, stderr=error)
 	d.subscribe()
 	with start_server(*configs):
 		cherrypy.engine.block()
