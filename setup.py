@@ -17,7 +17,7 @@ setup(name = name,
 		],
 		entry_points = {
 			'console_scripts': [
-				'recapture-docs = recapturedocs.turk:handle_command_line',
+				'recapture-docs = recapturedocs.server:handle_command_line',
 				],
 		},
 		install_requires=[
@@ -25,6 +25,7 @@ setup(name = name,
 			'genshi',
 			'boto == 2.0-jaraco', # http://bitbucket.org/jaraco/boto
 			'PyPDF >= 1.12',
+			'keyring',
 		],
 		extras_require = {
 		},
