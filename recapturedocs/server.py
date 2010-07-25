@@ -1,3 +1,5 @@
+from __future__ import relative_import
+
 import os
 import sys
 import optparse
@@ -12,7 +14,8 @@ import cherrypy
 from genshi.template import TemplateLoader, loader
 from jaraco.util.string import local_format as lf
 
-from turk import ConversionJob
+from .turk import ConversionJob
+from . import persistence
 
 local_resource = functools.partial(pkg_resources.resource_stream, __name__)
 
@@ -89,7 +92,7 @@ def start_server(*configs):
 	host_config = {'server.socket_host': '::0'}
 	configs = itertools.chain([host_config],configs)
 	map(cherrypy.config.update, configs)
-	server = JobServer()
+	server = persistence.load('server') or JobServer()
 	if hasattr(cherrypy.engine, "signal_handler"):
 		cherrypy.engine.signal_handler.subscribe()
 	if hasattr(cherrypy.engine, "console_control_handler"):
@@ -99,6 +102,7 @@ def start_server(*configs):
 	cherrypy.engine.start()
 	yield server
 	cherrypy.engine.exit()
+	persistence.save('server', server)
 
 def serve(*configs):
 	with start_server(*configs):
