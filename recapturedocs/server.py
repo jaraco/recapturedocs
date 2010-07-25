@@ -84,6 +84,12 @@ class JobServer(list):
 		return lf('<div>File not found for hitId {hitId}</div>')
 	image.exposed = True
 
+	def __getstate__(self):
+		return list(self)
+
+	def __setstate__(self, items):
+		self[:] = items
+
 @contextmanager
 def start_server(*configs):
 	global cherrypy, server
