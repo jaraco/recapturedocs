@@ -164,6 +164,7 @@ class ConversionJob(object):
 	def do_split_pdf(self):
 		assert self.content_type == 'application/pdf'
 		self.files = self.split_pdf(self.file, self.filename)
+		del self.file
 
 	@classmethod
 	def _from_file(cls_, filename):
