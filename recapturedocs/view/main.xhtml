@@ -41,5 +41,8 @@ body
 	<div id="header"><p id="title">ReCapture Docs (beta)</p></div>
 	<div class="divider"></div>
 	<div class="message" py:content="message">A message goes here.</div>
+	<div py:for="function in functions" py:strip="True">
+		<a href="${function.href}"><span py:content="function.name">Function</span></a>
+	</div>
 </body>
 </html>

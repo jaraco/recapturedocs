@@ -5,6 +5,7 @@ import sys
 import optparse
 import functools
 import itertools
+from collections import namedtuple
 from contextlib import contextmanager
 import pkg_resources
 from textwrap import dedent
@@ -24,7 +25,14 @@ class JobServer(list):
 
 	def index(self):
 		tmpl = self.tl.load('main.xhtml')
-		return tmpl.generate(message='Coming soon...').render('xhtml')
+		message = 'Coming soon...'
+		function_descr = namedtuple('function_descr', 'name href')
+		functions = [
+			function_descr('Submit Document(s)', 'submit_form'),
+			function_descr('Check Document Status', 'check_status'),
+			function_descr('Add Money to Balance', 'make_payment'),
+			]
+		return tmpl.generate(message=message, functions=functions).render('xhtml')
 	index.exposed = True
 
 	def test_upload(self):
