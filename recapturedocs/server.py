@@ -23,6 +23,7 @@ local_resource = functools.partial(pkg_resources.resource_stream, __name__)
 class JobServer(list):
 	tl = TemplateLoader([loader.package(__name__, 'view')])
 
+	@cherrypy.expose
 	def index(self):
 		tmpl = self.tl.load('main.xhtml')
 		message = 'Coming soon...'
@@ -33,8 +34,8 @@ class JobServer(list):
 			function_descr('Add Money to Balance', 'make_payment'),
 			]
 		return tmpl.generate(message=message, functions=functions).render('xhtml')
-	index.exposed = True
 
+	@cherrypy.expose
 	def test_upload(self):
 		return dedent("""
 			<form method='POST' enctype='multipart/form-data'
@@ -44,8 +45,8 @@ class JobServer(list):
 			<input type="submit" value="Press"></input> to upload the file!
 			</form>
 			""").strip()
-	test_upload.exposed = True
 
+	@cherrypy.expose
 	def upload(self, file):
 		hostname = socket.getfqdn()
 		port_number = cherrypy.server.socket_port
@@ -63,8 +64,8 @@ class JobServer(list):
 			<div><a target="_blank" href="https://workersandbox.mturk.com/mturk/preview?groupId={type_id}">Work this hit now</a></div>
 			<div>When done, you should be able to <a target="_blank" href="get_results?job_id={job.id}">get the results from here</a>.</div>
 			""").lstrip())
-	upload.exposed = True
 
+	@cherrypy.expose
 	def process(self, hitId, assignmentId, workerId=None, turkSubmitTo=None, **kwargs):
 		"""
 		Fulfill a request of a client who's been sent from AMT. This
@@ -72,16 +73,16 @@ class JobServer(list):
 		"""
 		page_url = lf('/image/{hitId}')
 		return lf(local_resource('view/retype page.xhtml').read())
-	process.exposed = True
 
+	@cherrypy.expose
 	def get_results(self, job_id):
 		jobs = dict((job.id, job) for job in self)
 		job = jobs[job_id]
 		if not job.is_complete():
 			return '<div>Job not complete</div>'
 		return job.get_data()
-	get_results.exposed = True
 
+	@cherrypy.expose
 	def image(self, hitId):
 		# find the appropriate image
 		for job in self:
@@ -90,7 +91,6 @@ class JobServer(list):
 					cherrypy.response.headers['Content-Type'] = 'application/pdf'
 					return file
 		return lf('<div>File not found for hitId {hitId}</div>')
-	image.exposed = True
 
 	def __getstate__(self):
 		return list(self)
