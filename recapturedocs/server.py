@@ -98,13 +98,28 @@ class JobServer(list):
 	def __setstate__(self, items):
 		self[:] = items
 
+class Devel(object):
+	def __init__(self, server):
+		self.server = server
+
+	@cherrypy.expose
+	def status(self):
+		yield '<table>'
+		yield '<tr><td>filename</td><td>pages</td>'
+		for job in self.server:
+			yield '<tr>'
+			yield '<td>'+job.filename+'<td>'
+			yield '<td>'+len(job.files)+'<td>'
+			yield '</tr>'
+		yield '</table>'
+
 @contextmanager
 def start_server(*configs):
 	global cherrypy, server
 	import cherrypy
 	# set the socket host, but let other configs override
-	host_config = {'server.socket_host': '::0'}
-	configs = itertools.chain([host_config],configs)
+	host_config = {'global':{'server.socket_host': '::0'}}
+	configs = list(itertools.chain([host_config],configs))
 	map(cherrypy.config.update, configs)
 	server = persistence.load('server') or JobServer()
 	if hasattr(cherrypy.engine, "signal_handler"):
@@ -113,6 +128,9 @@ def start_server(*configs):
 		cherrypy.engine.console_control_handler.subscribe()
 	app = cherrypy.tree.mount(server, '/')
 	map(app.merge, configs)
+	if not cherrypy.config.get('server.production', False):
+		dev_app = cherrypy.tree.mount(Devel(server), '/devel')
+		map(dev_app.merge, configs)
 	cherrypy.engine.start()
 	yield server
 	cherrypy.engine.exit()
