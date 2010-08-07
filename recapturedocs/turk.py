@@ -11,8 +11,7 @@ warnings.filterwarnings('ignore', module='pdf', lineno=52)
 from pyPdf import PdfFileReader, PdfFileWriter
 
 todo = """
-Simple front-end aesthetic improvements
-Job persistence
+Basic functional workflow
 Payment system
 Add new and pending page
 Automatically approve submitted work
@@ -25,6 +24,7 @@ Partial Page support
 """
 
 completed_features = """
+Job persistence
 Native PDF handling (PyPDF)
 Run as daemon
 document upload
