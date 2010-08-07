@@ -7,7 +7,7 @@ from cStringIO import StringIO
 from jaraco.util.iter_ import one
 # suppress the deprecation warning in PyPDF
 import warnings
-warnings.filterwarnings('ignore', module='pdf', lineno=52)
+warnings.filterwarnings('ignore', module='pyPdf.pdf', lineno=52)
 from pyPdf import PdfFileReader, PdfFileWriter
 
 todo = """
