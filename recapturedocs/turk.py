@@ -2,6 +2,7 @@ from __future__ import print_function, absolute_import
 import os
 import mimetypes
 import hashlib
+import datetime
 from cStringIO import StringIO
 
 from jaraco.util.iter_ import one
@@ -59,20 +60,41 @@ def get_connection():
 		)
 
 class RetypePageHIT(object):
+	type_params = dict(
+		title="Type a Page",
+		description="You will read a scanned page and retype its textual contents.",
+		keywords='typing page rekey retype'.split(),
+		reward=1.0,
+		duration=datetime.timedelta(days=7),
+		)
+
 	def __init__(self, server_url):
 		self.server_url = server_url
 
+	@classmethod
+	def disable_all(cls):
+		"""
+		Disable all hits that match this hit type
+		"""
+		conn = get_connection()
+		all_hits = conn.get_all_hits()
+		hit_type = cls.get_hit_type()
+		is_local_hit = lambda h: h.HITTypeID == hit_type
+		local_hits = filter(is_local_hit, all_hits)
+		for hit in local_hits:
+			conn.disable_hit(hit.HITId)
+		return len(local_hits)
+
+	@classmethod
+	def get_hit_type(cls):
+		conn = get_connection()
+		result = conn.register_hit_type(**cls.type_params)
+		return result.HITTypeId
+
 	def register(self):
 		conn = get_connection()
-		from boto.mturk.price import Price
-		type_params = dict(
-			title="Type a Page",
-			description="You will read a scanned page and retype its textual contents.",
-			keywords='typing page rekey retype'.split(),
-			reward=Price(1.0),
-			)
-			
-		res = conn.create_hit(question=self.get_external_question(), **type_params)
+		res = conn.create_hit(question=self.get_external_question(),
+			**self.type_params)
 		self.registration_result = res
 		return res
 
@@ -207,4 +229,18 @@ class ConversionJob(object):
 			output.write(stream)
 			return stream.getvalue()
 		return map(get_page_data, input.pages)
+
+def get_all_hits(conn):
+	page_size = 100
+	search_rs = conn.search_hits(page_size=page_size)
+	total_records = int(search_rs.TotalNumResults)
+	def get_page_hits(page):
+		search_rs = conn.search_hits(page_size=page_size, page_number=page)
+		if not search_rs.status:
+			fmt = 'Error performing search, code:%s, message:%s'
+			msg = fmt%(search_rs.Code, search_rs.Message)
+			raise Exception(msg)
+		return search_rs
+	hit_sets = map(get_page_hits, get_pages(page_size, total_records))
+	return list(itertools.chain(*hit_sets))
 

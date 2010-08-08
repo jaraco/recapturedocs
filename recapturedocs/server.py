@@ -15,7 +15,7 @@ import cherrypy
 from genshi.template import TemplateLoader, loader
 from jaraco.util.string import local_format as lf
 
-from .turk import ConversionJob
+from .turk import ConversionJob, RetypePageHIT
 from . import persistence
 
 local_resource = functools.partial(pkg_resources.resource_stream, __name__)
@@ -104,14 +104,37 @@ class Devel(object):
 
 	@cherrypy.expose
 	def status(self):
-		yield '<table>'
-		yield '<tr><td>filename</td><td>pages</td>'
+		yield '<div>'
 		for job in self.server:
-			yield '<tr>'
-			yield '<td>'+job.filename+'<td>'
-			yield '<td>'+len(job.files)+'<td>'
-			yield '</tr>'
-		yield '</table>'
+			yield '<div>'
+			filename = job.filename
+			pages = len(job.files)
+			yield '<div>Job Filename: {filename} ({pages} pages)'.format(**vars())
+			yield '<div style="margin-left:1em;">Hits'
+			for hit in job.hits:
+				yield '<div>'
+				yield hit.id
+				yield '</div>'
+			yield '</div>'
+			yield '</div>'
+		yield '</div>'
+
+	@cherrypy.expose
+	def clean(self):
+		for job in server:
+			job.remove()
+
+	@cherrypy.expose
+	def disable_all(self):
+		"""
+		Disable of all recapture-docs hits (even those not recognized by this
+		server).
+		"""
+		disabled = RetypePageHIT.disable_all()
+		del server[:]
+		msg = 'Disabled {disabled} HITs (do not forget to remove them from other servers).'
+		return msg.format(**vars())
+
 
 @contextmanager
 def start_server(*configs):
