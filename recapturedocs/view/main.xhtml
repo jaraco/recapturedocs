@@ -9,8 +9,10 @@
 	<title>RecaptureDocs main</title>
 </head>
 <body>
-	<div py:for="function in functions" py:strip="True">
-		<a href="${function.href}"><span py:content="function.name">Function</span></a>
-	</div>
+	<form method='POST' enctype='multipart/form-data' action='upload'>
+		Upload your scanned PDF document here: <input type="file" name="file"></input><br />
+		<br />
+		<input type="submit" value="Press"></input> to upload the file!
+	</form>
 </body>
 </html>

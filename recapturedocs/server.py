@@ -26,14 +26,8 @@ class JobServer(list):
 	@cherrypy.expose
 	def index(self):
 		tmpl = self.tl.load('main.xhtml')
-		message = 'Coming soon...'
-		function_descr = namedtuple('function_descr', 'name href')
-		functions = [
-			function_descr('Submit Document(s)', 'submit_form'),
-			function_descr('Check Document Status', 'check_status'),
-			function_descr('Add Money to Balance', 'make_payment'),
-			]
-		return tmpl.generate(message=message, functions=functions).render('xhtml')
+		message = 'Welcome to RecaptureDocs'
+		return tmpl.generate(message=message).render('xhtml')
 
 	@cherrypy.expose
 	def test_upload(self):
