@@ -79,7 +79,7 @@ class RetypePageHIT(object):
 		conn = get_connection()
 		all_hits = conn.get_all_hits()
 		hit_type = cls.get_hit_type()
-		is_local_hit = lambda h: h.HITTypeID == hit_type
+		is_local_hit = lambda h: h.HITTypeId == hit_type
 		local_hits = filter(is_local_hit, all_hits)
 		for hit in local_hits:
 			conn.disable_hit(hit.HITId)

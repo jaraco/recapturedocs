@@ -114,11 +114,6 @@ class Devel(object):
 		yield '</div>'
 
 	@cherrypy.expose
-	def clean(self):
-		for job in server:
-			job.remove()
-
-	@cherrypy.expose
 	def disable_all(self):
 		"""
 		Disable of all recapture-docs hits (even those not recognized by this
