@@ -119,7 +119,7 @@ class RetypePageHIT(object):
 		assignment = one(assignments)
 		answers_set = one(assignment.answers)
 		answer = dict(
-			(answer.QuestionIdentifier, answer.FreeText)
+			answer.fields[0]
 			for answer in answers_set
 			)
 		return answer['content']
