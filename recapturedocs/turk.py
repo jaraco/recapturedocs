@@ -6,6 +6,8 @@ import datetime
 from cStringIO import StringIO
 
 from jaraco.util.iter_ import one
+from jaraco.util.string import local_format as lf
+
 # suppress the deprecation warning in PyPDF
 import warnings
 warnings.filterwarnings('ignore', module='pyPdf.pdf', lineno=52)
@@ -103,13 +105,21 @@ class RetypePageHIT(object):
 		if not len(self.registration_result) == 1: return None
 		return self.registration_result[0].HITId
 
-	def is_complete(self):
+	def load_assignments(self):
 		conn = get_connection()
-		assignments = conn.get_assignments(self.id)
+		return conn.get_assignments(self.id)
+
+	def max_assignments(self):
+		res = getattr(self.registration_result[0], 'MaxAssignments', None)
+		return int(res) if res else 1
+
+	def is_complete(self):
+		if not self.id: return False
+		assignments = self.load_assignments()
 		some_results = int(assignments.NumResults) >= 1
 		complete_status = ('Submitted', 'Approved')
 		self.assignments_cache = assignments
-		return all(
+		return some_results and all(
 			assignment.AssignmentStatus in complete_status
 			for assignment in assignments)
 
@@ -181,16 +191,24 @@ class RetypePageHIT(object):
 
 class ConversionJob(object):
 	def __init__(self, file, content_type, server_url, filename=None):
+		self.created = datetime.datetime.now()
 		self.file = file
 		self.content_type = content_type
 		self.filename = filename
 		self.server_url = server_url
 		self.do_split_pdf()
+		self.authorized = False
+
+	@property
+	def cost(self):
+		"$2 per page"
+		cost = float(2*len(self))
+		return lf('${cost}')
 
 	def do_split_pdf(self):
 		msg = "Only PDF content is supported"
 		assert self.content_type == 'application/pdf', msg
-		self.pages = self.split_pdf(self.file, self.filename)
+		self.pages = self.split_pdf(self.file)
 		del self.file
 
 	@classmethod
@@ -213,10 +231,12 @@ class ConversionJob(object):
 
 	@property
 	def id(self):
-		if not hasattr(self, 'hits'): return None
-		hitids = (hit.id for hit in self.hits)
-		hitids_cat = ''.join(hitids)
-		return hashlib.md5(hitids_cat).hexdigest()
+		# Compute the id of this job as the hash of the content and the
+		#  date it was created.
+		hash = hashlib.md5()
+		map(hash.update, self.pages)
+		hash.update(str(self.created))
+		return hash.hexdigest()
 
 	def is_complete(self):
 		return all(hit.is_complete() for hit in self.hits)
@@ -237,7 +257,7 @@ class ConversionJob(object):
 		return pages[hit_id]
 
 	@staticmethod
-	def split_pdf(source_stream, filename):
+	def split_pdf(source_stream):
 		input = PdfFileReader(source_stream)
 		def get_page_data(page):
 			output = PdfFileWriter()

@@ -49,20 +49,46 @@ class JobServer(list):
 		job = ConversionJob(
 			file.file, str(file.content_type), server_url, file.filename,
 			)
-		job.run()
 		self.append(job)
+		persistence.save('server', self)
 		raise cherrypy.HTTPRedirect(lf("status/{job.id}"))
 
 	@cherrypy.expose
 	def status(self, job_id):
 		job = self._get_job_for_id(job_id)
-		nhits = len(job.hits)
+		n_pages = len(job)
+		fmt = lambda s: lf(dedent(s.lstrip()))
+		yield lf(dedent("""
+			<div>Recapture job was created {n_pages} pages.</div>
+			""".lstrip()))
+		if not job.authorized:
+			msg = """
+				<div>This job will cost {job.cost} to complete. <a href="/pay/{job.id}">Click here</a> to pay to pay for the job.</div>
+				"""
+			yield lf(dedent(msg.lstrip()))
+			return
+		# for development purposes
 		type_id = job.hits[0].registration_result[0].HITTypeId
-		return lf(dedent("""
-			<div>File was uploaded and created {nhits} hits.</div>
-			<div><a target="_blank" href="https://workersandbox.mturk.com/mturk/preview?groupId={type_id}">Work this hit now</a></div>
-			<div>When done, you should be able to <a target="_blank" href="get_results?job_id={job.id}">get the results from here</a>.</div>
-			""").lstrip())
+		yield lf(dedent("""
+			<div>Workers can <a target="_blank" href="https://workersandbox.mturk.com/mturk/preview?groupId={type_id}">complete the hits here</a>.</div>
+			""".lstrip()))
+		if not job.is_complete():
+			msg = """
+			<div>Your job is authorized and being processed. Please, check back later.</div>
+			"""
+		else:
+			msg = """
+			<div>Your job is complete. You may now <a target="_blank" href="/get_results?job_id={job.id}">get the results from here</a>.</div>
+			"""
+		yield lf(dedent(msg.lstrip()))
+
+	@cherrypy.expose
+	def pay(self, job_id):
+		job = self._get_job_for_id(job_id)
+		# stubbed - jobs are automatically authorized
+		job.authorized = True
+		job.register_hits()
+		return lf('<a href="/status/{job_id}">Payment simulated; click here to continue.</a>')
 
 	@cherrypy.expose
 	def process(self, hitId, assignmentId, workerId=None, turkSubmitTo=None, **kwargs):
@@ -85,11 +111,13 @@ class JobServer(list):
 		return job.get_data()
 
 	def _jobs_by_hit_id(self):
-		return dict(
-			(hit.id, job)
-			for hit in hits
-			for job in self
-		)
+		def _hits_for(job):
+			hits = getattr(job, 'hits', [])
+			return ((hit.id, job) for hit in hits)
+		job_hits = itertools.imap(_hits_for, self)
+		items = itertools.chain.from_iterable(job_hits)
+		#items = list(items); print items
+		return dict(items)
 
 	@cherrypy.expose
 	def image(self, hit_id):
