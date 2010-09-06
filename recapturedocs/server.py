@@ -84,15 +84,20 @@ class JobServer(list):
 			return '<div>Job not complete</div>'
 		return job.get_data()
 
+	def _jobs_by_hit_id(self):
+		return dict(
+			(hit.id, job)
+			for hit in hits
+			for job in self
+		)
+
 	@cherrypy.expose
-	def image(self, hitId):
+	def image(self, hit_id):
 		# find the appropriate image
-		for job in self:
-			for file, hit in zip(job.files, job.hits):
-				if hit.matches(hitId):
-					cherrypy.response.headers['Content-Type'] = 'application/pdf'
-					return file
-		return lf('<div>File not found for hitId {hitId}</div>')
+		job = self._jobs_by_hit_id()[hit_id]
+		if not job: raise cherrypy.NotFound
+		cherrypy.response.headers['Content-Type'] = job.content_type
+		return job.page_for_hit(hit_id)
 
 	def __getstate__(self):
 		return list(self)
@@ -110,7 +115,7 @@ class Devel(object):
 		for job in self.server:
 			yield '<div>'
 			filename = job.filename
-			pages = len(job.files)
+			pages = len(job)
 			yield '<div>Job Filename: {filename} ({pages} pages)'.format(**vars())
 			yield '<div style="margin-left:1em;">Hits'
 			for hit in job.hits:

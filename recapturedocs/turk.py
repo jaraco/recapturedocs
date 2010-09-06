@@ -185,10 +185,12 @@ class ConversionJob(object):
 		self.content_type = content_type
 		self.filename = filename
 		self.server_url = server_url
+		self.do_split_pdf()
 
 	def do_split_pdf(self):
-		assert self.content_type == 'application/pdf'
-		self.files = self.split_pdf(self.file, self.filename)
+		msg = "Only PDF content is supported"
+		assert self.content_type == 'application/pdf', msg
+		self.pages = self.split_pdf(self.file, self.filename)
 		del self.file
 
 	@classmethod
@@ -197,7 +199,14 @@ class ConversionJob(object):
 		return cls_(open(filename, 'rb'), content_type, filename)
 
 	def register_hits(self):
-		self.hits = [RetypePageHIT(self.server_url) for file in self.files]
+		"""
+		Create a hit for each page in the job.
+		
+		The mapping of HIT to page is implicit - they're kept arranged
+		in order so that zip(self.pages, self.hits) always produces
+		pairs of each page with its HIT.
+		"""
+		self.hits = [RetypePageHIT(self.server_url) for page in self.pages]
 		for hit in self.hits:
 			hit.register()
 		assert all(hit.registration_result.status == True for hit in self.hits)
@@ -215,9 +224,17 @@ class ConversionJob(object):
 	def get_data(self):
 		return '\n\nPAGE\n\n'.join(hit.get_data() for hit in self.hits)
 
-	def run(self):
-		self.do_split_pdf()
-		self.register_hits()
+	def get_hit(self, hit_id):
+		return next(
+			hit for hit in self.hits if hit.id == hit_id
+			)
+
+	def page_for_hit(self, hit_id):
+		pages = dict(
+			(hit.id, page)
+			for hit, page in zip(self.hits, self.pages)
+			)
+		return pages[hit_id]
 
 	@staticmethod
 	def split_pdf(source_stream, filename):
@@ -229,6 +246,9 @@ class ConversionJob(object):
 			output.write(stream)
 			return stream.getvalue()
 		return map(get_page_data, input.pages)
+
+	def __len__(self):
+		return len(self.pages)
 
 def get_all_hits(conn):
 	page_size = 100
