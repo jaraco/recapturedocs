@@ -51,6 +51,11 @@ class JobServer(list):
 			)
 		job.run()
 		self.append(job)
+		raise cherrypy.HTTPRedirect(lf("status/{job.id}"))
+
+	@cherrypy.expose
+	def status(self, job_id):
+		job = self._get_job_for_id(job_id)
 		nhits = len(job.hits)
 		type_id = job.hits[0].registration_result[0].HITTypeId
 		return lf(dedent("""
@@ -68,10 +73,13 @@ class JobServer(list):
 		page_url = lf('/image/{hitId}')
 		return lf(local_resource('view/retype page.xhtml').read())
 
+	def _get_job_for_id(self, job_id):
+		jobs = dict((job.id, job) for job in self)
+		return jobs[job_id]
+
 	@cherrypy.expose
 	def get_results(self, job_id):
-		jobs = dict((job.id, job) for job in self)
-		job = jobs[job_id]
+		job = self._get_job_for_id(job_id)
 		if not job.is_complete():
 			return '<div>Job not complete</div>'
 		return job.get_data()
