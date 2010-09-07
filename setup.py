@@ -9,6 +9,7 @@ setup(name = name,
 		author_email = 'jaraco@jaraco.com',
 		url = 'http://www.recapturedocs.com/',
 		packages = find_packages(),
+		include_package_data=True,
 		license = 'proprietary',
 		classifiers = [
 			"Development Status :: 4 - Beta",
@@ -35,4 +36,7 @@ setup(name = name,
 			'py >= 1.3.2',
 		],
 		test_suite='py.test',
+		setup_requires=[
+			'hgtools',
+		],
 	)
