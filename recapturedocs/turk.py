@@ -243,17 +243,3 @@ def get_all_hits(conn):
 		return search_rs
 	hit_sets = map(get_page_hits, get_pages(page_size, total_records))
 	return list(itertools.chain(*hit_sets))
-
-def construct_payment_url(job, conn):
-	n_pages = len(job)
-	params = dict(
-		callerKey = os.environ['AWS_ACCESS_KEY_ID'], # My access key
-		pipelineName = 'SingleUse',
-		returnURL = 'http://www.recapturedocs.com/...', # todo, build this 
-		callerReference = job.id,
-		paymentReason = lf('RecaptureDocs conversion - {n_pages} pages'),
-		transactionAmount = job.cost,
-		recipientToken = get_recipient_token(), # this should also be me
-		)
-	return conn.make_url(**params)
-	

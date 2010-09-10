@@ -29,23 +29,16 @@ class JobServer(list):
 		message = 'Welcome to RecaptureDocs'
 		return tmpl.generate(message=message).render('xhtml')
 
-	@cherrypy.expose
-	def test_upload(self):
-		return dedent("""
-			<form method='POST' enctype='multipart/form-data'
-				action='upload'>
-			File to upload: <input type="file" name="file"></input><br />
-			<br />
-			<input type="submit" value="Press"></input> to upload the file!
-			</form>
-			""").strip()
+	@staticmethod
+	def construct_url(path):
+		hostname = socket.getfqdn()
+		port_number = cherrypy.server.socket_port
+		base_url = lf('http://{hostname}:{port_number}')
+		return urlparse.urljoin(base_url, path)
 
 	@cherrypy.expose
 	def upload(self, file):
-		hostname = socket.getfqdn()
-		port_number = cherrypy.server.socket_port
-		server_url = lf('http://{hostname}:{port_number}/process')
-
+		server_url = self.construct_url('/process')
 		job = ConversionJob(
 			file.file, str(file.content_type), server_url, file.filename,
 			)
@@ -58,6 +51,34 @@ class JobServer(list):
 			<div><a target="_blank" href="https://workersandbox.mturk.com/mturk/preview?groupId={type_id}">Work this hit now</a></div>
 			<div>When done, you should be able to <a target="_blank" href="get_results?job_id={job.id}">get the results from here</a>.</div>
 			""").lstrip())
+
+	@cherrypy.expose
+	def initiate_payment(self, job_id):
+		from boto.fps.connection import FPSConnection
+		conn = FPSConnection()
+		conn.install_caller_instruction()
+		conn.install_recipient_instruction()
+		jobs = dict((job.id, job) for job in self)
+		job = jobs[job_id]
+		raise cherrypy.HttpRedirect(self.construct_payment_url(job, conn))
+
+	@staticmethod
+	def construct_payment_url(job, conn):
+		n_pages = len(job)
+		params = dict(
+			callerKey = os.environ['AWS_ACCESS_KEY_ID'], # My access key
+			pipelineName = 'SingleUse',
+			returnURL = self.construct_url(lf('/complete_payment/{job.id}'))
+			callerReference = job.id,
+			paymentReason = lf('RecaptureDocs conversion - {n_pages} pages'),
+			transactionAmount = job.cost,
+			recipientToken = get_recipient_token(), # this should also be me
+			)
+		return conn.make_url(**params)
+		
+	@cherrypy.expose
+	def complete_payment(self, job_id):
+		pass
 
 	@cherrypy.expose
 	def process(self, hitId, assignmentId, workerId=None, turkSubmitTo=None, **kwargs):
