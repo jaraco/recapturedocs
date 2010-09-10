@@ -87,22 +87,24 @@ class JobServer(list):
 	def initiate_payment(self, job_id):
 		from boto.fps.connection import FPSConnection
 		conn = FPSConnection()
-		conn.install_caller_instruction()
-		conn.install_recipient_instruction()
+		caller_token = conn.install_caller_instruction()
+		recipient_token = conn.install_recipient_instruction()
 		job = self._get_job_for_id(job_id)
-		raise cherrypy.HttpRedirect(self.construct_payment_url(job, conn))
+		raise cherrypy.HttpRedirect(
+			self.construct_payment_url(job, conn, recipient_token)
+			)
 
 	@staticmethod
-	def construct_payment_url(job, conn):
+	def construct_payment_url(job, conn, recipient_token):
 		n_pages = len(job)
 		params = dict(
 			callerKey = os.environ['AWS_ACCESS_KEY_ID'], # My access key
 			pipelineName = 'SingleUse',
-			returnURL = self.construct_url(lf('/complete_payment/{job.id}'))
+			returnURL = self.construct_url(lf('/complete_payment/{job.id}')),
 			callerReference = job.id,
 			paymentReason = lf('RecaptureDocs conversion - {n_pages} pages'),
 			transactionAmount = job.cost,
-			recipientToken = get_recipient_token(), # this should also be me
+			recipientToken = recipient_token,
 			)
 		return conn.make_url(**params)
 		
@@ -185,11 +187,11 @@ class Devel(object):
 		msg = 'Disabled {disabled} HITs (do not forget to remove them from other servers).'
 		return msg.format(**vars())
 
-
 @contextmanager
 def start_server(*configs):
 	global cherrypy, server
 	import cherrypy
+	persistence.init()
 	# set the socket host, but let other configs override
 	host_config = {'global':{'server.socket_host': '::0'}}
 	configs = list(itertools.chain([host_config],configs))
