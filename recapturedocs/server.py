@@ -89,8 +89,7 @@ class JobServer(list):
 		conn = FPSConnection()
 		conn.install_caller_instruction()
 		conn.install_recipient_instruction()
-		jobs = dict((job.id, job) for job in self)
-		job = jobs[job_id]
+		job = self._get_job_for_id(job_id)
 		raise cherrypy.HttpRedirect(self.construct_payment_url(job, conn))
 
 	@staticmethod
