@@ -6,14 +6,17 @@ import datetime
 from cStringIO import StringIO
 
 from jaraco.util.iter_ import one
+from jaraco.util.string import local_format as lf
+
 # suppress the deprecation warning in PyPDF
 import warnings
 warnings.filterwarnings('ignore', module='pyPdf.pdf', lineno=52)
 from pyPdf import PdfFileReader, PdfFileWriter
 
 todo = """
-Basic functional workflow
 Payment system
+Terms and Conditions
+Privacy Policy
 Add new and pending page
 Automatically approve submitted work
 Sanity checks on submitted work
@@ -25,6 +28,7 @@ Partial Page support
 """
 
 completed_features = """
+Basic functional workflow
 Job persistence
 Native PDF handling (PyPDF)
 Run as daemon
@@ -103,13 +107,21 @@ class RetypePageHIT(object):
 		if not len(self.registration_result) == 1: return None
 		return self.registration_result[0].HITId
 
-	def is_complete(self):
+	def load_assignments(self):
 		conn = get_connection()
-		assignments = conn.get_assignments(self.id)
+		return conn.get_assignments(self.id)
+
+	def max_assignments(self):
+		res = getattr(self.registration_result[0], 'MaxAssignments', None)
+		return int(res) if res else 1
+
+	def is_complete(self):
+		if not self.id: return False
+		assignments = self.load_assignments()
 		some_results = int(assignments.NumResults) >= 1
 		complete_status = ('Submitted', 'Approved')
 		self.assignments_cache = assignments
-		return all(
+		return some_results and all(
 			assignment.AssignmentStatus in complete_status
 			for assignment in assignments)
 
@@ -181,14 +193,24 @@ class RetypePageHIT(object):
 
 class ConversionJob(object):
 	def __init__(self, file, content_type, server_url, filename=None):
+		self.created = datetime.datetime.now()
 		self.file = file
 		self.content_type = content_type
 		self.filename = filename
 		self.server_url = server_url
+		self.do_split_pdf()
+		self.authorized = False
+
+	@property
+	def cost(self):
+		"$2 per page"
+		cost = float(2*len(self))
+		return lf('${cost}')
 
 	def do_split_pdf(self):
-		assert self.content_type == 'application/pdf'
-		self.files = self.split_pdf(self.file, self.filename)
+		msg = "Only PDF content is supported"
+		assert self.content_type == 'application/pdf', msg
+		self.pages = self.split_pdf(self.file)
 		del self.file
 
 	@classmethod
@@ -197,17 +219,26 @@ class ConversionJob(object):
 		return cls_(open(filename, 'rb'), content_type, filename)
 
 	def register_hits(self):
-		self.hits = [RetypePageHIT(self.server_url) for file in self.files]
+		"""
+		Create a hit for each page in the job.
+		
+		The mapping of HIT to page is implicit - they're kept arranged
+		in order so that zip(self.pages, self.hits) always produces
+		pairs of each page with its HIT.
+		"""
+		self.hits = [RetypePageHIT(self.server_url) for page in self.pages]
 		for hit in self.hits:
 			hit.register()
 		assert all(hit.registration_result.status == True for hit in self.hits)
 
 	@property
 	def id(self):
-		if not hasattr(self, 'hits'): return None
-		hitids = (hit.id for hit in self.hits)
-		hitids_cat = ''.join(hitids)
-		return hashlib.md5(hitids_cat).hexdigest()
+		# Compute the id of this job as the hash of the content and the
+		#  date it was created.
+		hash = hashlib.md5()
+		map(hash.update, self.pages)
+		hash.update(str(self.created))
+		return hash.hexdigest()
 
 	def is_complete(self):
 		return all(hit.is_complete() for hit in self.hits)
@@ -215,12 +246,20 @@ class ConversionJob(object):
 	def get_data(self):
 		return '\n\nPAGE\n\n'.join(hit.get_data() for hit in self.hits)
 
-	def run(self):
-		self.do_split_pdf()
-		self.register_hits()
+	def get_hit(self, hit_id):
+		return next(
+			hit for hit in self.hits if hit.id == hit_id
+			)
+
+	def page_for_hit(self, hit_id):
+		pages = dict(
+			(hit.id, page)
+			for hit, page in zip(self.hits, self.pages)
+			)
+		return pages[hit_id]
 
 	@staticmethod
-	def split_pdf(source_stream, filename):
+	def split_pdf(source_stream):
 		input = PdfFileReader(source_stream)
 		def get_page_data(page):
 			output = PdfFileWriter()
@@ -229,6 +268,9 @@ class ConversionJob(object):
 			output.write(stream)
 			return stream.getvalue()
 		return map(get_page_data, input.pages)
+
+	def __len__(self):
+		return len(self.pages)
 
 def get_all_hits(conn):
 	page_size = 100
