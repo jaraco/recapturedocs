@@ -109,7 +109,6 @@ class JobServer(list):
 			recipientToken = recipient_token,
 			)
 		url = conn.make_url(**params)
-		import pdb; pdb.set_trace()
 		return url
 		
 	@cherrypy.expose
