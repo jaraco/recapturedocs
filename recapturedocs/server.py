@@ -119,7 +119,12 @@ class JobServer(list):
 		raise cherrypy.HTTPRedirect(lf('/status/{job_id}'))
 
 	def verify_URL_signature(self, params):
-		pass
+		assert params['signatureVersion'] == '2'
+		assert params['signatureMethod'] == 'RSA-SHA1'
+		key = self.get_key_from_cert(params['certificateURL'])
+		# http://laughingmeme.org/2008/12/30/new-amazon-aws-signature-version-2-is-oauth-compatible/
+		# http://github.com/simplegeo/python-oauth2
+		
 
 	@cherrypy.expose
 	def process(self, hitId, assignmentId, workerId=None, turkSubmitTo=None, **kwargs):
