@@ -32,10 +32,7 @@ class JobServer(list):
 
 	@staticmethod
 	def construct_url(path):
-		hostname = socket.getfqdn()
-		port_number = cherrypy.server.socket_port
-		base_url = lf('http://{hostname}:{port_number}')
-		return urlparse.urljoin(base_url, path)
+		return urlparse.urljoin(cherrypy.request.base, path)
 
 	@cherrypy.expose
 	def upload(self, file):
@@ -115,11 +112,14 @@ class JobServer(list):
 	def complete_payment(self, job_id, status, **params):
 		if not status == 'Success':
 			return lf('<div>payment was declined with status {status}. <a href="/initiate_payment/{job_id}>Click here</a> to try again.</div><div>{params}</div>')
-		# todo: validate signature
+		self.verify_URL_signature()
 		job = self._get_job_for_id(job_id)
 		job.authorized = True
 		job.register_hits()
 		raise cherrypy.HTTPRedirect('/status/{job_id}')
+
+	def verify_URL_signature(self):
+		pass
 
 	@cherrypy.expose
 	def process(self, hitId, assignmentId, workerId=None, turkSubmitTo=None, **kwargs):
