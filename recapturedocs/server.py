@@ -110,15 +110,15 @@ class JobServer(list):
 		
 	@cherrypy.expose
 	def complete_payment(self, job_id, status, **params):
-		if not status == 'Success':
+		if not status == 'SC':
 			return lf('<div>payment was declined with status {status}. <a href="/initiate_payment/{job_id}>Click here</a> to try again.</div><div>{params}</div>')
-		self.verify_URL_signature()
+		self.verify_URL_signature(params)
 		job = self._get_job_for_id(job_id)
 		job.authorized = True
 		job.register_hits()
-		raise cherrypy.HTTPRedirect('/status/{job_id}')
+		raise cherrypy.HTTPRedirect(lf('/status/{job_id}'))
 
-	def verify_URL_signature(self):
+	def verify_URL_signature(self, params):
 		pass
 
 	@cherrypy.expose
