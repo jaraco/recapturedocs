@@ -63,6 +63,11 @@ def get_connection():
 		debug=True,
 		)
 
+class DollarAmount(float):
+	def __str__(self):
+		string = super(DollarAmount, self).__str__()
+		return lf('${string}')
+
 class RetypePageHIT(object):
 	type_params = dict(
 		title="Type a Page",
@@ -204,8 +209,7 @@ class ConversionJob(object):
 	@property
 	def cost(self):
 		"$2 per page"
-		cost = float(2*len(self))
-		return lf('${cost}')
+		return DollarAmount(float(2*len(self)))
 
 	def do_split_pdf(self):
 		msg = "Only PDF content is supported"

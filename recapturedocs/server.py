@@ -10,12 +10,13 @@ from contextlib import contextmanager
 import pkg_resources
 from textwrap import dedent
 import socket
+import urlparse
 
 import cherrypy
 from genshi.template import TemplateLoader, loader
 from jaraco.util.string import local_format as lf
 
-from .turk import ConversionJob, RetypePageHIT
+from .turk import ConversionJob, RetypePageHIT, set_connection_environment
 from . import persistence
 
 local_resource = functools.partial(pkg_resources.resource_stream, __name__)
@@ -56,7 +57,7 @@ class JobServer(list):
 			""".lstrip()))
 		if not job.authorized:
 			msg = """
-				<div>This job will cost {job.cost} to complete. <a href="/pay/{job.id}">Click here</a> to pay to pay for the job.</div>
+				<div>This job will cost {job.cost} to complete. <a href="/initiate_payment/{job.id}">Click here</a> to pay to pay for the job.</div>
 				"""
 			yield lf(dedent(msg.lstrip()))
 			return
@@ -86,11 +87,12 @@ class JobServer(list):
 	@cherrypy.expose
 	def initiate_payment(self, job_id):
 		from boto.fps.connection import FPSConnection
+		set_connection_environment()
 		conn = FPSConnection()
 		caller_token = conn.install_caller_instruction()
 		recipient_token = conn.install_recipient_instruction()
 		job = self._get_job_for_id(job_id)
-		raise cherrypy.HttpRedirect(
+		raise cherrypy.HTTPRedirect(
 			self.construct_payment_url(job, conn, recipient_token)
 			)
 
@@ -100,17 +102,25 @@ class JobServer(list):
 		params = dict(
 			callerKey = os.environ['AWS_ACCESS_KEY_ID'], # My access key
 			pipelineName = 'SingleUse',
-			returnURL = self.construct_url(lf('/complete_payment/{job.id}')),
+			returnURL = JobServer.construct_url(lf('/complete_payment/{job.id}')),
 			callerReference = job.id,
 			paymentReason = lf('RecaptureDocs conversion - {n_pages} pages'),
-			transactionAmount = job.cost,
+			transactionAmount = float(job.cost),
 			recipientToken = recipient_token,
 			)
-		return conn.make_url(**params)
+		url = conn.make_url(**params)
+		import pdb; pdb.set_trace()
+		return url
 		
 	@cherrypy.expose
-	def complete_payment(self, job_id):
-		pass
+	def complete_payment(self, job_id, status, **params):
+		if not status == 'Success':
+			return lf('<div>payment was declined with status {status}. <a href="/initiate_payment/{job_id}>Click here</a> to try again.</div><div>{params}</div>')
+		# todo: validate signature
+		job = self._get_job_for_id(job_id)
+		job.authorized = True
+		job.register_hits()
+		raise cherrypy.HTTPRedirect('/status/{job_id}')
 
 	@cherrypy.expose
 	def process(self, hitId, assignmentId, workerId=None, turkSubmitTo=None, **kwargs):
