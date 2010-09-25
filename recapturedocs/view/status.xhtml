@@ -1,0 +1,32 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:py="http://genshi.edgewall.org/"
+	xmlns:xi="http://www.w3.org/2001/XInclude">
+
+<xi:include href="master.xhtml" />
+
+<head>
+	<title>RecaptureDocs job status</title>
+</head>
+<body>
+	<div>Recapture job <span py:replace="job.id">job id</span> of
+	<span py:replace="len(job)">0</span> pages</div>
+	<py:if test="not job.authorized">
+		<div>This job will cost <span py:replace="job.cost">$0</span> to complete.
+		<a href="/initiate_payment/${job.id}">click here</a> to pay for the job.</div>
+	</py:if>
+	<py:if test="job.authorized">
+		<!-- for development purposes -->
+		<div>Workers can <a target="_blank" href="https://workersandbox.mturk.com/mturk/preview?groupId=${job.hits[0].registration_result[0].HITTypeId}">complete the hits here</a>.</div>
+
+		<div py:choose="">
+			<div py:when="not job.is_complete()">
+				Your job is authorized and being processed. Please, check back later. You may bookmark this page to check back later.
+			</div>
+			<div py:otherwise="">
+				Your job is complete. You may now <a target="_blank" href="/get_results?job_id=${job.id}">get the results from here</a>.
+			</div>
+		</div>
+	</py:if>
+</body>
+</html>
