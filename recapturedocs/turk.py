@@ -14,7 +14,7 @@ warnings.filterwarnings('ignore', module='pyPdf.pdf', lineno=52)
 from pyPdf import PdfFileReader, PdfFileWriter
 
 todo = """
-Payment system
+Basic Aesthetics
 Terms and Conditions
 Privacy Policy
 Add new and pending page
@@ -28,6 +28,7 @@ Partial Page support
 """
 
 completed_features = """
+Payment System
 Basic functional workflow
 Job persistence
 Native PDF handling (PyPDF)

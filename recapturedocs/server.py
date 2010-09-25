@@ -73,7 +73,7 @@ class JobServer(list):
 			"""
 		yield lf(dedent(msg.lstrip()))
 
-	@cherrypy.expose
+	#@cherrypy.expose
 	def pay(self, job_id):
 		job = self._get_job_for_id(job_id)
 		# stubbed - jobs are automatically authorized
@@ -111,7 +111,7 @@ class JobServer(list):
 	@cherrypy.expose
 	def complete_payment(self, job_id, status, tokenID, **params):
 		if not status == 'SC':
-			return lf('<div>payment was declined with status {status}. <a href="/initiate_payment/{job_id}>Click here</a> to try again or <a href="/pay/{job_id}">cluck here to simulate payment</a></div><div>{params}</div>')
+			return lf('<div>payment was declined with status {status}. <a href="/initiate_payment/{job_id}>Click here</a> to try again</div><div>{params}</div>')
 		end_point_url = JobServer.construct_url(lf('/complete_payment/{job_id}'))
 		self.verify_URL_signature(end_point_url, params)
 		job = self._get_job_for_id(job_id)
@@ -126,15 +126,8 @@ class JobServer(list):
 		# http://laughingmeme.org/2008/12/30/new-amazon-aws-signature-version-2-is-oauth-compatible/
 		# http://github.com/simplegeo/python-oauth2
 		
-		# we could try to verify the crypto ourselves, but it appears
-		#  that FPS provides a VerifySignature action, so just use that
-		verify_request = dict(
-			HttpParameters = cherrypy.query_string,
-			UrlEndPoint = end_point_url,
-		)
 		conn = FPSConnection()
-		conn.verify_signature(**verify_request)
-		
+		conn.verify_signature(end_point_url, cherrypy.query_string)
 
 	@cherrypy.expose
 	def process(self, hitId, assignmentId, workerId=None, turkSubmitTo=None, **kwargs):
