@@ -15,12 +15,16 @@ import urlparse
 import cherrypy
 from genshi.template import TemplateLoader, loader
 from jaraco.util.string import local_format as lf
-from boto.fps.connection import FPSConnection
+import boto, boto.fps.connection
 
 from .turk import ConversionJob, RetypePageHIT, set_connection_environment
 from . import persistence
 
 local_resource = functools.partial(pkg_resources.resource_stream, __name__)
+
+def get_fps_connection():
+	set_connection_environment()
+	return boto.fps.connection.FPSConnection()
 
 class JobServer(list):
 	tl = TemplateLoader([loader.package(__name__, 'view')])
@@ -53,22 +57,14 @@ class JobServer(list):
 		return tmpl.generate(message=message, job=job).render('xhtml')
 
 	@cherrypy.expose
-	def pay(self, job_id):
-		job = self._get_job_for_id(job_id)
-		# stubbed - jobs are automatically authorized
-		job.authorized = True
-		job.register_hits()
-		return lf('<a href="/status/{job_id}">Payment simulated; click here to continue.</a>')
-
-	@cherrypy.expose
 	def initiate_payment(self, job_id):
-		set_connection_environment()
-		conn = FPSConnection()
-		caller_token = conn.install_caller_instruction()
-		recipient_token = conn.install_recipient_instruction()
+		conn = get_fps_connection()
 		job = self._get_job_for_id(job_id)
+		job.caller_token = conn.install_caller_instruction()
+		job.recipient_token = conn.install_recipient_instruction()
+		persistence.save('server', self)
 		raise cherrypy.HTTPRedirect(
-			self.construct_payment_url(job, conn, recipient_token)
+			self.construct_payment_url(job, conn, job.recipient_token)
 			)
 
 	@staticmethod
@@ -93,6 +89,10 @@ class JobServer(list):
 		end_point_url = JobServer.construct_url(lf('/complete_payment/{job_id}'))
 		self.verify_URL_signature(end_point_url, params)
 		job = self._get_job_for_id(job_id)
+		job.sender_token = tokenID
+		conn = get_fps_connection()
+		conn.pay(float(job.cost), job.sender_token, job.recipient_token,
+			job.caller_token)
 		job.authorized = True
 		job.register_hits()
 		raise cherrypy.HTTPRedirect(lf('/status/{job_id}'))
@@ -104,7 +104,7 @@ class JobServer(list):
 		# http://laughingmeme.org/2008/12/30/new-amazon-aws-signature-version-2-is-oauth-compatible/
 		# http://github.com/simplegeo/python-oauth2
 		
-		conn = FPSConnection()
+		conn = get_fps_connection()
 		conn.verify_signature(end_point_url, cherrypy.request.query_string)
 
 	@cherrypy.expose
@@ -113,7 +113,8 @@ class JobServer(list):
 		Fulfill a request of a client who's been sent from AMT. This
 		will be rendered in an iFrame, so don't use the template.
 		"""
-		page_url = lf('/image/{hitId}')
+		preview = assignmentId == 'ASSIGNMENT_ID_NOT_AVAILABLE'
+		page_url = lf('/image/{hitId}') # if not preview else '/static/Lorem ipsum.pdf'
 		return lf(local_resource('view/retype page.xhtml').read())
 
 	def _get_job_for_id(self, job_id):
@@ -182,6 +183,17 @@ class Devel(object):
 		msg = 'Disabled {disabled} HITs (do not forget to remove them from other servers).'
 		return msg.format(**vars())
 
+	@cherrypy.expose
+	def pay(self, job_id):
+		"""
+		Force payment for a given job.
+		"""
+		job = self.server._get_job_for_id(job_id)
+		job.authorized = True
+		job.register_hits()
+		return lf('<a href="/status/{job_id}">Payment simulated; click here for status.</a>')
+
+
 @contextmanager
 def start_server(*configs):
 	global cherrypy, server
@@ -201,6 +213,7 @@ def start_server(*configs):
 	if not cherrypy.config.get('server.production', False):
 		dev_app = cherrypy.tree.mount(Devel(server), '/devel')
 		map(dev_app.merge, configs)
+		boto.set_stream_logger('recapturedocs')
 	cherrypy.engine.start()
 	yield server
 	cherrypy.engine.exit()
