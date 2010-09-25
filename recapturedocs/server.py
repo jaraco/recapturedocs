@@ -114,7 +114,7 @@ class JobServer(list):
 		will be rendered in an iFrame, so don't use the template.
 		"""
 		preview = assignmentId == 'ASSIGNMENT_ID_NOT_AVAILABLE'
-		page_url = lf('/image/{hitId}') # if not preview else '/static/Lorem ipsum.pdf'
+		page_url = lf('/image/{hitId}') if not preview else '/static/Lorem ipsum.pdf'
 		return lf(local_resource('view/retype page.xhtml').read())
 
 	def _get_job_for_id(self, job_id):
@@ -196,12 +196,23 @@ class Devel(object):
 
 @contextmanager
 def start_server(*configs):
+	"""
+	The main entry point for the service, regardless of how it's used.
+	Takes any number of filename or dictionary objects suitable for
+	cherrypy.config.update.
+	"""
 	global cherrypy, server
 	import cherrypy
 	persistence.init()
 	# set the socket host, but let other configs override
 	host_config = {'global':{'server.socket_host': '::0'}}
-	configs = list(itertools.chain([host_config],configs))
+	static_dir = pkg_resources.resource_filename('recapturedocs', 'static')
+	static_config = {'/static':
+			{
+			'tools.staticdir.on': True,
+			'tools.staticdir.dir': static_dir,
+			},}
+	configs = list(itertools.chain([host_config, static_config],configs))
 	map(cherrypy.config.update, configs)
 	server = persistence.load('server') or JobServer()
 	if hasattr(cherrypy.engine, "signal_handler"):
@@ -231,7 +242,7 @@ def interact(*configs):
 			{
 			'autoreload.on': False,
 			'log.screen': False,
-			}
+			},
 		}
 	with start_server(config, *configs):
 		import code; code.interact(local=globals())
