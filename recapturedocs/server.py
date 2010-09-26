@@ -37,7 +37,8 @@ class JobServer(list):
 		return urlparse.urljoin(cherrypy.request.base, path)
 
 	@cherrypy.expose
-	def upload(self, file):
+	def upload(self, file, code):
+		if not code == 'recaptureb1': return "You must enter a valid invitation code to utilize recapturedocs at this time. We're sorry for any inconvenience, and we're working hard to have the site ready for public use very soon. Hit your back button to return to the previous page."
 		server_url = self.construct_url('/process')
 		job = turk.ConversionJob(
 			file.file, str(file.content_type), server_url, file.filename,
