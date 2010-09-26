@@ -15,16 +15,13 @@ import urlparse
 import cherrypy
 from genshi.template import TemplateLoader, loader
 from jaraco.util.string import local_format as lf
-import boto, boto.fps.connection
+import boto
 
-from .turk import ConversionJob, RetypePageHIT, set_connection_environment
+from . import turk
 from . import persistence
+from . import aws
 
 local_resource = functools.partial(pkg_resources.resource_stream, __name__)
-
-def get_fps_connection():
-	set_connection_environment()
-	return boto.fps.connection.FPSConnection()
 
 class JobServer(list):
 	tl = TemplateLoader([loader.package(__name__, 'view')])
@@ -42,7 +39,7 @@ class JobServer(list):
 	@cherrypy.expose
 	def upload(self, file):
 		server_url = self.construct_url('/process')
-		job = ConversionJob(
+		job = turk.ConversionJob(
 			file.file, str(file.content_type), server_url, file.filename,
 			)
 		self.append(job)
@@ -58,7 +55,7 @@ class JobServer(list):
 
 	@cherrypy.expose
 	def initiate_payment(self, job_id):
-		conn = get_fps_connection()
+		conn = aws.ConnectionFactory.get_fps_connection()
 		job = self._get_job_for_id(job_id)
 		job.caller_token = conn.install_caller_instruction()
 		job.recipient_token = conn.install_recipient_instruction()
@@ -90,7 +87,7 @@ class JobServer(list):
 		self.verify_URL_signature(end_point_url, params)
 		job = self._get_job_for_id(job_id)
 		job.sender_token = tokenID
-		conn = get_fps_connection()
+		conn = aws.ConnectionFactory.get_fps_connection()
 		conn.pay(float(job.cost), job.sender_token, job.recipient_token,
 			job.caller_token)
 		job.authorized = True
@@ -104,7 +101,7 @@ class JobServer(list):
 		# http://laughingmeme.org/2008/12/30/new-amazon-aws-signature-version-2-is-oauth-compatible/
 		# http://github.com/simplegeo/python-oauth2
 		
-		conn = get_fps_connection()
+		conn = aws.ConnectionFactory.get_fps_connection()
 		conn.verify_signature(end_point_url, cherrypy.request.query_string)
 
 	@cherrypy.expose
@@ -178,7 +175,7 @@ class Devel(object):
 		Disable of all recapture-docs hits (even those not recognized by this
 		server).
 		"""
-		disabled = RetypePageHIT.disable_all()
+		disabled = turk.RetypePageHIT.disable_all()
 		del server[:]
 		msg = 'Disabled {disabled} HITs (do not forget to remove them from other servers).'
 		return msg.format(**vars())
@@ -225,6 +222,7 @@ def start_server(*configs):
 		dev_app = cherrypy.tree.mount(Devel(server), '/devel')
 		map(dev_app.merge, configs)
 		boto.set_stream_logger('recapturedocs')
+		aws.ConnectionFactory.production=False
 	cherrypy.engine.start()
 	yield server
 	cherrypy.engine.exit()

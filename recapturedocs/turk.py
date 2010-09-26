@@ -13,8 +13,10 @@ import warnings
 warnings.filterwarnings('ignore', module='pyPdf.pdf', lineno=52)
 from pyPdf import PdfFileReader, PdfFileWriter
 
+from . import aws
+
 todo = """
-Basic Aesthetics
+Thread Safety
 Terms and Conditions
 Privacy Policy
 Add new and pending page
@@ -31,6 +33,7 @@ Partial Page support
 """
 
 completed_features = """
+Basic Aesthetics
 Payment System
 Basic functional workflow
 Job persistence
@@ -46,26 +49,6 @@ class ConversionError(BaseException):
 def save_credentials(access_key, secret_key):
 	import keyring
 	keyring.set_password('AWS', access_key, secret_key)
-
-def set_connection_environment(access_key='0ZWJV1BMM1Q6GXJ9J2G2'):
-	"""
-	boto requires the credentials to be either passed to the connection,
-	stored in a unix-like config file unencrypted, or available in
-	the environment, so pull the encrypted key out and put it in the
-	environment.
-	"""
-	import keyring
-	secret_key = keyring.get_password('AWS', access_key)
-	os.environ['AWS_ACCESS_KEY_ID'] = access_key
-	os.environ['AWS_SECRET_ACCESS_KEY'] = secret_key
-
-def get_connection():
-	from boto.mturk.connection import MTurkConnection
-	set_connection_environment()
-	return MTurkConnection(
-		host='mechanicalturk.sandbox.amazonaws.com',
-		debug=True,
-		)
 
 class DollarAmount(float):
 	def __str__(self):
@@ -89,7 +72,7 @@ class RetypePageHIT(object):
 		"""
 		Disable all hits that match this hit type
 		"""
-		conn = get_connection()
+		conn = aws.ConnectionFactory.get_mturk_connection()
 		all_hits = conn.get_all_hits()
 		hit_type = cls.get_hit_type()
 		is_local_hit = lambda h: h.HITTypeId == hit_type
@@ -100,12 +83,12 @@ class RetypePageHIT(object):
 
 	@classmethod
 	def get_hit_type(cls):
-		conn = get_connection()
+		conn = aws.ConnectionFactory.get_mturk_connection()
 		result = conn.register_hit_type(**cls.type_params)
 		return result.HITTypeId
 
 	def register(self):
-		conn = get_connection()
+		conn = aws.ConnectionFactory.get_mturk_connection()
 		res = conn.create_hit(question=self.get_external_question(),
 			**self.type_params)
 		self.registration_result = res
@@ -117,7 +100,7 @@ class RetypePageHIT(object):
 		return self.registration_result[0].HITId
 
 	def load_assignments(self):
-		conn = get_connection()
+		conn = aws.ConnectionFactory.get_mturk_connection()
 		return conn.get_assignments(self.id)
 
 	def max_assignments(self):
