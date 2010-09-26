@@ -33,7 +33,6 @@ class ConnectionFactory(object):
 		set_connection_environment()
 		host = ['fps.sandbox.amazonaws.com', 'fps.amazonaws.com'][
 			class_.production]
-		import pdb; pdb.set_trace()
 		return boto.fps.connection.FPSConnection(host=host)
 
 	@classmethod
