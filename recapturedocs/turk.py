@@ -23,6 +23,9 @@ Sanity checks on submitted work
 Per-page rejection
 Rich text editor
 Support for non-standard documents
+ - image extraction
+ - standard forms
+ - data sheets
 Privacy Enhancements
 Partial Page support
 """
