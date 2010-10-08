@@ -1,10 +1,14 @@
 import pickle
-
 import os
+
+from jaraco.util.concurrency import AtomicGuard
 
 def get_config_dir():
 	return os.path.dirname(__file__)
 
+guard = AtomicGuard()
+
+@guard
 def save(key, objects):
 	"""
 	Use pickle to save objects to a file
@@ -13,6 +17,7 @@ def save(key, objects):
 	with open(filename, 'wb') as file:
 		pickle.dump(objects, file, protocol=pickle.HIGHEST_PROTOCOL)
 
+@guard
 def load(key):
 	filename = os.path.join(get_config_dir(), key+'.pickle')
 	if not os.path.isfile(filename):

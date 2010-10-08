@@ -17,6 +17,9 @@ from . import aws
 
 todo = """
 Thread Safety
+Improved Sample HIT support
+Auto-refresh Status Page
+Site Design
 Terms and Conditions
 Privacy Policy
 Add new and pending page
