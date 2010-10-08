@@ -263,7 +263,9 @@ def get_log_directory(appname):
 		return os.path.join(os.environ['SYSTEMROOT'], 'System32', 'LogFiles', appname)
 	@ensure_exists
 	def get_log_root_linux2():
-		return '/var/' + appname.lower()
+		if sys.prefix == '/usr':
+			return '/var/' + appname.lower()
+		return os.path.join(sys.prefix, 'var', appname.lower())
 	getter = locals()['get_log_root_'+sys.platform]
 	return getter()
 
