@@ -28,6 +28,7 @@ setup(name = name,
 			'boto == 2.0b2', # easy_install http://github.com/jaraco/boto/tarball/master
 			'PyPDF >= 1.12',
 			'keyring',
+			'jaraco.util',
 		],
 		extras_require = {
 		},
