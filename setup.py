@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 name = 'recapturedocs'
 
 setup(name = name,
-		version = '1.0dev',
+		use_hg_version=True,
 		description = 'Library for RecaptureDocs.com',
 		author = 'Jason R. Coombs',
 		author_email = 'jaraco@jaraco.com',
