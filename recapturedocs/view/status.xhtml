@@ -23,7 +23,9 @@
 
 		<div py:choose="">
 			<div py:when="not job.is_complete()">
-				Your job is authorized and being processed. Please, check back later. You may bookmark this page to check back later.
+				<div>Your job is authorized and being processed. Please, check back later. You may bookmark this page to check back later.</div>
+				<div>This page will automatically refresh every five minutes, or you may bookmark the page to check back another time.</div>
+				<script>setTimeout("window.location.reload()", 60*5*1000);</script>
 			</div>
 			<div py:otherwise="">
 				Your job is complete. You may now <a target="_blank" href="/get_results?job_id=${job.id}">get the results from here</a>.

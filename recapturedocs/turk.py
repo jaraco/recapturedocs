@@ -16,9 +16,6 @@ from pyPdf import PdfFileReader, PdfFileWriter
 from . import aws
 
 todo = """
-Thread Safety
-Improved Sample HIT support
-Auto-refresh Status Page
 Site Design
 Terms and Conditions
 Privacy Policy
@@ -37,6 +34,9 @@ Partial Page support
 """
 
 completed_features = """
+Auto-refresh Status Page
+Improved Sample HIT support
+Thread Safety
 Basic Aesthetics
 Payment System
 Basic functional workflow
