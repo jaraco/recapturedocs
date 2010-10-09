@@ -201,6 +201,8 @@ class Devel(object):
 				yield '</div>'
 			yield '</div>'
 			yield '</div>'
+		else:
+			yield 'no jobs'
 		yield '</div>'
 
 	@cherrypy.expose
