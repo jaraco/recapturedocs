@@ -132,9 +132,17 @@ class JobServer(list):
 		Fulfill a request of a client who's been sent from AMT. This
 		will be rendered in an iFrame, so don't use the template.
 		"""
-		preview = assignmentId == 'ASSIGNMENT_ID_NOT_AVAILABLE'
-		page_url = lf('/image/{hitId}') if not preview else '/static/Lorem ipsum.pdf'
-		return lf(local_resource('view/retype page.xhtml').read())
+		# rename a few variables to use the PEP-8 syntax
+		assignment_id = assignmentId
+		hit_id = hitId
+		worker_id = workerId
+		turk_submit_to = turkSubmitTo
+		preview = assignment_id == 'ASSIGNMENT_ID_NOT_AVAILABLE'
+		page_url = lf('/image/{hit_id}') if not preview else '/static/Lorem ipsum.pdf'
+		tmpl = self.tl.load('retype page.xhtml')
+		params = dict(vars())
+		del params['self']
+		return tmpl.generate(**params).render('xhtml')
 
 	def _get_job_for_id(self, job_id):
 		jobs = dict((job.id, job) for job in self)
@@ -185,7 +193,7 @@ class Devel(object):
 			yield lf('<div>ID: <a href="/status/{job.id}">{job.id}</a></div>')
 			yield lf('<div>Payment authorized: {job.authorized}</div>')
 			if not job.authorized:
-				lf('<div><a href="pay/{job.id}">simulate payment</a></div>')
+				yield lf('<div><a href="pay/{job.id}">simulate payment</a></div>')
 			yield '<div style="margin-left:1em;">Hits'
 			for hit in getattr(job, 'hits', []):
 				yield '<div>'
