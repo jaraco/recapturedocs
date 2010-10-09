@@ -14,6 +14,7 @@ import urlparse
 
 import cherrypy
 from genshi.template import TemplateLoader, loader
+import genshi
 from jaraco.util.string import local_format as lf
 import boto
 
@@ -29,30 +30,46 @@ class JobServer(list):
 	@cherrypy.expose
 	def index(self):
 		tmpl = self.tl.load('main.xhtml')
-		message = 'Welcome to RecaptureDocs'
+		message = "Welcome to RecaptureDocs"
 		return tmpl.generate(message=message).render('xhtml')
 
 	@staticmethod
 	def construct_url(path):
 		return urlparse.urljoin(cherrypy.request.base, path)
 
+	@staticmethod
+	def is_production():
+		return cherrypy.config.get('server.production', False)
+
 	@cherrypy.expose
 	def upload(self, file, code):
-		if not code == 'recaptureb1': return "You must enter a valid invitation code to utilize recapturedocs at this time. We're sorry for any inconvenience, and we're working hard to have the site ready for public use very soon. Hit your back button to return to the previous page."
+		if self.is_production() and not code == 'recaptureb1':
+			tmpl = self.tl.load('simple.xhtml')
+			message = dedent("""
+				You must enter a valid invitation code to utilize
+				recapturedocs at this time. We're sorry for any
+				inconvenience, and we're working hard to have the site
+				ready for public use very soon. Hit your back button to
+				return to the previous page.
+				""").strip()
+			return tmpl.generate(message=message).render('xhtml')
 		server_url = self.construct_url('/process')
 		job = turk.ConversionJob(
 			file.file, str(file.content_type), server_url, file.filename,
 			)
 		self.append(job)
-		persistence.save('server', self)
+		self.save()
 		raise cherrypy.HTTPRedirect(lf("status/{job.id}"))
 
 	@cherrypy.expose
 	def status(self, job_id):
 		tmpl = self.tl.load('status.xhtml')
 		job = self._get_job_for_id(job_id)
-		message = lf("Job ID {job.id}")
-		return tmpl.generate(message=message, job=job).render('xhtml')
+		return tmpl.generate(job=job, production=self.is_production()
+			).render('xhtml')
+
+	def save(self):
+		persistence.save('server', self)
 
 	@cherrypy.expose
 	def initiate_payment(self, job_id):
@@ -60,7 +77,7 @@ class JobServer(list):
 		job = self._get_job_for_id(job_id)
 		job.caller_token = conn.install_caller_instruction()
 		job.recipient_token = conn.install_recipient_instruction()
-		persistence.save('server', self)
+		self.save()
 		raise cherrypy.HTTPRedirect(
 			self.construct_payment_url(job, conn, job.recipient_token)
 			)
@@ -81,18 +98,22 @@ class JobServer(list):
 		return url
 		
 	@cherrypy.expose
-	def complete_payment(self, job_id, status, tokenID, **params):
+	def complete_payment(self, job_id, status, tokenID=None, **params):
+		job = self._get_job_for_id(job_id)
 		if not status == 'SC':
-			return lf('<div>payment was declined with status {status}. <a href="/initiate_payment/{job_id}>Click here</a> to try again</div><div>{params}</div>')
+			tmpl = self.tl.load('declined.xhtml')
+			params = genshi.Markup(lf('<!-- {params} -->'))
+			res = tmpl.generate(status=status, job=job, params=params)
+			return res.render('xhtml')
 		end_point_url = JobServer.construct_url(lf('/complete_payment/{job_id}'))
 		self.verify_URL_signature(end_point_url, params)
-		job = self._get_job_for_id(job_id)
 		job.sender_token = tokenID
 		conn = aws.ConnectionFactory.get_fps_connection()
 		conn.pay(float(job.cost), job.sender_token, job.recipient_token,
 			job.caller_token)
 		job.authorized = True
 		job.register_hits()
+		self.save()
 		raise cherrypy.HTTPRedirect(lf('/status/{job_id}'))
 
 	def verify_URL_signature(self, end_point_url, params):
@@ -227,7 +248,7 @@ def start_server(*configs):
 	cherrypy.engine.start()
 	yield server
 	cherrypy.engine.exit()
-	persistence.save('server', server)
+	server.save()
 
 def serve(*configs):
 	with start_server(*configs):

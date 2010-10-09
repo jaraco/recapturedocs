@@ -22,7 +22,8 @@ Auto-refresh Status Page
 Site Design
 Terms and Conditions
 Privacy Policy
-Add new and pending page
+Job Naming (maybe use filename, maybe provide user-supplied field)
+Add new and pending features page
 Automatically approve submitted work
 Sanity checks on submitted work
 Per-page rejection
@@ -238,7 +239,7 @@ class ConversionJob(object):
 		return all(hit.is_complete() for hit in self.hits)
 
 	def get_data(self):
-		return '\n\nPAGE\n\n'.join(hit.get_data() for hit in self.hits)
+		return '\n\n\n'.join(hit.get_data() for hit in self.hits)
 
 	def get_hit(self, hit_id):
 		return next(
