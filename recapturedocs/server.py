@@ -181,9 +181,13 @@ class Devel(object):
 			yield '<div>'
 			filename = job.filename
 			pages = len(job)
-			yield '<div>Job Filename: {filename} ({pages} pages)'.format(**vars())
+			yield lf('<div style="margin:1em;">Job Filename: {filename} ({pages} pages)')
+			yield lf('<div>ID: <a href="/status/{job.id}">{job.id}</a></div>')
+			yield lf('<div>Payment authorized: {job.authorized}</div>')
+			if not job.authorized:
+				lf('<div><a href="pay/{job.id}">simulate payment</a></div>')
 			yield '<div style="margin-left:1em;">Hits'
-			for hit in job.hits:
+			for hit in getattr(job, 'hits', []):
 				yield '<div>'
 				yield hit.id
 				yield '</div>'
@@ -200,7 +204,7 @@ class Devel(object):
 		disabled = turk.RetypePageHIT.disable_all()
 		del server[:]
 		msg = 'Disabled {disabled} HITs (do not forget to remove them from other servers).'
-		return msg.format(**vars())
+		return lf(msg)
 
 	@cherrypy.expose
 	def pay(self, job_id):
