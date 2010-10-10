@@ -22,8 +22,6 @@ from . import turk
 from . import persistence
 from . import aws
 
-local_resource = functools.partial(pkg_resources.resource_stream, __name__)
-
 class JobServer(list):
 	tl = TemplateLoader([loader.package(__name__, 'view')])
 
@@ -171,6 +169,10 @@ class JobServer(list):
 		if not job: raise cherrypy.NotFound
 		cherrypy.response.headers['Content-Type'] = job.content_type
 		return job.page_for_hit(hit_id)
+
+	@cherrypy.expose
+	def design(self):
+		return self.tl.load('design goals.xhtml').generate().render('xhtml')
 
 	def __getstate__(self):
 		return list(self)
