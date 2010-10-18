@@ -120,6 +120,7 @@ class JobServer(list):
 		#key = self.get_key_from_cert(params['certificateURL'])
 		# http://laughingmeme.org/2008/12/30/new-amazon-aws-signature-version-2-is-oauth-compatible/
 		# http://github.com/simplegeo/python-oauth2
+		# http://lists.dlitz.net/pipermail/pycrypto/2009q3/000112.html
 		
 		conn = aws.ConnectionFactory.get_fps_connection()
 		conn.verify_signature(end_point_url, cherrypy.request.query_string)
