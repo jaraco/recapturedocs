@@ -15,6 +15,9 @@ from pyPdf import PdfFileReader, PdfFileWriter
 
 from . import aws
 
+page_ideas = """
+tagline (or unattributed quote): It's nothing to write home about... unless you need a document retyped; then it's the shi*"""
+
 todo = """
 Site Design
 Terms and Conditions
