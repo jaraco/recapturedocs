@@ -22,6 +22,7 @@ todo = """
 Site Design
 Terms and Conditions
 Privacy Policy
+Improved persistence (S3 storage or similar)
 Job Naming (maybe use filename, maybe provide user-supplied field)
 Add new and pending features page
 Automatically approve submitted work

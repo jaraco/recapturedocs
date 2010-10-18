@@ -8,33 +8,7 @@
 
 <head py:match="head" py:attrs="select('@*')">
 
-<style>
-body
-{
-	font-family: Calibri;
-}
-
-#header
-{
-	width: 100%-2em;
-	background-color: green;
-	color: white;
-	padding: 2em;
-}
-
-#title
-{
-	font-size: xx-large;
-}
-
-.divider
-{
-	width: 100%;
-	height: 1em;
-	background-color: black;
-}
-</style>
-	<!--link rel="stylesheet" type="text/css" media="screen" href="/static/css/style.css" /-->
+	<link rel="stylesheet" type="text/css" media="screen" href="/static/main-styles.css" />
 
 	<meta py:replace="select('*')" />
 
@@ -43,9 +17,9 @@ body
 <body py:match="body" py:attrs="select('@*')">
 	<div id="header"><p id="title">ReCapture Docs (beta)</p></div>
 	<div class="divider"></div>
-	<div class="message" py:if="defined('message')"
-		py:content="message">A message goes here.</div>
 	<div id="main_content">
+		<div class="message" py:if="defined('message')"
+			py:content="message">An optional message goes here.</div>
 		<div py:replace="select('*|text()')" />
 	</div>
 </body>

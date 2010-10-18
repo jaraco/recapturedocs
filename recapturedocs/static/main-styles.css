@@ -1,0 +1,39 @@
+body
+{
+	font-family: Calibri;
+}
+
+#header
+{
+	width: 100%-2em;
+	background-color: green;
+	color: white;
+	padding: 2em;
+}
+
+#title
+{
+	font-size: xx-large;
+}
+
+.divider
+{
+	width: 100%;
+	height: 1em;
+	background-color: black;
+}
+
+#main_content
+{
+	margin-top: 3em;
+	margin-left: 20%;
+	margin-right: 20%;
+}
+
+.message
+{
+	background-color: #FFDDDD;
+	border: 1px solid red;
+	text-align: center;
+	padding: 1em;
+}
