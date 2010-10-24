@@ -231,16 +231,11 @@ class Devel(object):
 		job.register_hits()
 		return lf('<a href="/status/{job_id}">Payment simulated; click here for status.</a>')
 
-
-@contextmanager
-def start_server(*configs):
+def init(*configs):
 	"""
-	The main entry point for the service, regardless of how it's used.
-	Takes any number of filename or dictionary objects suitable for
-	cherrypy.config.update.
+	Initialize the cherrypy context and other configuration options
+	based on the cherrypy config items supplied.
 	"""
-	global cherrypy, server
-	import cherrypy
 	# set the socket host, but let other configs override
 	host_config = {'global':{'server.socket_host': '::0'}}
 	static_dir = pkg_resources.resource_filename('recapturedocs', 'static')
@@ -252,6 +247,15 @@ def start_server(*configs):
 	configs = list(itertools.chain([host_config, static_config],configs))
 	map(cherrypy.config.update, configs)
 	persistence.init()
+
+@contextmanager
+def start_server(*configs):
+	"""
+	The main entry point for the service, regardless of how it's used.
+	Takes any number of filename or dictionary objects suitable for
+	cherrypy.config.update.
+	"""
+	global server
 	server = persistence.load('server') or JobServer()
 	if hasattr(cherrypy.engine, "signal_handler"):
 		cherrypy.engine.signal_handler.subscribe()
@@ -270,6 +274,7 @@ def start_server(*configs):
 	server.save()
 
 def serve(*configs):
+	init(*configs)
 	with start_server(*configs):
 		cherrypy.engine.block()
 	raise SystemExit(0)
@@ -283,11 +288,13 @@ def interact(*configs):
 			'log.screen': False,
 			},
 		}
+	init(config, *configs)
 	with start_server(config, *configs):
 		import code; code.interact(local=globals())
 
 def daemon(*configs):
 	from cherrypy.process.plugins import Daemonizer
+	init(*configs)
 	d = Daemonizer(cherrypy.engine, stdout=config.get_log_file(),
 		stderr=config.get_error_file())
 	d.subscribe()
