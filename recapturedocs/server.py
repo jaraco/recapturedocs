@@ -231,25 +231,8 @@ class Devel(object):
 		job.register_hits()
 		return lf('<a href="/status/{job_id}">Payment simulated; click here for status.</a>')
 
-def init(*configs):
-	"""
-	Initialize the cherrypy context and other configuration options
-	based on the cherrypy config items supplied.
-	"""
-	# set the socket host, but let other configs override
-	host_config = {'global':{'server.socket_host': '::0'}}
-	static_dir = pkg_resources.resource_filename('recapturedocs', 'static')
-	static_config = {'/static':
-			{
-			'tools.staticdir.on': True,
-			'tools.staticdir.dir': static_dir,
-			},}
-	configs = list(itertools.chain([host_config, static_config],configs))
-	map(cherrypy.config.update, configs)
-	persistence.init()
-
 @contextmanager
-def start_server(*configs):
+def start_server(configs):
 	"""
 	The main entry point for the service, regardless of how it's used.
 	Takes any number of filename or dictionary objects suitable for
@@ -273,33 +256,61 @@ def start_server(*configs):
 	cherrypy.engine.exit()
 	server.save()
 
-def serve(*configs):
-	init(*configs)
-	with start_server(*configs):
-		cherrypy.engine.block()
-	raise SystemExit(0)
+class Command(object):
+	def __init__(self, *configs):
+		self.configs = configs
+		self.configure()
 
-def interact(*configs):
-	# change some config that's problemmatic in interactive mode
-	config = {
-		'global':
-			{
-			'autoreload.on': False,
-			'log.screen': False,
-			},
-		}
-	init(config, *configs)
-	with start_server(config, *configs):
-		import code; code.interact(local=globals())
+	def configure(self):
+		"""
+		Initialize the cherrypy context and other configuration options
+		based on the cherrypy config items supplied.
+		"""
+		# set the socket host, but let other configs override
+		host_config = {'global':{'server.socket_host': '::0'}}
+		static_dir = pkg_resources.resource_filename('recapturedocs', 'static')
+		static_config = {'/static':
+				{
+				'tools.staticdir.on': True,
+				'tools.staticdir.dir': static_dir,
+				},}
+		self.configs = list(
+			itertools.chain([host_config, static_config], self.configs))
+		map(cherrypy.config.update, self.configs)
+		persistence.init()
 
-def daemon(*configs):
-	from cherrypy.process.plugins import Daemonizer
-	init(*configs)
-	d = Daemonizer(cherrypy.engine, stdout=config.get_log_file(),
-		stderr=config.get_error_file())
-	d.subscribe()
-	with start_server(*configs):
-		cherrypy.engine.block()
+class Serve(Command):
+	def run(self):
+		with start_server(self.configs):
+			cherrypy.engine.block()
+		raise SystemExit(0)
+
+class Interact(Command):
+	def configure(self):
+		# change some config that's problemmatic in interactive mode
+		config = {
+			'global':
+				{
+				'autoreload.on': False,
+				'log.screen': False,
+				},
+			}
+		self.configs = list(
+			itertools.chain([config], configs))
+		super(Interact, self).configure()
+
+	def run(self):
+		with start_server(self.configs):
+			import code; code.interact(local=globals())
+
+class Daemon(Command):
+	def run(self):
+		from cherrypy.process.plugins import Daemonizer
+		d = Daemonizer(cherrypy.engine, stdout=config.get_log_file(),
+			stderr=config.get_error_file())
+		d.subscribe()
+		with start_server(self.configs):
+			cherrypy.engine.block()
 	
 def handle_command_line():
 	"%prog <command> [options]"
@@ -307,10 +318,12 @@ def handle_command_line():
 	parser = optparse.OptionParser(usage=usage)
 	options, args = parser.parse_args()
 	if not args: parser.error('A command is required')
-	cmd = args.pop(0)
+	cmd = args.pop(0).capitalize()
 	configs = args
 	if cmd in globals():
-		globals()[cmd](*configs)
+		cls = globals()[cmd]
+		command = cls(*configs)
+		command.run()
 
 if __name__ == '__main__':
 	handle_command_line()
