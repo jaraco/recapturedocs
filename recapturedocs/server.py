@@ -11,6 +11,7 @@ import pkg_resources
 from textwrap import dedent
 import socket
 import urlparse
+import inspect
 
 import cherrypy
 from genshi.template import TemplateLoader, loader
@@ -239,7 +240,6 @@ def start_server(*configs):
 	"""
 	global cherrypy, server
 	import cherrypy
-	persistence.init()
 	# set the socket host, but let other configs override
 	host_config = {'global':{'server.socket_host': '::0'}}
 	static_dir = pkg_resources.resource_filename('recapturedocs', 'static')
@@ -250,6 +250,7 @@ def start_server(*configs):
 			},}
 	configs = list(itertools.chain([host_config, static_config],configs))
 	map(cherrypy.config.update, configs)
+	persistence.init()
 	server = persistence.load('server') or JobServer()
 	if hasattr(cherrypy.engine, "signal_handler"):
 		cherrypy.engine.signal_handler.subscribe()
@@ -318,8 +319,11 @@ def daemon(*configs):
 		cherrypy.engine.block()
 	
 def handle_command_line():
-	parser = optparse.OptionParser()
+	"%prog <command> [options]"
+	usage = inspect.getdoc(handle_command_line)
+	parser = optparse.OptionParser(usage=usage)
 	options, args = parser.parse_args()
+	if not args: parser.error('A command is required')
 	cmd = args.pop(0)
 	configs = args
 	if cmd in globals():

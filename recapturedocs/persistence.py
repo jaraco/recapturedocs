@@ -1,10 +1,26 @@
 import pickle
 import os
+import sys
+
+import cherrypy
 
 from jaraco.util.concurrency import AtomicGuard
 
+def _get_config_base_win32():
+	return '{APPDATA}/RecaptureDocs'.format(**os.environ)
+
+def _get_config_base_linux2():
+	return '/var/recapturedocs'
+
 def get_config_dir():
-	return os.path.dirname(__file__)
+	func = globals().get('_get_config_base_' + sys.platform)
+	dir = base = func()
+	# todo: consider adding an honest setting for the config identifier
+	if not cherrypy.config.get('server.production', False):
+		dir = os.path.join(base, 'dev')
+	if not os.path.isdir(dir):
+		os.makedirs(dir)
+	return dir
 
 guard = AtomicGuard()
 
