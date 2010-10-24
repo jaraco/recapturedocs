@@ -29,6 +29,7 @@ setup(name = name,
 			'PyPDF >= 1.12',
 			'keyring',
 			'jaraco.util',
+			'path.py',
 		],
 		extras_require = {
 		},

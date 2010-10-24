@@ -1,26 +1,7 @@
 import pickle
-import os
-import sys
-
-import cherrypy
 
 from jaraco.util.concurrency import AtomicGuard
-
-def _get_config_base_win32():
-	return '{APPDATA}/RecaptureDocs'.format(**os.environ)
-
-def _get_config_base_linux2():
-	return '/var/recapturedocs'
-
-def get_config_dir():
-	func = globals().get('_get_config_base_' + sys.platform)
-	dir = base = func()
-	# todo: consider adding an honest setting for the config identifier
-	if not cherrypy.config.get('server.production', False):
-		dir = os.path.join(base, 'dev')
-	if not os.path.isdir(dir):
-		os.makedirs(dir)
-	return dir
+from .config import get_config_dir
 
 guard = AtomicGuard()
 
@@ -29,14 +10,14 @@ def save(key, objects):
 	"""
 	Use pickle to save objects to a file
 	"""
-	filename = os.path.join(get_config_dir(), key+'.pickle')
+	filename = get_config_dir() / (key+'.pickle')
 	with open(filename, 'wb') as file:
 		pickle.dump(objects, file, protocol=pickle.HIGHEST_PROTOCOL)
 
 @guard
 def load(key):
-	filename = os.path.join(get_config_dir(), key+'.pickle')
-	if not os.path.isfile(filename):
+	filename = get_config_dir() / (key+'.pickle')
+	if not filename.isfile():
 		return
 	with open(filename, 'rb') as file:
 		return pickle.load(file)
@@ -52,7 +33,7 @@ def patch_boto_config():
 	data is only ever written to the recapturedocs config location.
 	"""
 	import boto.pyami.config
-	config_file = os.path.join(get_config_dir(), 'boto.cfg')
+	config_file = get_config_dir() / 'boto.cfg'
 	boto.pyami.config.UserConfigPath = config_file
 	boto.pyami.config.BotoConfigLocations = [config_file]
 	# set the system config path to an invalid name so nothing is ever
