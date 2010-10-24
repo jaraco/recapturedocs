@@ -22,6 +22,7 @@ import boto
 from . import turk
 from . import persistence
 from . import aws
+from . import config
 
 class JobServer(list):
 	tl = TemplateLoader([loader.package(__name__, 'view')])
@@ -285,35 +286,10 @@ def interact(*configs):
 	with start_server(config, *configs):
 		import code; code.interact(local=globals())
 
-def get_log_directory(appname):
-	candidate = os.path.join(sys.prefix, 'var')
-	if os.path.isdir(candidate):
-		return candidate
-	def ensure_exists(func):
-		@functools.wraps(func)
-		def make_if_not_present():
-			dir = func()
-			if not os.path.isdir(dir):
-				os.makedirs(dir)
-			return dir
-		return make_if_not_present
-	@ensure_exists
-	def get_log_root_win32():
-		return os.path.join(os.environ['SYSTEMROOT'], 'System32', 'LogFiles', appname)
-	@ensure_exists
-	def get_log_root_linux2():
-		if sys.prefix == '/usr':
-			return '/var/' + appname.lower()
-		return os.path.join(sys.prefix, 'var', appname.lower())
-	getter = locals()['get_log_root_'+sys.platform]
-	return getter()
-
 def daemon(*configs):
 	from cherrypy.process.plugins import Daemonizer
-	appname = 'RecaptureDocs'
-	log = os.path.join(get_log_directory(appname), 'log.txt')
-	error = os.path.join(get_log_directory(appname), 'error.txt')
-	d = Daemonizer(cherrypy.engine, stdout=log, stderr=error)
+	d = Daemonizer(cherrypy.engine, stdout=config.get_log_file(),
+		stderr=config.get_error_file())
 	d.subscribe()
 	with start_server(*configs):
 		cherrypy.engine.block()
