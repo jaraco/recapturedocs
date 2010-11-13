@@ -20,14 +20,15 @@ tagline (or unattributed quote): It's nothing to write home about... unless you 
 
 todo = """
 Typist Rejection (for jobs that are too complex)
-Site Design
 Terms and Conditions
 Privacy Policy
+Same Job Detection
 Improved persistence (S3 storage or similar)
 Job Naming (maybe use filename, maybe provide user-supplied field)
 Add new and pending features page
 Automatically approve submitted work
 Sanity checks on submitted work
+Site Design
 Rich text editor
 Port to App Engine
 Support for non-standard documents
