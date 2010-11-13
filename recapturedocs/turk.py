@@ -147,9 +147,9 @@ class RetypePageHIT(object):
 		return ExternalQuestion(external_url=self.server_url, frame_height=600)
 
 class ConversionJob(object):
-	def __init__(self, file, content_type, server_url, filename=None):
+	def __init__(self, stream, content_type, server_url, filename=None):
 		self.created = datetime.datetime.now()
-		self.file = file
+		self.stream = stream
 		self.content_type = content_type
 		self.filename = filename
 		self.server_url = server_url
@@ -164,8 +164,8 @@ class ConversionJob(object):
 	def do_split_pdf(self):
 		msg = "Only PDF content is supported"
 		assert self.content_type == 'application/pdf', msg
-		self.pages = self.split_pdf(self.file)
-		del self.file
+		self.pages = self.split_pdf(self.stream)
+		del self.stream
 
 	@classmethod
 	def _from_file(cls_, filename):
@@ -225,6 +225,9 @@ class ConversionJob(object):
 
 	def __len__(self):
 		return len(self.pages)
+
+	def matches(self, other):
+		return self.pages == other.pages
 
 def get_all_hits(conn):
 	page_size = 100
