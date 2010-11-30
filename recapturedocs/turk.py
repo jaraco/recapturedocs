@@ -19,6 +19,7 @@ page_ideas = """
 tagline (or unattributed quote): It's nothing to write home about... unless you need a document retyped; then it's the shi*"""
 
 todo = """
+Typist Rejection (for jobs that are too complex)
 Site Design
 Terms and Conditions
 Privacy Policy
@@ -27,8 +28,8 @@ Job Naming (maybe use filename, maybe provide user-supplied field)
 Add new and pending features page
 Automatically approve submitted work
 Sanity checks on submitted work
-Per-page rejection
 Rich text editor
+Port to App Engine
 Support for non-standard documents
  - image extraction
  - standard forms
