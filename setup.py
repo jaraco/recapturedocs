@@ -30,6 +30,7 @@ setup(name = name,
 			'keyring',
 			'jaraco.util',
 			'path.py',
+			'docutils',
 		],
 		extras_require = {
 		},

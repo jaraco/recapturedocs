@@ -12,6 +12,7 @@ from textwrap import dedent
 import socket
 import urlparse
 import inspect
+from docutils import examples
 
 import cherrypy
 from genshi.template import TemplateLoader, loader
@@ -176,6 +177,16 @@ class JobServer(list):
 	@cherrypy.expose
 	def design(self):
 		return self.tl.load('design goals.xhtml').generate().render('xhtml')
+
+	@cherrypy.expose
+	def text(self, name):
+		path = 'text/' + name + '.rst'
+		rst = pkg_resources.resource_stream('recapturedocs', path)
+		icls = docutils.io.FileInput
+		parts = docutils.publish_parts(source=rst,
+			source_cls=docutils.io.FileInput)
+		html = genshi.HTML(parts['body'])
+		return self.tl.load('simple.xhtml').generate(content=html).render('xhtml')
 
 	def __getstate__(self):
 		return list(self)
