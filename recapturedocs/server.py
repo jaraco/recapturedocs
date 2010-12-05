@@ -12,7 +12,7 @@ from textwrap import dedent
 import socket
 import urlparse
 import inspect
-from docutils import examples
+import docutils.io, docutils.core
 
 import cherrypy
 from genshi.template import TemplateLoader, loader
@@ -183,9 +183,9 @@ class JobServer(list):
 		path = 'text/' + name + '.rst'
 		rst = pkg_resources.resource_stream('recapturedocs', path)
 		icls = docutils.io.FileInput
-		parts = docutils.publish_parts(source=rst,
-			source_cls=docutils.io.FileInput)
-		html = genshi.HTML(parts['body'])
+		parts = docutils.core.publish_parts(source=rst,
+			source_class=docutils.io.FileInput, writer_name='html',)
+		html = genshi.HTML(parts['html_body'])
 		return self.tl.load('simple.xhtml').generate(content=html).render('xhtml')
 
 	def __getstate__(self):
