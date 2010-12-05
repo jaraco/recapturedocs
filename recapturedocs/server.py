@@ -43,17 +43,7 @@ class JobServer(list):
 		return cherrypy.config.get('server.production', False)
 
 	@cherrypy.expose
-	def upload(self, file, code):
-		if self.is_production() and not code == 'recaptureb1':
-			tmpl = self.tl.load('simple.xhtml')
-			message = dedent("""
-				You must enter a valid invitation code to utilize
-				recapturedocs at this time. We're sorry for any
-				inconvenience, and we're working hard to have the site
-				ready for public use very soon. Hit your back button to
-				return to the previous page.
-				""").strip()
-			return tmpl.generate(message=message).render('xhtml')
+	def upload(self, file):
 		server_url = self.construct_url('/process')
 		job = turk.ConversionJob(
 			file.file, str(file.content_type), server_url, file.filename,
