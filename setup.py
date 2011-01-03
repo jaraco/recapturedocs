@@ -25,7 +25,7 @@ setup(name = name,
 			'cherrypy==3.2.0rc1',
 			# install with easy_install http://svn.cherrypy.org/trunk/
 			'genshi',
-			'boto == 2.0b2', # easy_install http://github.com/jaraco/boto/tarball/master
+			'boto == 2.0b3', # easy_install http://github.com/jaraco/boto/tarball/master
 			'PyPDF >= 1.12',
 			'keyring',
 			'jaraco.util',
