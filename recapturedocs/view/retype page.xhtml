@@ -11,7 +11,8 @@ body
 </style>
 <body>
 <h1>Type a Page <span py:if="preview">(Sample)</span></h1>
-<div id="instructions">
+<div id="show_instructions" style="font-size:xx-small"><a href="#" onclick="getElementById('show_instructions').style.display='none'; getElementById('instructions').style.display='block';">instructions</a></div>
+<div id="instructions" style="display:none;">
 	<h2>Instructions <a href="#" onclick="getElementById('instructions').style.display='none'; return false;">hide</a></h2>
 	<p>Please re-type the content of the PDF page (a link is provided below). Please note,</p>
 	<ul>
