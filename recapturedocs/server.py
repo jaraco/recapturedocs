@@ -2,9 +2,9 @@ from __future__ import absolute_import
 
 import os
 import sys
-import optparse
 import functools
 import itertools
+import argparse
 from collections import namedtuple
 from contextlib import contextmanager
 import pkg_resources
@@ -18,6 +18,7 @@ import cherrypy
 from genshi.template import TemplateLoader, loader
 import genshi
 from jaraco.util.string import local_format as lf
+from jaraco.util.meta import LeafClassesMeta
 import boto
 
 from . import turk
@@ -258,6 +259,7 @@ def start_server(configs):
 	server.save()
 
 class Command(object):
+	__metaclass__ = LeafClassesMeta
 	def __init__(self, *configs):
 		self.configs = configs
 		self.configure()
@@ -279,6 +281,17 @@ class Command(object):
 			itertools.chain([host_config, static_config], self.configs))
 		map(cherrypy.config.update, self.configs)
 		persistence.init()
+
+	@classmethod
+	def add_subparsers(cls, parser):
+		subparsers = parser.add_subparsers()
+		[cmd_class.add_parser(subparsers) for cmd_class in cls._leaf_classes]
+
+	@classmethod
+	def add_parser(cls, subparsers):
+		parser = subparsers.add_parser(cls.__name__.lower())
+		parser.set_defaults(action=cls)
+		parser.add_argument('configs', nargs='*', default=[], help='Config filename')
 
 class Serve(Command):
 	def run(self):
@@ -314,17 +327,12 @@ class Daemon(Command):
 			cherrypy.engine.block()
 	
 def handle_command_line():
-	"%prog <command> [options]"
 	usage = inspect.getdoc(handle_command_line)
-	parser = optparse.OptionParser(usage=usage)
-	options, args = parser.parse_args()
-	if not args: parser.error('A command is required')
-	cmd = args.pop(0).capitalize()
-	configs = args
-	if cmd in globals():
-		cls = globals()[cmd]
-		command = cls(*configs)
-		command.run()
+	parser = argparse.ArgumentParser()
+	Command.add_subparsers(parser)
+	args = parser.parse_args()
+	command = args.action(*args.configs)
+	command.run()
 
 if __name__ == '__main__':
 	handle_command_line()
