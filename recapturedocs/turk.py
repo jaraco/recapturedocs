@@ -19,9 +19,6 @@ page_ideas = """
 tagline (or unattributed quote): It's nothing to write home about... unless you need a document retyped; then it's the shi*"""
 
 todo = """
-Typist Rejection (for jobs that are too complex)
-Terms and Conditions
-Privacy Policy
 Same Job Detection
 Improved persistence (S3 storage or similar)
 Job Naming (maybe use filename, maybe provide user-supplied field)
@@ -40,6 +37,9 @@ Partial Page support
 """
 
 completed_features = """
+Typist Rejection (for jobs that are too complex)
+Terms and Conditions
+Privacy Policy
 Auto-refresh Status Page
 Improved Sample HIT support
 Thread Safety
@@ -187,8 +187,10 @@ class ConversionJob(object):
 
 	@property
 	def id(self):
-		# Compute the id of this job as the hash of the content and the
-		#  date it was created.
+		"""
+		Compute the id of this job as the hash of the content and the
+		date it was created.
+		"""
 		hash = hashlib.md5()
 		map(hash.update, self.pages)
 		hash.update(str(self.created))
