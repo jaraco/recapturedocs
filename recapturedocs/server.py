@@ -27,6 +27,9 @@ from . import aws
 from . import config
 
 class JobServer(list):
+	"""
+	The job server is both a CherryPy server and a list of jobs
+	"""
 	tl = TemplateLoader([loader.package(__name__, 'view')])
 
 	@cherrypy.expose
@@ -49,8 +52,10 @@ class JobServer(list):
 		job = turk.ConversionJob(
 			file.file, str(file.content_type), server_url, file.filename,
 			)
-		self.append(job)
-		self.save()
+		if job.id not in self.job_lookup:
+			self.append(job)
+			self.save()
+		# otherwise, the job already exists - no need to process it again
 		raise cherrypy.HTTPRedirect(lf("status/{job.id}"))
 
 	@cherrypy.expose
@@ -137,9 +142,12 @@ class JobServer(list):
 		del params['self']
 		return tmpl.generate(**params).render('xhtml')
 
+	@property
+	def job_lookup(self):
+		return dict((job.id, job) for job in self)
+
 	def _get_job_for_id(self, job_id):
-		jobs = dict((job.id, job) for job in self)
-		return jobs[job_id]
+		return self.job_lookup[job_id]
 
 	@cherrypy.expose
 	def get_results(self, job_id):
