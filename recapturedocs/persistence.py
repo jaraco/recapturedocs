@@ -1,15 +1,25 @@
-import pickle
+import pymongo
+import cherrypy
 
-from jaraco.util.concurrency import AtomicGuard
 from .config import get_config_dir
 
-guard = AtomicGuard()
+def get_collection(name):
+	ps = persistence_settings = cherrypy.config.get('persistence', dict())
+	storage_host = ps.get('storage.host')
+	conn = pymongo.Connection(storage_host)
+	storage_db = ps.get('storage.db', 'recapturedocs')
+	is_production = cherrypy.config.get('server.production', False)
+	if not is_production:
+		storage_db += '_devel'
+	db = conn[storage_db]
+	return db[name]
 
-@guard
 def save(key, objects):
 	"""
 	Use pickle to save objects to a file
 	"""
+	coll = get_collection(key)
+	
 	filename = get_config_dir() / (key+'.pickle')
 	with open(filename, 'wb') as file:
 		pickle.dump(objects, file, protocol=pickle.HIGHEST_PROTOCOL)

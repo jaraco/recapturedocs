@@ -317,8 +317,7 @@ class Interact(Command):
 				'log.screen': False,
 				},
 			}
-		self.configs = list(
-			itertools.chain([config], configs))
+		self.configs = list(itertools.chain([config], self.configs))
 		super(Interact, self).configure()
 
 	def run(self):
