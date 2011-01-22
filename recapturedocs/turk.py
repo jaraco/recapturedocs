@@ -20,6 +20,7 @@ tagline (or unattributed quote): It's nothing to write home about... unless you 
 
 todo = """
 Improved persistence (S3 storage or similar)
+update faq to mention language issues
 Job Naming (maybe use filename, maybe provide user-supplied field)
 Add new and pending features page
 Automatically approve submitted work
