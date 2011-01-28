@@ -1,6 +1,11 @@
+import sys
 from setuptools import find_packages
 
 name = 'recapturedocs'
+
+def py_ver_dependencies():
+	if sys.version_info < (2,7):
+		yield 'argparse'
 
 setup_params = dict(
 	name = name,
@@ -32,7 +37,7 @@ setup_params = dict(
 		'jaraco.util',
 		'path.py',
 		'docutils',
-	],
+	] + list(py_ver_dependencies()),
 	extras_require = {
 	},
 	dependency_links = [
