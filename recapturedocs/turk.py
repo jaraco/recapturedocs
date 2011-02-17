@@ -159,8 +159,8 @@ class ConversionJob(object):
 
 	@property
 	def cost(self):
-		"$2 per page"
-		return DollarAmount(float(2*len(self)))
+		"$1.95 per page"
+		return DollarAmount(float(1.95*len(self)))
 
 	def do_split_pdf(self):
 		msg = "Only PDF content is supported"
