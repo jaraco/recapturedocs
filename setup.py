@@ -31,7 +31,7 @@ setup_params = dict(
 		'cherrypy==3.2.0rc1',
 		# install with easy_install http://svn.cherrypy.org/trunk/
 		'genshi',
-		'boto == 2.0b3', # easy_install http://github.com/jaraco/boto/tarball/master
+		'boto == 2.0b4', # easy_install http://github.com/jaraco/boto/tarball/master
 		'PyPDF >= 1.12',
 		'keyring',
 		'jaraco.util',
@@ -43,7 +43,7 @@ setup_params = dict(
 	dependency_links = [
 	],
 	tests_require=[
-		'py >= 1.3.2',
+		'pytest',
 	],
 	test_suite='py.test',
 	setup_requires=[
