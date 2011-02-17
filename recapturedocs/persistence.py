@@ -24,7 +24,6 @@ def save(key, objects):
 	with open(filename, 'wb') as file:
 		pickle.dump(objects, file, protocol=pickle.HIGHEST_PROTOCOL)
 
-@guard
 def load(key):
 	filename = get_config_dir() / (key+'.pickle')
 	if not filename.isfile():
