@@ -14,6 +14,7 @@ warnings.filterwarnings('ignore', module='pyPdf.pdf', lineno=52)
 from pyPdf import PdfFileReader, PdfFileWriter
 
 from . import aws
+from . import persistence
 
 page_ideas = """
 tagline (or unattributed quote): It's nothing to write home about... unless you need a document retyped; then it's the shi*"""
@@ -228,6 +229,30 @@ class ConversionJob(object):
 
 	def matches(self, other):
 		return self.pages == other.pages
+
+	def save_if_new(self):
+		"""
+		Only save the job if there isn't already a job with the same hash
+		"""
+		if self.load(self.id): return
+		self.save()
+
+	def save(self):
+		data = dict(vars(self))
+		# serialize the hit objects
+		data['hits'] = [hit.data for hit in data['hits']]
+		self._id = persistence.store.jobs.save(data)
+
+	@classmethod
+	def load(cls, id):
+		data = persistence.store.jobs.find_one({'_id': id})
+		result = cls.__new__()
+		result.__dict__ = data
+		return result
+
+	@classmethod
+	def for_hitid(cls, hit_id):
+		return persistence.store.jobs.find_one({'hits.id': hit_id})
 
 def get_all_hits(conn):
 	page_size = 100

@@ -3,7 +3,7 @@ import cherrypy
 
 from .config import get_config_dir
 
-def get_collection(name):
+def init_mongodb():
 	ps = persistence_settings = cherrypy.config.get('persistence', dict())
 	storage_host = ps.get('storage.host')
 	conn = pymongo.Connection(storage_host)
@@ -11,27 +11,10 @@ def get_collection(name):
 	is_production = cherrypy.config.get('server.production', False)
 	if not is_production:
 		storage_db += '_devel'
-	db = conn[storage_db]
-	return db[name]
-
-def save(key, objects):
-	"""
-	Use pickle to save objects to a file
-	"""
-	coll = get_collection(key)
-	
-	filename = get_config_dir() / (key+'.pickle')
-	with open(filename, 'wb') as file:
-		pickle.dump(objects, file, protocol=pickle.HIGHEST_PROTOCOL)
-
-def load(key):
-	filename = get_config_dir() / (key+'.pickle')
-	if not filename.isfile():
-		return
-	with open(filename, 'rb') as file:
-		return pickle.load(file)
+	globals.update(store = conn[storage_db])
 
 def init():
+	init_mongodb()
 	patch_boto_config()
 
 def patch_boto_config():

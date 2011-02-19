@@ -26,7 +26,7 @@ from . import persistence
 from . import aws
 from . import config
 
-class JobServer(list):
+class JobServer(object):
 	"""
 	The job server is both a CherryPy server and a list of jobs
 	"""
@@ -52,10 +52,7 @@ class JobServer(list):
 		job = turk.ConversionJob(
 			file.file, str(file.content_type), server_url, file.filename,
 			)
-		if job.id not in self.job_lookup:
-			self.append(job)
-			self.save()
-		# otherwise, the job already exists - no need to process it again
+		job.save_if_new()
 		raise cherrypy.HTTPRedirect(lf("status/{job.id}"))
 
 	@cherrypy.expose
@@ -65,16 +62,13 @@ class JobServer(list):
 		return tmpl.generate(job=job, production=self.is_production()
 			).render('xhtml')
 
-	def save(self):
-		persistence.save('server', self)
-
 	@cherrypy.expose
 	def initiate_payment(self, job_id):
 		conn = aws.ConnectionFactory.get_fps_connection()
 		job = self._get_job_for_id(job_id)
 		job.caller_token = conn.install_caller_instruction()
 		job.recipient_token = conn.install_recipient_instruction()
-		self.save()
+		job.save()
 		raise cherrypy.HTTPRedirect(
 			self.construct_payment_url(job, conn, job.recipient_token)
 			)
@@ -110,7 +104,7 @@ class JobServer(list):
 			job.caller_token)
 		job.authorized = True
 		job.register_hits()
-		self.save()
+		job.save()
 		raise cherrypy.HTTPRedirect(lf('/status/{job_id}'))
 
 	def verify_URL_signature(self, end_point_url, params):
@@ -142,12 +136,8 @@ class JobServer(list):
 		del params['self']
 		return tmpl.generate(**params).render('xhtml')
 
-	@property
-	def job_lookup(self):
-		return dict((job.id, job) for job in self)
-
 	def _get_job_for_id(self, job_id):
-		return self.job_lookup[job_id]
+		return ConversionJob.load(job_id)
 
 	@cherrypy.expose
 	def get_results(self, job_id):
@@ -156,19 +146,10 @@ class JobServer(list):
 			return '<div>Job not complete</div>'
 		return job.get_data()
 
-	def _jobs_by_hit_id(self):
-		def _hits_for(job):
-			hits = getattr(job, 'hits', [])
-			return ((hit.id, job) for hit in hits)
-		job_hits = itertools.imap(_hits_for, self)
-		items = itertools.chain.from_iterable(job_hits)
-		#items = list(items); print items
-		return dict(items)
-
 	@cherrypy.expose
 	def image(self, hit_id):
 		# find the appropriate image
-		job = self._jobs_by_hit_id()[hit_id]
+		job = ConversionJob.for_hitid(hit_id)
 		if not job: raise cherrypy.NotFound
 		cherrypy.response.headers['Content-Type'] = job.content_type
 		return job.page_for_hit(hit_id)
@@ -249,7 +230,7 @@ def start_server(configs):
 	cherrypy.config.update.
 	"""
 	global server
-	server = persistence.load('server') or JobServer()
+	server = JobServer()
 	if hasattr(cherrypy.engine, "signal_handler"):
 		cherrypy.engine.signal_handler.subscribe()
 	if hasattr(cherrypy.engine, "console_control_handler"):
