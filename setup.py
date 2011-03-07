@@ -1,6 +1,11 @@
+import sys
 from setuptools import find_packages
 
 name = 'recapturedocs'
+
+def py_ver_dependencies():
+	if sys.version_info < (2,7):
+		yield 'argparse'
 
 setup_params = dict(
 	name = name,
@@ -23,22 +28,21 @@ setup_params = dict(
 			],
 	},
 	install_requires=[
-		'cherrypy==3.2.0rc1',
-		# install with easy_install http://svn.cherrypy.org/trunk/
+		'cherrypy==3.2.0',
 		'genshi',
-		'boto == 2.0b3', # easy_install http://github.com/jaraco/boto/tarball/master
+		'boto == 2.0b4', # easy_install http://github.com/jaraco/boto/tarball/master
 		'PyPDF >= 1.12',
 		'keyring',
 		'jaraco.util',
 		'path.py',
 		'docutils',
-	],
+	] + list(py_ver_dependencies()),
 	extras_require = {
 	},
 	dependency_links = [
 	],
 	tests_require=[
-		'py >= 1.3.2',
+		'pytest',
 	],
 	test_suite='py.test',
 	setup_requires=[

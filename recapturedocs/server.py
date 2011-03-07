@@ -82,7 +82,7 @@ class JobServer(object):
 			returnURL = JobServer.construct_url(lf('/complete_payment/{job.id}')),
 			callerReference = job.id,
 			paymentReason = lf('RecaptureDocs conversion - {n_pages} pages'),
-			transactionAmount = float(job.cost),
+			transactionAmount = str(float(job.cost)),
 			recipientToken = recipient_token,
 			)
 		url = conn.make_url(**params)

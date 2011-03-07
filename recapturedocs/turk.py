@@ -21,6 +21,7 @@ tagline (or unattributed quote): It's nothing to write home about... unless you 
 
 todo = """
 Improved persistence (S3 storage or similar)
+update faq to mention language issues
 Job Naming (maybe use filename, maybe provide user-supplied field)
 Add new and pending features page
 Automatically approve submitted work
@@ -159,8 +160,8 @@ class ConversionJob(object):
 
 	@property
 	def cost(self):
-		"$2 per page"
-		return DollarAmount(float(2*len(self)))
+		"$1.95 per page"
+		return DollarAmount(float(1.95*len(self)))
 
 	def do_split_pdf(self):
 		msg = "Only PDF content is supported"
