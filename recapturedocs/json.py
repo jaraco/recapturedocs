@@ -19,12 +19,12 @@ class GenericEncoder(json.JSONEncoder):
 		result.
 		"""
 		cls, args = args[0], args[1:]
-		return self.encode(dict(
+		return dict(
 			__python_class__ = cls.__name__,
 			__python_module__ = cls.__module__,
 			args = self.encode(args),
 			state = self.encode(state),
-			))
+			)
 
 encode = GenericEncoder().encode
 
@@ -33,11 +33,11 @@ def decode_object_hook(object):
 		return object
 	class_name = object['__python_class__']
 	mod_name = object['__python_module__']
-	args = object['args']
-	state = object['state']
+	args = decode(object['args'])
+	state = decode(object['state'])
 	mod = __import__(mod_name)
 	cls = getattr(mod, class_name)
-	ob = cls.__new__(*args)
+	ob = cls.__new__(cls, *args)
 	ob.__dict__.update(state)
 	return ob
 
