@@ -28,8 +28,7 @@ setup_params = dict(
 			],
 	},
 	install_requires=[
-		'cherrypy==3.2.0rc1',
-		# install with easy_install http://svn.cherrypy.org/trunk/
+		'cherrypy==3.2.0',
 		'genshi',
 		'boto == 2.0b4', # easy_install http://github.com/jaraco/boto/tarball/master
 		'PyPDF >= 1.12',
