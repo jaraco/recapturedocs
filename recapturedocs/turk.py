@@ -7,6 +7,7 @@ from cStringIO import StringIO
 
 from jaraco.util.iter_ import one
 from jaraco.util.string import local_format as lf
+import jsonpickle
 
 # suppress the deprecation warning in PyPDF
 import warnings
@@ -239,21 +240,28 @@ class ConversionJob(object):
 		self.save()
 
 	def save(self):
-		data = dict(vars(self))
-		# serialize the hit objects
-		data['hits'] = [hit.data for hit in data['hits']]
+		data = jsonpickle.encode(self)
+		data['_id'] = self.id
 		self._id = persistence.store.jobs.save(data)
 
 	@classmethod
 	def load(cls, id):
 		data = persistence.store.jobs.find_one({'_id': id})
-		result = cls.__new__()
-		result.__dict__ = data
+		return cls._restore(data)
+
+	@classmethod
+	def _restore(cls, data):
+		id = data.pop('_id')
+		result = jsonpickle.decode(data)
+		if not result.id == id:
+			raise ValueError(lf("ID mutated on load: {id} became "
+				"{result.id}"))
 		return result
 
 	@classmethod
 	def for_hitid(cls, hit_id):
-		return persistence.store.jobs.find_one({'hits.id': hit_id})
+		data = persistence.store.jobs.find_one({'hits.id': hit_id})
+		return cls._restore(data)
 
 def get_all_hits(conn):
 	page_size = 100
