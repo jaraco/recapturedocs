@@ -137,7 +137,7 @@ class JobServer(object):
 		return tmpl.generate(**params).render('xhtml')
 
 	def _get_job_for_id(self, job_id):
-		return ConversionJob.load(job_id)
+		return turk.ConversionJob.load(job_id)
 
 	@cherrypy.expose
 	def get_results(self, job_id):
@@ -149,7 +149,7 @@ class JobServer(object):
 	@cherrypy.expose
 	def image(self, hit_id):
 		# find the appropriate image
-		job = ConversionJob.for_hitid(hit_id)
+		job = turk.ConversionJob.for_hitid(hit_id)
 		if not job: raise cherrypy.NotFound
 		cherrypy.response.headers['Content-Type'] = job.content_type
 		return job.page_for_hit(hit_id)
