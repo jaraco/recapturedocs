@@ -33,7 +33,7 @@ setup_params = dict(
 		'boto == 2.0b4', # easy_install http://github.com/jaraco/boto/tarball/master
 		'PyPDF >= 1.12',
 		'keyring',
-		'jaraco.util',
+		'jaraco.util >= 3.8dev',
 		'path.py',
 		'docutils',
 	] + list(py_ver_dependencies()),

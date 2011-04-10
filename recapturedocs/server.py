@@ -19,6 +19,7 @@ from genshi.template import TemplateLoader, loader
 import genshi
 from jaraco.util.string import local_format as lf
 from jaraco.util.meta import LeafClassesMeta
+import jaraco.util.logging
 import boto
 
 from . import turk
@@ -245,7 +246,6 @@ def start_server(configs):
 	cherrypy.engine.start()
 	yield server
 	cherrypy.engine.exit()
-	server.save()
 
 class Command(object):
 	__metaclass__ = LeafClassesMeta
@@ -259,13 +259,19 @@ class Command(object):
 		based on the cherrypy config items supplied.
 		"""
 		# set the socket host, but let other configs override
-		host_config = {'global':{'server.socket_host': '::0'}}
+		host_config = {
+			'global': {
+				'server.socket_host': '::0',
+				'log.screen': False,
+			}
+		}
 		static_dir = pkg_resources.resource_filename('recapturedocs', 'static')
 		static_config = {'/static':
-				{
+			{
 				'tools.staticdir.on': True,
 				'tools.staticdir.dir': static_dir,
-				},}
+			},
+		}
 		self.configs = list(
 			itertools.chain([host_config, static_config], self.configs))
 		map(cherrypy.config.update, self.configs)
@@ -317,8 +323,10 @@ class Daemon(Command):
 def handle_command_line():
 	usage = inspect.getdoc(handle_command_line)
 	parser = argparse.ArgumentParser()
+	jaraco.util.logging.add_arguments(parser)
 	Command.add_subparsers(parser)
 	args = parser.parse_args()
+	jaraco.util.logging.setup(args)
 	command = args.action(*args.configs)
 	command.run()
 

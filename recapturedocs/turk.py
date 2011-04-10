@@ -4,6 +4,7 @@ import mimetypes
 import hashlib
 import datetime
 from cStringIO import StringIO
+import logging
 
 from jaraco.util.iter_ import one
 from jaraco.util.string import local_format as lf
@@ -55,6 +56,8 @@ Run as daemon
 document upload
 document processing
 """
+
+log = logging.getLogger(__name__)
 
 class ConversionError(BaseException):
 	pass
@@ -241,13 +244,14 @@ class ConversionJob(object):
 
 	def save(self):
 		data = jsonpickle.encode(self)
+		#log.debug("saving {0!r}".format(data))
 		data['_id'] = self.id
 		self._id = persistence.store.jobs.save(data)
 
 	@classmethod
 	def load(cls, id):
 		data = persistence.store.jobs.find_one({'_id': id})
-		return cls._restore(data)
+		return cls._restore(data) if data else None
 
 	@classmethod
 	def _restore(cls, data):
