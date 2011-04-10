@@ -8,7 +8,7 @@ import logging
 
 from jaraco.util.iter_ import one
 from jaraco.util.string import local_format as lf
-import jsonpickle
+import jaraco.modb
 
 # suppress the deprecation warning in PyPDF
 import warnings
@@ -243,7 +243,7 @@ class ConversionJob(object):
 		self.save()
 
 	def save(self):
-		data = jsonpickle.encode(self)
+		data = jaraco.modb.encode(self)
 		#log.debug("saving {0!r}".format(data))
 		data['_id'] = self.id
 		self._id = persistence.store.jobs.save(data)
@@ -256,7 +256,7 @@ class ConversionJob(object):
 	@classmethod
 	def _restore(cls, data):
 		id = data.pop('_id')
-		result = jsonpickle.decode(data)
+		result = jaraco.modb.decode(data)
 		if not result.id == id:
 			raise ValueError(lf("ID mutated on load: {id} became "
 				"{result.id}"))

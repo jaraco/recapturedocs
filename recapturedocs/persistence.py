@@ -1,12 +1,8 @@
 import pymongo
 import cherrypy
-import jsonpickle
+import jaraco.modb
 
 from .config import get_config_dir
-
-# set up a couple of "serialization" functions for jsonpickle to return
-#  just the JSON-ready dicts
-dumps = loads = lambda x: x
 
 def init_mongodb():
 	ps = persistence_settings = cherrypy.config.get('persistence', dict())
@@ -21,8 +17,7 @@ def init_mongodb():
 def init():
 	init_mongodb()
 	patch_boto_config()
-	jsonpickle.load_backend('recapturedocs.persistence', 'dumps', 'loads', ValueError)
-	jsonpickle.set_preferred_backend('recapturedocs.persistence')
+	jaraco.modb.init()
 
 def patch_boto_config():
 	"""
