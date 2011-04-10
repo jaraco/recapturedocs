@@ -20,6 +20,7 @@ setup_params = dict(
 	classifiers = [
 		"Development Status :: 4 - Beta",
 		"Programming Language :: Python",
+		"Programming Language :: Python :: 2",
 		"Programming Language :: Python :: 3",
 	],
 	entry_points = {
@@ -33,10 +34,10 @@ setup_params = dict(
 		'boto == 2.0b4', # easy_install http://github.com/jaraco/boto/tarball/master
 		'PyPDF >= 1.12',
 		'keyring',
-		'jaraco.util >= 3.8dev',
+		'jaraco.util >= 3.8',
 		'path.py',
 		'docutils',
-		'jaraco.modb >= 0.0.1dev',
+		'jaraco.modb >= 1.0',
 	] + list(py_ver_dependencies()),
 	extras_require = {
 	},
