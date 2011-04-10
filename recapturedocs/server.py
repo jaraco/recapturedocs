@@ -169,11 +169,8 @@ class JobServer(object):
 		html = genshi.HTML(parts['html_body'])
 		return self.tl.load('simple.xhtml').generate(content=html).render('xhtml')
 
-	def __getstate__(self):
-		return list(self)
-
-	def __setstate__(self, items):
-		self[:] = items
+	def __iter__(self):
+		return turk.ConversionJob.load_all()
 
 class Devel(object):
 	def __init__(self, server):

@@ -254,6 +254,10 @@ class ConversionJob(object):
 		return cls._restore(data) if data else None
 
 	@classmethod
+	def load_all(cls):
+		return (cls._restore(data) for data in persistence.store.jobs.find())
+
+	@classmethod
 	def _restore(cls, data):
 		id = data.pop('_id')
 		result = jaraco.modb.decode(data)
