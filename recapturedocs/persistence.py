@@ -1,8 +1,11 @@
+from __future__ import absolute_import
+
 import pymongo
 import cherrypy
 import jaraco.modb
 
 from .config import get_config_dir
+from . import jsonpickle
 
 def init_mongodb():
 	ps = persistence_settings = cherrypy.config.get('persistence', dict())
@@ -18,6 +21,7 @@ def init():
 	init_mongodb()
 	patch_boto_config()
 	jaraco.modb.init()
+	jsonpickle.setup_handlers()
 
 def patch_boto_config():
 	"""
