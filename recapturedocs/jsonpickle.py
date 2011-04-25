@@ -10,8 +10,8 @@ from boto.mturk.connection import HIT
 
 class BotoResultSetHandler(jsonpickle.handlers.BaseHandler):
 	def flatten(self, obj, data):
-		data[jsonpickle.tags.SEQ] = jsonpickle.pickler.flatten(list(obj))
-		data.update(jsonpickle.pickler.flatten(vars(obj)))
+		data[jsonpickle.tags.SEQ] = self._base.flatten(list(obj))
+		data.update(self._base.flatten(vars(obj)))
 		return data
 
 	def restore(self, data):
@@ -26,7 +26,7 @@ class BotoResultSetHandler(jsonpickle.handlers.BaseHandler):
 class OldStyleClassParamsHandler(jsonpickle.handlers.BaseHandler):
 	params = ()
 	def flatten(self, obj, data):
-		data.update(jsonpickle.pickler.flatten(vars(obj)))
+		data.update(self._base.flatten(vars(obj)))
 		return data
 
 	def restore(self, data):
