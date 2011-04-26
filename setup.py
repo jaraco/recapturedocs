@@ -38,6 +38,7 @@ setup_params = dict(
 		'path.py',
 		'docutils',
 		'jaraco.modb >= 1.0.2',
+		'pymongo >= 1.9',
 	] + list(py_ver_dependencies()),
 	extras_require = {
 	},
