@@ -145,6 +145,7 @@ class JobServer(object):
 		job = self._get_job_for_id(job_id)
 		if not job.is_complete():
 			return '<div>Job not complete</div>'
+		cherrypy.response.headers['Content-Type'] = 'text/plain'
 		return job.get_data()
 
 	@cherrypy.expose
