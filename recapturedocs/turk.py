@@ -272,7 +272,9 @@ class ConversionJob(object):
 
 	@classmethod
 	def for_hitid(cls, hit_id):
-		data = persistence.store.jobs.find_one({'hits.id': hit_id})
+		# the hitID is stored in the database here
+		hitid_loc = 'hits.registration_result.py/seq.HITId'
+		data = persistence.store.jobs.find_one({hitid_loc: hit_id})
 		return cls._restore(data)
 
 def get_all_hits(conn):
