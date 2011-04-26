@@ -172,6 +172,11 @@ class JobServer(object):
 	def __iter__(self):
 		return turk.ConversionJob.load_all()
 
+	def __delitem__(self, key):
+		jobs = list(iter(self))
+		for job in jobs[key]:
+			job.remove()
+
 class Devel(object):
 	tl = TemplateLoader([
 		loader.package(__name__, 'view/devel'),

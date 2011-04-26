@@ -248,6 +248,10 @@ class ConversionJob(object):
 		data['_id'] = self.id
 		self._id = persistence.store.jobs.save(data)
 
+	def remove(self):
+		assert self.id is not None
+		persistence.store.jobs.remove(self.id)
+
 	@classmethod
 	def load(cls, id):
 		data = persistence.store.jobs.find_one({'_id': id})
