@@ -173,31 +173,17 @@ class JobServer(object):
 		return turk.ConversionJob.load_all()
 
 class Devel(object):
+	tl = TemplateLoader([
+		loader.package(__name__, 'view/devel'),
+		loader.package(__name__, 'view'),
+		])
 	def __init__(self, server):
 		self.server = server
 
 	@cherrypy.expose
 	def status(self):
-		yield '<div>'
-		for job in self.server:
-			yield '<div>'
-			filename = job.filename
-			pages = len(job)
-			yield lf('<div style="margin:1em;">Job Filename: {filename} ({pages} pages)')
-			yield lf('<div>ID: <a href="/status/{job.id}">{job.id}</a></div>')
-			yield lf('<div>Payment authorized: {job.authorized}</div>')
-			if not job.authorized:
-				yield lf('<div><a href="pay/{job.id}">simulate payment</a></div>')
-			yield '<div style="margin-left:1em;">Hits'
-			for hit in getattr(job, 'hits', []):
-				yield '<div>'
-				yield hit.id
-				yield '</div>'
-			yield '</div>'
-			yield '</div>'
-		else:
-			yield 'no jobs'
-		yield '</div>'
+		tmpl = self.tl.load('status.xhtml')
+		return tmpl.generate(jobs=list(self.server)).render('xhtml')
 
 	@cherrypy.expose
 	def disable_all(self):

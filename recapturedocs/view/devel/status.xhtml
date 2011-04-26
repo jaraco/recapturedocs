@@ -1,0 +1,26 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:py="http://genshi.edgewall.org/"
+	xmlns:xi="http://www.w3.org/2001/XInclude">
+
+<xi:include href="master.xhtml" />
+
+<head>
+	<title>RecaptureDocs server status</title>
+</head>
+<body>
+	<div>
+		<py:if test="not jobs">No Jobs</py:if>
+		<div py:for="job in jobs">
+			<div style="margin:1em;">Job Filename: ${job.filename} (${len(job)} pages)</div>
+			<div>ID: <a href="/status/${job.id}" py:content="job.id"></a></div>
+			<div>Payment authorized: ${job.authorized}</div>
+			<div py:if="not job.authorized"><a href="pay/${job.id}">simulate payment</a></div>
+			<div style="margin-left: 1em;">
+				Hits
+				<div py:for="hit in getattr(job, 'hits', [])" py:content="hit.id" />
+			</div>
+		</div>
+	</div>
+</body>
+</html>
