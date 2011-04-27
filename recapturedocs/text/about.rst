@@ -27,7 +27,7 @@ necessary. Simply upload a PDF, complete payment for that document, and
 wait for the content to be rekeyed.
 
 When you upload your PDF, our proprietary system separates out the
-images of the PDF and allocates them to jobs for typists to do. Under
+images of the PDF and allocates them to jobs for typists to do. Behind
 the scenes, we employ workers from Amazon's `Mechanical Turk
 <https://www.mturk.com/mturk/welcome>`_, their marketplace for work.
 Typists have access to only one page at a time, which means a multi-page

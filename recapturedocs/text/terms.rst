@@ -31,5 +31,3 @@ or its affiliates
 responsible for any breach of copyright or other intellectual property
 violation enacted by the typists. This agreement does not preclude the
 client's right to pursue legal action against a typist directly.
-
-against the typists direc
