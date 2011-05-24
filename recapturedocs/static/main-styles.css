@@ -16,6 +16,11 @@ body
 	font-size: xx-large;
 }
 
+#byline
+{
+	margin-left: 20px;
+}
+
 .divider
 {
 	width: 100%;

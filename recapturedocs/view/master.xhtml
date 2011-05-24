@@ -15,7 +15,10 @@
 </head>
 
 <body py:match="body" py:attrs="select('@*')">
-	<div id="header"><p id="title">ReCapture Docs (beta)</p></div>
+	<div id="header">
+		<p id="title">ReCapture Docs</p>
+		<p id="byline">Automated Document Retyping Services</p>
+	</div>
 	<div class="divider"></div>
 	<div id="main_content">
 		<div class="message" py:if="defined('message')"
