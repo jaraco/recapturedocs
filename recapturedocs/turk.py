@@ -184,6 +184,13 @@ class RetypePageHIT(object):
 		return ExternalQuestion(external_url=self.server_url, frame_height=600)
 
 class ConversionJob(object):
+	"""
+	Conversion Job, a collection of pages to be retyped
+	"""
+	
+	"$1.95 per page"
+	page_cost = DollarAmount(1.95)
+
 	def __init__(self, stream, content_type, server_url, filename=None):
 		self.created = datetime.datetime.now()
 		self.stream = stream
@@ -195,8 +202,7 @@ class ConversionJob(object):
 
 	@property
 	def cost(self):
-		"$1.95 per page"
-		return DollarAmount(float(1.95*len(self)))
+		return DollarAmount(self.page_cost * len(self))
 
 	def do_split_pdf(self):
 		msg = "Only PDF content is supported"

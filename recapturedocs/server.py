@@ -37,7 +37,10 @@ class JobServer(object):
 	def index(self):
 		tmpl = self.tl.load('main.xhtml')
 		message = "Welcome to RecaptureDocs"
-		return tmpl.generate(message=message).render('xhtml')
+		return tmpl.generate(
+			message=message,
+			page_cost=turk.ConversionJob.page_cost,
+			).render('xhtml')
 
 	@staticmethod
 	def construct_url(path):
