@@ -22,13 +22,14 @@ page_ideas = """
 tagline (or unattributed quote): It's nothing to write home about... unless you need a document retyped; then it's the shi*"""
 
 todo = """
-Improved persistence (S3 storage or similar)
+Site Design
+Automatically approve submitted work
+E-mail results
+E-mail link to status
 update faq to mention language issues
 Job Naming (maybe use filename, maybe provide user-supplied field)
 Add new and pending features page
-Automatically approve submitted work
 Sanity checks on submitted work
-Site Design
 Rich text editor
 Port to App Engine
 Support for non-standard documents
@@ -40,6 +41,7 @@ Partial Page support
 """
 
 completed_features = """
+Improved persistence (S3 storage or similar)
 Same Job Detection
 Typist Rejection (for jobs that are too complex)
 Terms and Conditions
