@@ -18,9 +18,6 @@ from pyPdf import PdfFileReader, PdfFileWriter
 from . import aws
 from . import persistence
 
-page_ideas = """
-tagline (or unattributed quote): It's nothing to write home about... unless you need a document retyped; then it's the shi*"""
-
 todo = """
 Site Design
 Automatically approve submitted work
