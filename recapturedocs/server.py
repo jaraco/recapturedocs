@@ -23,7 +23,7 @@ from jaraco.util.meta import LeafClassesMeta
 import jaraco.util.logging
 import boto
 
-from . import turk
+from . import model
 from . import persistence
 from . import aws
 from . import config
@@ -40,7 +40,7 @@ class JobServer(object):
 		message = "Welcome to RecaptureDocs"
 		return tmpl.generate(
 			message=message,
-			page_cost=turk.ConversionJob.page_cost,
+			page_cost=model.ConversionJob.page_cost,
 			).render('xhtml')
 
 	@staticmethod
@@ -57,7 +57,7 @@ class JobServer(object):
 		if not unicode(file.content_type) == 'application/pdf':
 			msg = "Got content other than PDF: {content_type}"
 			cherrypy.log(msg.format(**vars(file)), severity=logging.WARNING)
-		job = turk.ConversionJob(
+		job = model.ConversionJob(
 			file.file, unicode(file.content_type), server_url, file.filename,
 		)
 		job.save_if_new()
@@ -145,7 +145,7 @@ class JobServer(object):
 		return tmpl.generate(**params).render('xhtml')
 
 	def _get_job_for_id(self, job_id):
-		return turk.ConversionJob.load(job_id)
+		return model.ConversionJob.load(job_id)
 
 	@cherrypy.expose
 	def get_results(self, job_id):
@@ -158,7 +158,7 @@ class JobServer(object):
 	@cherrypy.expose
 	def image(self, hit_id):
 		# find the appropriate image
-		job = turk.ConversionJob.for_hitid(hit_id)
+		job = model.ConversionJob.for_hitid(hit_id)
 		if not job: raise cherrypy.NotFound
 		cherrypy.response.headers['Content-Type'] = job.content_type
 		return job.page_for_hit(hit_id)
@@ -178,7 +178,7 @@ class JobServer(object):
 		return self.tl.load('simple.xhtml').generate(content=html).render('xhtml')
 
 	def __iter__(self):
-		return turk.ConversionJob.load_all()
+		return model.ConversionJob.load_all()
 
 	def __delitem__(self, key):
 		jobs = list(iter(self))
@@ -204,7 +204,7 @@ class Devel(object):
 		Disable of all recapture-docs hits (even those not recognized by this
 		server).
 		"""
-		disabled = turk.RetypePageHIT.disable_all()
+		disabled = model.RetypePageHIT.disable_all()
 		del server[:]
 		msg = 'Disabled {disabled} HITs (do not forget to remove them from other servers).'
 		return lf(msg)
