@@ -13,6 +13,7 @@ import socket
 import urlparse
 import inspect
 import docutils.io, docutils.core
+import logging
 
 import cherrypy
 from genshi.template import TemplateLoader, loader
@@ -53,9 +54,12 @@ class JobServer(object):
 	@cherrypy.expose
 	def upload(self, file):
 		server_url = self.construct_url('/process')
+		if not file.content_type == 'application/pdf':
+			msg = "Got content other than PDF: {content_type}"
+			cherrypy.log(msg.format(**vars(file)), severity=logging.WARNING)
 		job = turk.ConversionJob(
 			file.file, str(file.content_type), server_url, file.filename,
-			)
+		)
 		job.save_if_new()
 		raise cherrypy.HTTPRedirect(lf("status/{job.id}"))
 
@@ -91,7 +95,7 @@ class JobServer(object):
 			)
 		url = conn.make_url(**params)
 		return url
-		
+
 	@cherrypy.expose
 	def complete_payment(self, job_id, status, tokenID=None, **params):
 		job = self._get_job_for_id(job_id)
@@ -118,7 +122,7 @@ class JobServer(object):
 		# http://laughingmeme.org/2008/12/30/new-amazon-aws-signature-version-2-is-oauth-compatible/
 		# http://github.com/simplegeo/python-oauth2
 		# http://lists.dlitz.net/pipermail/pycrypto/2009q3/000112.html
-		
+
 		conn = aws.ConnectionFactory.get_fps_connection()
 		conn.verify_signature(end_point_url, cherrypy.request.query_string)
 

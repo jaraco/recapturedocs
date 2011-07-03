@@ -155,7 +155,7 @@ class ConversionJob(object):
 	"""
 	Conversion Job, a collection of pages to be retyped
 	"""
-	
+
 	"$1.95 per page"
 	page_cost = DollarAmount(1.95)
 
@@ -173,8 +173,8 @@ class ConversionJob(object):
 		return DollarAmount(self.page_cost * len(self))
 
 	def do_split_pdf(self):
-		msg = "Only PDF content is supported"
-		assert self.content_type == 'application/pdf', msg
+		msg = "Only PDF content is supported (got {content_type} instead)"
+		assert self.content_type == 'application/pdf', msg.format(**vars(self))
 		self.pages = self.split_pdf(self.stream)
 		del self.stream
 
@@ -186,7 +186,7 @@ class ConversionJob(object):
 	def register_hits(self):
 		"""
 		Create a hit for each page in the job.
-		
+
 		The mapping of HIT to page is implicit - they're kept arranged
 		in order so that zip(self.pages, self.hits) always produces
 		pairs of each page with its HIT.
