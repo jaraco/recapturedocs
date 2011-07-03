@@ -54,11 +54,11 @@ class JobServer(object):
 	@cherrypy.expose
 	def upload(self, file):
 		server_url = self.construct_url('/process')
-		if not file.content_type == 'application/pdf':
+		if not unicode(file.content_type) == 'application/pdf':
 			msg = "Got content other than PDF: {content_type}"
 			cherrypy.log(msg.format(**vars(file)), severity=logging.WARNING)
 		job = turk.ConversionJob(
-			file.file, str(file.content_type), server_url, file.filename,
+			file.file, unicode(file.content_type), server_url, file.filename,
 		)
 		job.save_if_new()
 		raise cherrypy.HTTPRedirect(lf("status/{job.id}"))
