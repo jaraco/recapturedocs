@@ -5,7 +5,7 @@ import sys
 import functools
 import itertools
 import argparse
-from collections import namedtuple
+import collections
 from contextlib import contextmanager
 import pkg_resources
 from textwrap import dedent
@@ -54,11 +54,21 @@ class JobServer(object):
 	@cherrypy.expose
 	def upload(self, file):
 		server_url = self.construct_url('/process')
-		if not unicode(file.content_type) == 'application/pdf':
+		content_type_map = collections.defaultdict(
+			lambda x: x,
+			{
+				# some people have their browsers incorrectly configured with
+				#  mime types, so map these types.
+				'application/adobe': 'application/pdf',
+				'application/x-pdf': 'application/pdf',
+			},
+		)
+		content_type = content_type_map[unicode(file.content_type)]
+		if not content_type == 'application/pdf':
 			msg = "Got content other than PDF: {content_type}"
 			cherrypy.log(msg.format(**vars(file)), severity=logging.WARNING)
 		job = model.ConversionJob(
-			file.file, unicode(file.content_type), server_url, file.filename,
+			file.file, content_type, server_url, file.filename,
 		)
 		job.save_if_new()
 		raise cherrypy.HTTPRedirect(lf("status/{job.id}"))
