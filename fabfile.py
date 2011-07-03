@@ -20,3 +20,11 @@ def install_env():
 	sudo('virtualenv --no-site-packages /recapturedocs')
 	# requires libcap2-bin
 	#sudo('setcap "cap_net_bind_service=+ep" /recapturedocs/bin/python')
+
+def update_staging():
+	run('envs/staging/bin/easy_install -U -f http://dl.dropbox.com/u/54081/cheeseshop/index.html recapturedocs')
+	run('./stage-recapturedocs')
+
+def update_production():
+	sudo('/recapturedocs/bin/easy_install -U -f http://dl.dropbox.com/u/54081/cheeseshop/index.html recapturedocs')
+	sudo('restart recapture-docs')
