@@ -1,16 +1,11 @@
-import re
 import subprocess
 import os
+import sys
 
-from jaraco.windows import clipboard
-from jaraco.util.string import local_format as lf
-
+target = r'C:\Users\jaraco\Dropbox\public\cheeseshop'
 proc = subprocess.Popen([
-	'python', 'setup.py', 'sdist',
-	'--dist-dir', r'C:\Users\jaraco\Dropbox\public\cheeseshop',
+	sys.executable, 'setup.py', 'sdist',
+	'--dist-dir', target,
 	], stdout=subprocess.PIPE, stderr=open(os.path.devnull, 'w'))
 stdout, stderr = proc.communicate()
-pattern = re.compile("creating '(?P<filename>.*)' and adding .* to it")
-filepath = next(pattern.finditer(stdout)).group('filename')
-filename = os.path.basename(filepath)
-clipboard.set_text(lf('http://dl.dropbox.com/u/54081/cheeseshop/{filename}'))
+subprocess.Popen(['dropbox-index', target]).wait()
