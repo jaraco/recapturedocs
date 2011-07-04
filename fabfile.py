@@ -1,6 +1,7 @@
-from fabric.operations import sudo, run
+from fabric.operations import sudo, run, settings
 from fabric.contrib import files
 
+from jaraco.util.string import local_format as lf
 import yg.deploy.fabric.python
 
 def install_ppa_python():
@@ -28,3 +29,16 @@ def update_staging():
 def update_production():
 	sudo('/recapturedocs/bin/easy_install -U -f http://dl.dropbox.com/u/54081/cheeseshop/index.html recapturedocs')
 	sudo('restart recapture-docs')
+
+def setup_mongodb_firewall():
+	allowed_ips = '127.0.0.1', '66.92.166.0/24', '69.55.228.234'
+	with settings(warn_only=True):
+		sudo('iptables --new-chain mongodb')
+		sudo('iptables -D INPUT -p tcp --dport 27017 -j mongodb')
+		sudo('iptables -D INPUT -p tcp --dport 27018 -j mongodb')
+	sudo('iptables -A INPUT -p tcp --dport 27017 -j mongodb')
+	sudo('iptables -A INPUT -p tcp --dport 27018 -j mongodb')
+	sudo('iptables --flush mongodb')
+	for ip in allowed_ips:
+		sudo(lf('iptables -A mongodb -s {ip} --jump RETURN'))
+	sudo('iptables -A mongodb -j REJECT')
