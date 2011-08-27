@@ -15,15 +15,47 @@
 </head>
 
 <body py:match="body" py:attrs="select('@*')">
-	<div id="header">
-		<p id="title">ReCapture Docs</p>
-		<p id="byline">Automated Document Retyping Services</p>
-	</div>
-	<div class="divider"></div>
-	<div id="main_content">
-		<div class="message" py:if="defined('message')"
-			py:content="message">An optional message goes here.</div>
+	<div class="overlight"></div>
+	<div id="layout">
+		<div id="header">
+			<div class="logo"><a href="#"><img src="/static/logo.png" alt="recapturedocs" /></a></div>
+			<div class="right_menu">
+				<ul>
+					<li><a href="Blank.html">Blank</a></li>
+					<li><a href="Contact.html">Contact Us</a></li>
+					<li style="background-image:none;"><a href="Payment.html">Payment</a></li>
+				</ul>
+			</div>
+			<div id="menu">
+				<ul>
+					<li><a href="index.html">Home</a></li>
+					<li><a href="About.html">About RecaptureDocs</a></li>
+					<li><a href="Support.html">E-mail support</a></li>
+					<li><a href="Terms.html">Terms and Conditions</a></li>
+					<li><a href="Privacy.html">Privacy Policy</a></li>
+				</ul>
+			</div>
+		</div>
+
+		<!--! <div id="main_content">
+			<div class="message" py:if="defined('message')"
+				py:content="message">An optional message goes here.</div>
+			<div py:replace="select('*|text()')" />
+		</div> -->
+
+		<!--! Insert the content for the page that included this template -->
 		<div py:replace="select('*|text()')" />
+
+		<div id="footer">
+			<a href="index.html">Home</a>|
+			<a href="About.html">About RecaptureDocs</a>|
+			<a href="Support.html">E-mail support</a>|
+			<a href="Terms.html">Terms and Conditions</a>|
+			<a href="Privacy.html">Privacy Policy</a>|
+			<a href="Payment.html">Payment</a>|
+			<a href="Contact.html">Contact Us</a>
+		</div>
+
 	</div>
 </body>
 </html>

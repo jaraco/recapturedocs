@@ -7,22 +7,85 @@
 
 <head>
 	<title>RecaptureDocs main</title>
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js" />
+	<script type="text/javascript" src="/static/jquery.blockUI.js" />
+	<script type="text/javascript" src="/static/main.js" />
+	<script type="text/javascript">
+		$(document).ready(function(){
+			$(".get_strted").click(function(){
+				$('.fildcont').fadeIn();
+				$('.overlight').css("display","block");
+			});
+			$('.overlight').click(function(){
+				$('.fildcont').fadeOut();
+				$(this).css("display","none");
+			});
+			$('.closebottom').click(function(){
+				$('.fildcont').fadeOut();
+				$('.overlight').css("display","none");
+			});
+			initFileUploads();
+		});
+	</script>
+	<style type="text/css">
+		div.fileinputs {
+			position: relative;
+		}
+
+		div.fakefile {
+			position: absolute;
+			top: 0px;
+			left: 0px;
+			z-index: 1;
+		}
+
+		input.file {
+			position: relative;
+			text-align: right;
+			-moz-opacity:0 ;
+			filter:alpha(opacity: 0);
+			opacity: 0;
+			z-index: 2;
+		}
+	</style>
 </head>
 <body>
-	<xi:include href="menu.xhtml" />
-	<p><a href="text/about">About RecaptureDocs</a></p>
-	<div><img src="/static/visualize.png" /></div>
-	<p>Here you can have your scanned or faxed documents retyped with very high accuracy by our team of human typists. The process is quick and simple:</p>
-	<ul>
-		<li>Upload your PDF file.</li>
-		<li>Pay <span py:replace="page_cost">$2.00</span> per page for the document (through Amazon's secure payment service).</li>
-		<li>In just a few hours, your document will be retyped and ready to be copied into a word processing application or e-mail.</li>
-	</ul>
-	<form method='POST' enctype='multipart/form-data' action='upload'>
-		Get started now by uploading your scanned PDF document here:<br />
-		<input type="file" name="file"></input><br />
-		<br />
-		<input type="submit" value="Press Here"></input> to upload the file.
-	</form>
+	<div id="banner">
+		<div class="BannerSlide">
+			<img src="/static/process.png" alt="automated retyping process" />
+		</div>
+	</div>
+	<div id="middle">
+		<div class="left">Welcome to recapturedocs</div>
+		<div class="right">Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu. In enim justo, rhoncus ut, imperdiet a, venenatis vitae, justo. Nullam dictum felis eu pede mollis pretium. Integer tincidunt. Cras dapibus. Vivamus elementum semper nisi. Aenean vulputate eleifend tellus. Aenean leo ligula, porttitor eu, consequat vitae, eleifend ac, enim. Aliquam lorem ante, dapibus in, viverra quis, feugiat a, tellus. Phasellus viverra nulla ut metus varius laoreet. Quisque rutrum. Aenean imperdiet. Etiam ultricies nisi vel augue. Curabitur ullamcorper ultricies nisi. Nam eget dui. Etiam</div>
+		<div class="midcont">
+			<div class="hed">HOW IT WORKS</div>
+			<div class="hedcont">
+				<ul>
+					<li>Upload your PDF file.</li>
+					<li>Pay $999 per page for the document (through Amazon's secure payment service).</li>
+					<li>In just a few hours, your document will be retyped and ready to be copied into a word processing application or e-mail.</li>
+				</ul>
+			</div>
+			<div class="get_strted">GET STARTED NOW BY UPLOADING YOUR SCANNED PDF DOCUMENT HERE</div>
+			<form action="uploadFile.php" method="post" enctype="multipart/form-data" onsubmit="return validate();" >
+				<div class="fildcont">
+					<div class="closebottom"></div>
+					<div class="fild" style="width:300px;">
+						<div class="fileinputs">
+							<input type="file" class="file input" style="width:300px;" name="pdfFile" id="pdfFile" />
+						</div>
+					</div>
+					<div class="btn">
+						<input type="submit" name="button" id="button" value="Upload" class="btnbg" />
+					</div>
+				</div>
+			</form>
+			<div style="display:none;" id="overlayDiv" >
+				<img src="images/loader.gif" height="400" width="400" />
+			</div>
+		</div>
+	</div>
+
 </body>
 </html>
