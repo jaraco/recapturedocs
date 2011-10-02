@@ -24,7 +24,7 @@
 				$('.fildcont').fadeOut();
 				$('.overlight').css("display","none");
 			});
-			initFileUploads();
+			init_file_uploads();
 		});
 	</script>
 	<style type="text/css">
@@ -68,7 +68,7 @@
 				</ul>
 			</div>
 			<div class="get_strted">GET STARTED NOW BY UPLOADING YOUR SCANNED PDF DOCUMENT HERE</div>
-			<form action="uploadFile.php" method="post" enctype="multipart/form-data" onsubmit="return validate();" >
+			<form action="upload" method="post" enctype="multipart/form-data" onsubmit="return validate();" >
 				<div class="fildcont">
 					<div class="closebottom"></div>
 					<div class="fild" style="width:300px;">

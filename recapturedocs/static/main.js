@@ -1,23 +1,18 @@
 var W3CDOM = (document.createElement && document.getElementsByTagName);
 
-function initFileUploads() {
-	if (!W3CDOM) return;
-	var fakeFileUpload = document.createElement('div');
-	fakeFileUpload.className = 'fakefile';
+function init_file_uploads() {
+	var fake_file_upload = $('<div>');
+	fake_file_upload.attr('class', 'fakefile');
+	fake_file_upload.html('<input class="input" style="padding: 2px;" readonly="readonly" /><input type="Submit" name="button" id="button" value="Browse" class="btnbg" />');
 
-	fakeFileUpload.innerHTML = '<input class="input" style="padding: 2px;" readonly="readonly" /><input type="Submit" name="button" id="button" value="Browse" class="btnbg" />';
-	var x = document.getElementsByTagName('input');
-	for (var i=0;i<x.length;i++) {
-		if (x[i].type != 'file') continue;
-		if (x[i].parentNode.className != 'fileinputs') continue;
-		x[i].className = 'file hidden';
-		var clone = fakeFileUpload.cloneNode(true);
-		x[i].parentNode.appendChild(clone);
-		x[i].relatedElement = clone.getElementsByTagName('input')[0];
-		x[i].onchange = x[i].onmouseout = function () {
-			this.relatedElement.value = this.value;
-		}
-	}
+	var orig_upload = $('input[type=file][:parent.fileinputs]');
+	orig_upload.attr('class', 'file hidden');
+	orig_upload.parent().append(fake_file_upload);
+	var update_value = function() {
+		fake_file_upload.find('input.input').attr('value', orig_upload.attr('value'));
+	};
+	orig_upload.change(update_value);
+	orig_upload.mouseout(update_value);
 }
 
 function validate()
