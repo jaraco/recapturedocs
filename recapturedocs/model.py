@@ -27,8 +27,9 @@ update faq to mention language issues
 Job Naming (maybe use filename, maybe provide user-supplied field)
 Add new and pending features page
 Sanity checks on submitted work
-Rich text editor
-Port to App Engine
+Quality Control review (additional cost)
+Rich text editor (google docs perhaps)
+Port to App Engine (or heroku)
 Support for non-standard documents
  - image extraction
  - standard forms
