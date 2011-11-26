@@ -130,13 +130,16 @@ img {
     border-right: 15px solid #a34218;
     border-bottom: 11px solid #a34218;
     border-top: 11px solid #a34218;
-    margin-left: 26px;
     margin-right: 26px
+    }
+#main_content {
+    width: 908px;
+    float: left;
+    margin: 0 26px;
     }
 #middle {
     width: 908px;
     float: left;
-    margin: 0 26px;
     padding: 23px 0 0 14px
     }
 #middle .left {
