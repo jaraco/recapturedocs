@@ -54,8 +54,7 @@ class JobServer(object):
 	@cherrypy.expose
 	def upload(self, file):
 		server_url = self.construct_url('/process')
-		content_type_map = collections.defaultdict(
-			lambda x: x,
+		content_type_map = IdentityOverrideMap(
 			{
 				# some people have their browsers incorrectly configured with
 				#  mime types, so map these types.
@@ -297,6 +296,22 @@ class Command(object):
 			help="Add config recipe as found in the package (e.g. prod)",)
 		parser.add_argument('configs', nargs='*', default=[],
 			help='Config filename')
+
+# until jaraco.util 4.1
+class IdentityOverrideMap(dict):
+	"""
+	A dictionary that by default maps each key to itself, but otherwise
+	acts like a normal dictionary.
+
+	>>> d = IdentityOverrideMap()
+	>>> d[42]
+	42
+	>>> d['speed'] = 'speedo'
+	>>> d['speed']
+	'speedo'
+	"""
+	def __missing__(self, key):
+		return key
 
 class Serve(Command):
 	def run(self):
