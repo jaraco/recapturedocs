@@ -1,9 +1,10 @@
-from fabric.operations import sudo, run, settings
+from fabric.api import sudo, run, settings, task
 from fabric.contrib import files
 
 from jaraco.util.string import local_format as lf
 import yg.deploy.fabric.python
 
+@task
 def install_ppa_python():
 	yg.deploy.fabric.python.install_ppa_python()
 	sudo('aptitude install python2.7-dev')
@@ -17,19 +18,23 @@ def create_user():
 	#files.append('~recapturedocs/.ssh/authorized_keys', [jaraco_pub], use_sudo=True)
 	#sudo('chown -R recapturedocs:nogroup ~recapturedocs/.ssh')
 
+@task
 def install_env():
 	sudo('virtualenv --no-site-packages /recapturedocs')
 	# requires libcap2-bin
 	#sudo('setcap "cap_net_bind_service=+ep" /recapturedocs/bin/python')
 
+@task
 def update_staging():
 	run('envs/staging/bin/easy_install -U -f http://dl.dropbox.com/u/54081/cheeseshop/index.html recapturedocs')
 	run('./stage-recapturedocs')
 
+@task
 def update_production():
 	sudo('/recapturedocs/bin/easy_install -U -f http://dl.dropbox.com/u/54081/cheeseshop/index.html recapturedocs')
 	sudo('restart recapture-docs')
 
+@task
 def setup_mongodb_firewall():
 	allowed_ips = '127.0.0.1', '66.92.166.0/24', '69.55.228.234'
 	with settings(warn_only=True):
