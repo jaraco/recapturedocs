@@ -18,45 +18,6 @@ from pyPdf import PdfFileReader, PdfFileWriter
 from . import aws
 from . import persistence
 
-todo = """
-Site Design
-Automatically approve submitted work
-E-mail results
-E-mail link to status
-update faq to mention language issues
-Job Naming (maybe use filename, maybe provide user-supplied field)
-Add new and pending features page
-Sanity checks on submitted work
-Quality Control review (additional cost)
-Rich text editor (google docs perhaps)
-Port to App Engine (or heroku)
-Support for non-standard documents
- - image extraction
- - standard forms
- - data sheets
-Privacy Enhancements
-Partial Page support
-"""
-
-completed_features = """
-Improved persistence (S3 storage or similar)
-Same Job Detection
-Typist Rejection (for jobs that are too complex)
-Terms and Conditions
-Privacy Policy
-Auto-refresh Status Page
-Improved Sample HIT support
-Thread Safety
-Basic Aesthetics
-Payment System
-Basic functional workflow
-Job persistence
-Native PDF handling (PyPDF)
-Run as daemon
-document upload
-document processing
-"""
-
 log = logging.getLogger(__name__)
 
 class ConversionError(BaseException):
