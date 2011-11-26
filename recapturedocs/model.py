@@ -6,7 +6,7 @@ import datetime
 from cStringIO import StringIO
 import logging
 
-from jaraco.util.iter_ import one
+from jaraco.util.itertools import one
 from jaraco.util.string import local_format as lf
 import jaraco.modb
 
