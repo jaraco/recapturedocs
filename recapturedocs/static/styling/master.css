@@ -121,6 +121,7 @@ img {
     background: url(foote_bg.png) left top repeat-x;
     height: 38px;
     margin: auto;
+    margin-top: 20px;
     padding-top: 43px;
     margin-left: 26px;
     text-align: center;
