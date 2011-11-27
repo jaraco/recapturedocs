@@ -9,11 +9,12 @@
 	<title>RecaptureDocs job status</title>
 </head>
 <body>
-	<div>Recapture job <span py:replace="job.id">job id</span> of
+    <h1>Job Status - <span py:replace="job.id[:8]">ABCDEF99</span></h1>
+	<div>Recapture job <span py:replace="job.id">ABCDEF991234567801234567890</span> of
 	<span py:replace="len(job)">0</span> pages</div>
 	<py:if test="not job.authorized">
-		<div>This job will cost <span py:replace="job.cost">$0</span> to complete.
-		<a href="/initiate_payment/${job.id}">click here</a> to pay for the job.</div>
+		<p>This job will cost <span py:replace="job.cost">$0</span> to complete.
+		<a href="/initiate_payment/${job.id}">Click here to pay</a> for the job.</p>
 	</py:if>
 	<py:if test="job.authorized">
 		<!-- for development purposes -->
@@ -23,14 +24,14 @@
 
 		<div py:choose="">
 			<div py:when="not job.is_complete()">
-				<div>Your job is authorized and being processed. Please, check back later. You may bookmark this page to check back later.</div>
-				<div>This page will automatically refresh every five minutes, or you may bookmark the page to check back another time.</div>
+				<p>Your job is authorized and being processed. Please, check back later. You may bookmark this page to check back later.</p>
+				<p>This page will automatically refresh every five minutes, or you may bookmark the page to check back another time.</p>
 				<script>setTimeout("window.location.reload()", 60*5*1000);</script>
-				<div><a href="#" onclick="window.external.AddFavorite(document.url,'Recapture Job');">Save a bookmark</a></div>
+				<p><a href="#" onclick="window.external.AddFavorite(document.url,'Recapture Job');">Save a bookmark</a></p>
 			</div>
-			<div py:otherwise="">
+			<p py:otherwise="">
 				Your job is complete. You may now <a target="_blank" href="/get_results?job_id=${job.id}">get the results from here</a>.
-			</div>
+			</p>
 		</div>
 	</py:if>
 </body>
