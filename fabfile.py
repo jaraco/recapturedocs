@@ -1,8 +1,10 @@
-from fabric.api import sudo, run, settings, task
+from fabric.api import sudo, run, settings, task, hosts, env
 from fabric.contrib import files
 
 from jaraco.util.string import local_format as lf
 import yg.deploy.fabric.python
+
+env.hosts = ['hideaki']
 
 @task
 def install_ppa_python():
