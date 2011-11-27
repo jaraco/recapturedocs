@@ -268,6 +268,10 @@ class Command(object):
 			'global': {
 				'server.socket_host': '::0',
 				'log.screen': False,
+				# genshi generates utf-8 by default, so let's instruct the
+				#  browser that's what we're using as well.
+				'tools.encode.on': True,
+				'tools.encode.encoding': 'utf-8',
 			}
 		}
 		static_dir = pkg_resources.resource_filename('recapturedocs', 'static')
