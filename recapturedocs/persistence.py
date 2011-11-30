@@ -20,7 +20,6 @@ def init_mongodb():
 def init():
 	init_mongodb()
 	patch_boto_config()
-	jaraco.modb.init()
 	jsonpickle.setup_handlers()
 
 def patch_boto_config():

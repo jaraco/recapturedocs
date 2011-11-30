@@ -37,7 +37,7 @@ setup_params = dict(
 		'jaraco.util >= 4.0',
 		'path.py',
 		'docutils',
-		'jaraco.modb >= 1.0.2',
+		'jaraco.modb >= 1.0.5',
 		'pymongo >= 1.9',
 	] + list(py_ver_dependencies()),
 	extras_require = {
