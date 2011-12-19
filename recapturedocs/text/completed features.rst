@@ -3,6 +3,7 @@ Completed Features
 
 Here are the features we've completed (most recent first):
 
+- Site Design
 - Improved persistence (S3 storage or similar)
 - Same Job Detection
 - Typist Rejection (for jobs that are too complex)

@@ -4,7 +4,8 @@ Work in Progress
 Here is a list of tasks we have slated for future releases (in rough
 order of priority):
 
-* Site Design
+* Administrative notifications of new jobs
+* Administrative notifications of errors
 * Automatically approve submitted work
 * E-mail results
 * E-mail link to status
