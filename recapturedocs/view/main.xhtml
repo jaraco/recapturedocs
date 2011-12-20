@@ -12,16 +12,16 @@
 	<script type="text/javascript" src="/static/main.js" />
 	<script type="text/javascript">
 		$(document).ready(function(){
-			$(".get_strted").click(function(){
-				$('.fildcont').fadeIn();
+			$(".get_started").click(function(){
+				$('.upload-box').fadeIn();
 				$('.overlight').css("display","block");
 			});
 			$('.overlight').click(function(){
-				$('.fildcont').fadeOut();
+				$('.upload-box').fadeOut();
 				$(this).css("display","none");
 			});
 			$('.closebottom').click(function(){
-				$('.fildcont').fadeOut();
+				$('.upload-box').fadeOut();
 				$('.overlight').css("display","none");
 			});
 			init_file_uploads();
@@ -78,25 +78,25 @@
 			each page by hand, providing an extremely high level of quality.
 		</div>
 		<div class="midcont">
-			<div class="hed">HOW IT WORKS</div>
-			<div class="hedcont">
+			<div class="intro-head">HOW IT WORKS</div>
+			<div class="intro">
 				<ul>
 					<li>Upload your PDF file.</li>
 					<li>Pay <span py:replace="page_cost">$2.00</span> per page for the document (through Amazon's secure payment service).</li>
 					<li>In just a few hours, your document will be retyped and ready to be copied into a word processing application or e-mail.</li>
 				</ul>
 			</div>
-			<div class="get_strted">GET STARTED NOW BY UPLOADING YOUR SCANNED PDF DOCUMENT HERE</div>
+			<div class="get_started">GET STARTED NOW BY UPLOADING YOUR SCANNED PDF DOCUMENT HERE</div>
 			<form action="upload" method="post" enctype="multipart/form-data" onsubmit="return validate();" >
-				<div class="fildcont">
+				<div class="upload-box">
 					<div class="closebottom"></div>
 					<div class="fild" style="width:300px;">
 						<div class="fileinputs">
 							<input type="file" class="file input" style="width:300px;" name="file" id="pdfFile" />
 						</div>
 					</div>
-					<div class="btn">
-						<input type="submit" id="button" value="Upload" class="btnbg" />
+					<div class="upload-button">
+						<input type="submit" id="button" value="Upload" class="upload-button-background" />
 					</div>
 				</div>
 			</form>

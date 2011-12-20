@@ -3,7 +3,7 @@ var W3CDOM = (document.createElement && document.getElementsByTagName);
 function init_file_uploads() {
 	var fake_file_upload = $('<div>');
 	fake_file_upload.attr('class', 'fakefile');
-	fake_file_upload.html('<input class="input" style="padding: 2px;" readonly="readonly" /><input type="Submit" name="button" id="button" value="Browse" class="btnbg" />');
+	fake_file_upload.html('<input class="input" style="padding: 2px;" readonly="readonly" /><input type="Submit" name="button" id="button" value="Browse" class="upload-button-background" />');
 
 	var orig_upload = $('input[type=file][:parent.fileinputs]');
 	orig_upload.attr('class', 'file hidden');
@@ -22,7 +22,7 @@ function validate()
 	{
 		alert("Please select pdf file.");
 		return false;
-	} else	{
+	} else {
 		$.blockUI({message:$('#overlayDiv').html()});
 		setOverlayPos();
 		return true;

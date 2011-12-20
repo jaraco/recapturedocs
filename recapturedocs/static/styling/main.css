@@ -2,12 +2,6 @@
     width: 100%;
     float: left
     }
-#banner .LRArrow {
-    float: left;
-    width: auto;
-    height: auto;
-    padding-top: 175px
-    }
 #banner .BannerSlide {
     float: left;
     width: auto;
@@ -55,7 +49,7 @@
     width: 924px;
     padding: 32px 0
     }
-#middle .midcont .hed {
+#middle .midcont .intro-head {
     float: left;
     width: 319px;
     background-color: #8d3115;
@@ -67,7 +61,7 @@
     text-decoration: none;
     padding-top: 10px
     }
-#middle .midcont .hedcont {
+#middle .midcont .intro {
     float: left;
     width: 789px;
     padding: 10px 0 15px 126px;
@@ -76,12 +70,12 @@
     font-weight: normal;
     color: #323131
     }
-#middle .midcont .hedcont ul li {
+#middle .midcont .intro ul li {
     float: left;
     background: url(icon.png) left top no-repeat;
     list-style: none
     }
-#middle .midcont .hedcont ul li {
+#middle .midcont .intro ul li {
     float: left;
     background: url(icon.png) left top no-repeat;
     list-style: none;
@@ -89,7 +83,7 @@
     width: 600px;
     padding-left: 20px
     }
-#middle .midcont .get_strted {
+#middle .midcont .get_started {
     float: left;
     width: 924px;
     background: url(get_started_bg.png) left top repeat-x;
@@ -100,7 +94,7 @@
     padding: 15px 0 32px 0;
     cursor: pointer
     }
-#middle .midcont .fildcont {
+#middle .midcont .upload-box {
     background: none repeat scroll 0 0 #FF9D20;
     border: 1px solid #CA7000;
     border-radius: 9px 9px 9px 9px;
@@ -138,11 +132,11 @@
     border: none;
     height: 26px
     }
-#middle .btn {
+#middle .upload-button {
     float: left;
     width: 78px
     }
-#middle .btnbg {
+.upload-button-background {
     float: left;
     width: 75px;
     background: url(bnt.png) left top no-repeat;
