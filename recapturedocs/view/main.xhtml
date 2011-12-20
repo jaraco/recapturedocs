@@ -11,19 +11,18 @@
 	<script type="text/javascript" src="/static/jquery.blockUI.js" />
 	<script type="text/javascript" src="/static/main.js" />
 	<script type="text/javascript">
-		$(document).ready(function(){
-			$(".get_started").click(function(){
+		$(document).ready(function() {
+			var show_upload = function() {
 				$('.upload-box').fadeIn();
 				$('.overlight').css("display","block");
-			});
-			$('.overlight').click(function(){
-				$('.upload-box').fadeOut();
-				$(this).css("display","none");
-			});
-			$('.upload-box .close-button').click(function(){
+			};
+			var hide_upload = function() {
 				$('.upload-box').fadeOut();
 				$('.overlight').css("display","none");
-			});
+			};
+			$(".get_started").click(show_upload);
+			$('.overlight').click(hide_upload);
+			$('.upload-box .close-button').click(hide_upload);
 			init_file_uploads();
 		});
 	</script>
