@@ -20,7 +20,7 @@
 				$('.upload-box').fadeOut();
 				$(this).css("display","none");
 			});
-			$('.closebottom').click(function(){
+			$('.upload-box .close-button').click(function(){
 				$('.upload-box').fadeOut();
 				$('.overlight').css("display","none");
 			});
@@ -89,7 +89,7 @@
 			<div class="get_started">GET STARTED NOW BY UPLOADING YOUR SCANNED PDF DOCUMENT HERE</div>
 			<form action="upload" method="post" enctype="multipart/form-data" onsubmit="return validate();" >
 				<div class="upload-box">
-					<div class="closebottom"></div>
+					<div class="close-button"></div>
 					<div class="fild" style="width:300px;">
 						<div class="fileinputs">
 							<input type="file" class="file input" style="width:300px;" name="file" id="pdfFile" />

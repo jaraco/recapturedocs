@@ -106,7 +106,7 @@
     width: 664px;
     z-index: 100
     }
-.closebottom {
+.upload-box .close-button {
     background: url(close-button.png) repeat scroll -4px -4px transparent;
     cursor: pointer;
     height: 32px;
