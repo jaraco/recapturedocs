@@ -20,6 +20,7 @@ from genshi.template import TemplateLoader, loader
 import genshi
 from jaraco.util.string import local_format as lf
 from jaraco.util.meta import LeafClassesMeta
+from jaraco.util.dictlib import IdentityOverrideMap
 import jaraco.util.logging
 import boto
 
@@ -300,22 +301,6 @@ class Command(object):
 			help="Add config recipe as found in the package (e.g. prod)",)
 		parser.add_argument('configs', nargs='*', default=[],
 			help='Config filename')
-
-# until jaraco.util 4.1
-class IdentityOverrideMap(dict):
-	"""
-	A dictionary that by default maps each key to itself, but otherwise
-	acts like a normal dictionary.
-
-	>>> d = IdentityOverrideMap()
-	>>> d[42]
-	42
-	>>> d['speed'] = 'speedo'
-	>>> d['speed']
-	'speedo'
-	"""
-	def __missing__(self, key):
-		return key
 
 class Serve(Command):
 	def run(self):
