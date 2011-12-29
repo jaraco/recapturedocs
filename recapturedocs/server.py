@@ -71,6 +71,7 @@ class JobServer(object):
 			file.file, content_type, server_url, file.filename,
 		)
 		job.save_if_new()
+		self.send_notice()
 		raise cherrypy.HTTPRedirect(lf("status/{job.id}"))
 
 	@cherrypy.expose
@@ -195,6 +196,15 @@ class JobServer(object):
 		for job in jobs[key]:
 			job.remove()
 
+	def send_notice(self):
+		config = self._app.config
+		if 'notification' not in config: return
+		config = config['notification']
+		addr_to = config['smtp_to']
+		host = config['smtp_host']
+		mb = notification.SMTPMailbox(addr_to=addr_to, host=host)
+		mb.notify('A new document was uploaded')
+
 class Devel(object):
 	tl = TemplateLoader([
 		loader.package(__name__, 'view/devel'),
@@ -243,6 +253,7 @@ def start_server(configs):
 	if hasattr(cherrypy.engine, "console_control_handler"):
 		cherrypy.engine.console_control_handler.subscribe()
 	app = cherrypy.tree.mount(server, '/')
+	server._app = app
 	map(app.merge, configs)
 	if not cherrypy.config.get('server.production', False):
 		dev_app = cherrypy.tree.mount(Devel(server), '/devel')
