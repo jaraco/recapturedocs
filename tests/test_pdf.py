@@ -1,6 +1,6 @@
 import os
 
-from recapturedocs.turk import ConversionJob
+from recapturedocs.model import ConversionJob
 
 here = os.path.dirname(__file__)
 

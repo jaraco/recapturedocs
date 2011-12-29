@@ -1,4 +1,4 @@
-from recapturedocs.turk import ConversionJob
+from recapturedocs.model import ConversionJob
 import pickle
 
 def test_persist_ConversionJob(sample_stream):
