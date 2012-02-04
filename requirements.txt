@@ -1,12 +1,2 @@
 -f http://dl.dropbox.com/u/54081/cheeseshop/index.html
-boto==2.0b4
-cherrypy==3.2.2
-docutils==0.8.1
-genshi==0.6
-jaraco.modb==1.0.5
 jaraco.util==5.0.1
-jsonpickle==0.4.0
-keyring==0.7.1
-path.py==2.2.2
-pymongo==2.1.1
-pypdf==1.13
