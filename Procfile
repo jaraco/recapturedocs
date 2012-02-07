@@ -1,1 +1,1 @@
-app: recapture-docs serve -C prod
+web: recapture-docs serve -C prod
