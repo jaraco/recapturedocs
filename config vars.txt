@@ -1,3 +1,0 @@
-> heroku config:add PIP_FIND_LINKS=http://dl.dropbox.com/u/54081/cheeseshop/index.html --app recapturedocs
-Adding config vars and restarting app... done, v3
-  PIP_FIND_LINKS => http://dl.dropbo...eshop/index.html
