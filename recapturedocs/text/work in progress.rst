@@ -4,6 +4,7 @@ Work in Progress
 Here is a list of tasks we have slated for future releases (in rough
 order of priority):
 
+* Better handling of payment errors
 * Browser support (IE8 has problems with upload form)
 * Detailed instructions for new users
 * Administrative notifications of new jobs
@@ -11,6 +12,7 @@ order of priority):
 * Automatically approve submitted work
 * E-mail results
 * E-mail link to status
+* Drag Drop
 * update faq to mention language issues
 * Job Naming (maybe use filename, maybe provide user-supplied field)
 * Add new and pending features page
