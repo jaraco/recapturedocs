@@ -19,7 +19,7 @@ def set_connection_environment(access_key='0ZWJV1BMM1Q6GXJ9J2G2'):
 	os.environ['AWS_SECRET_ACCESS_KEY'] = secret_key
 
 class ConnectionFactory(object):
-	production=True
+	production = True
 
 	@classmethod
 	def get_fps_endpoint(class_):
@@ -41,4 +41,3 @@ class ConnectionFactory(object):
 		host = ['mechanicalturk.sandbox.amazonaws.com',
 			'mechanicalturk.amazonaws.com'][class_.production]
 		return boto.mturk.connection.MTurkConnection(host=host)
-

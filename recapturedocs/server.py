@@ -1,18 +1,15 @@
 from __future__ import absolute_import
 
 import os
-import sys
 import functools
 import itertools
 import argparse
-import collections
 from contextlib import contextmanager
 import pkg_resources
-from textwrap import dedent
-import socket
 import urlparse
 import inspect
-import docutils.io, docutils.core
+import docutils.io
+import docutils.core
 import logging
 
 import cherrypy
@@ -96,7 +93,7 @@ class JobServer(object):
 	def construct_payment_url(job, conn, recipient_token):
 		n_pages = len(job)
 		params = dict(
-			callerKey = os.environ['AWS_ACCESS_KEY_ID'], # My access key
+			callerKey = os.environ['AWS_ACCESS_KEY_ID'],  # My access key
 			pipelineName = 'SingleUse',
 			returnURL = JobServer.construct_url(lf('/complete_payment/{job.id}')),
 			callerReference = job.id,
