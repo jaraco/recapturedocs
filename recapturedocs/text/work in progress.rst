@@ -4,6 +4,8 @@ Work in Progress
 Here is a list of tasks we have slated for future releases (in rough
 order of priority):
 
+* Browser support (IE8 has problems with upload form)
+* Detailed instructions for new users
 * Administrative notifications of new jobs
 * Administrative notifications of errors
 * Automatically approve submitted work
