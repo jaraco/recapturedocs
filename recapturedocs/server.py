@@ -11,6 +11,7 @@ import inspect
 import docutils.io
 import docutils.core
 import logging
+import importlib
 
 import cherrypy
 from genshi.template import TemplateLoader, loader
@@ -243,6 +244,7 @@ def start_server(configs):
 	Takes any number of filename or dictionary objects suitable for
 	cherrypy.config.update.
 	"""
+	importlib.import_module('.agency', __package__)
 	global server
 	server = JobServer()
 	if hasattr(cherrypy.engine, "signal_handler"):
@@ -281,6 +283,7 @@ class Command(object):
 				#  browser that's what we're using as well.
 				'tools.encode.on': True,
 				'tools.encode.encoding': 'utf-8',
+				'tools.agent_parser.on': True,
 			}
 		}
 		static_dir = pkg_resources.resource_filename('recapturedocs', 'static')

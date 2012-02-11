@@ -6,6 +6,7 @@ name = 'recapturedocs'
 def py_ver_dependencies():
 	if sys.version_info < (2,7):
 		yield 'argparse'
+		yield 'importlib'
 
 setup_params = dict(
 	name = name,
@@ -31,7 +32,7 @@ setup_params = dict(
 	install_requires=[
 		'cherrypy>=3.2.0,<3.3dev',
 		'genshi',
-		'boto == 2.0b4', # easy_install http://github.com/jaraco/boto/tarball/master
+		'boto == 2.0b4',  # easy_install http://github.com/jaraco/boto/tarball/master
 		'PyPDF >= 1.12',
 		'keyring',
 		'jaraco.util >= 4.1',
@@ -40,6 +41,7 @@ setup_params = dict(
 		'jaraco.modb >= 1.0.5',
 		'pymongo >= 1.9',
 		'jaraco.net >= 2.0.1',
+		'httpagentparser',
 	] + list(py_ver_dependencies()),
 	extras_require = {
 	},
