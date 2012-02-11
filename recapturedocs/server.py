@@ -319,7 +319,7 @@ class Command(object):
 		parser = subparsers.add_parser(cls.__name__.lower())
 		parser.set_defaults(action=cls)
 		parser.add_argument('-C', '--package-config', dest="package_configs",
-			default=[], action="append",
+			default=[], action="append", type=get_package_config,
 			help="Add config recipe as found in the package (e.g. prod)",)
 		parser.add_argument('configs', nargs='*', default=[],
 			help='Config filename')
@@ -356,13 +356,10 @@ class Daemon(Command):
 		with start_server(self.configs):
 			cherrypy.engine.block()
 
-def get_package_configs(args):
-	names = [
-		name if name.endswith('.conf') else name + '.conf'
-		for name in args.package_configs
-	]
+def get_package_config(name):
+	name = name if name.endswith('.conf') else name + '.conf'
 	pkg_res = functools.partial(pkg_resources.resource_filename, 'recapturedocs')
-	return map(pkg_res, names)
+	return pkg_res(name)
 
 def handle_command_line():
 	usage = inspect.getdoc(handle_command_line)
@@ -371,7 +368,7 @@ def handle_command_line():
 	Command.add_subparsers(parser)
 	args = parser.parse_args()
 	jaraco.util.logging.setup(args)
-	user_configs = get_package_configs(args) + args.configs()
+	user_configs = args.package_configs + args.configs
 	command = args.action(*user_configs)
 	command.run()
 
