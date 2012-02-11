@@ -302,6 +302,11 @@ class Command(object):
 		self.configs = list(
 			itertools.chain([host_config, static_config], self.configs))
 		map(cherrypy.config.update, self.configs)
+		# save a copy of the whole config so the persistence module can find
+		#  its config values.
+		# TODO: consider doing persistence setup as a cherrypy plugin
+		cherrypy._whole_config = cherrypy.lib.reprconf.Config()
+		map(cherrypy._whole_config.update, self.configs)
 		persistence.init()
 
 	@classmethod
