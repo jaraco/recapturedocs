@@ -40,6 +40,7 @@ class JobServer(object):
 		return tmpl.generate(
 			message=message,
 			page_cost=model.ConversionJob.page_cost,
+			user_agent=cherrypy.request.user_agent,
 			).render('xhtml')
 
 	@staticmethod
