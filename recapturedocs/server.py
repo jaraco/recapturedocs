@@ -15,14 +15,13 @@ import importlib
 import code
 
 import cherrypy
-from genshi.template import TemplateLoader, loader
-import genshi
-from jaraco.util.string import local_format as lf
-from jaraco.util.meta import LeafClassesMeta
-from jaraco.util.dictlib import IdentityOverrideMap
-from jaraco.net import notification
-import jaraco.util.logging
+import genshi.template
 import boto
+import jaraco.util.meta as meta
+import jaraco.util.dictlib as dictlib
+import jaraco.util.logging
+from jaraco.util.string import local_format as lf
+from jaraco.net import notification
 
 from . import model
 from . import persistence
@@ -33,7 +32,9 @@ class JobServer(object):
 	"""
 	The job server is both a CherryPy server and a list of jobs
 	"""
-	tl = TemplateLoader([loader.package(__name__, 'view')])
+	tl = genshi.template.TemplateLoader([
+		genshi.template.loader.package(__name__, 'view')
+	])
 
 	@cherrypy.expose
 	def index(self):
@@ -56,7 +57,7 @@ class JobServer(object):
 	@cherrypy.expose
 	def upload(self, file):
 		server_url = self.construct_url('/process')
-		content_type_map = IdentityOverrideMap(
+		content_type_map = dictlib.IdentityOverrideMap(
 			{
 				# some people have their browsers incorrectly configured with
 				#  mime types, so map these types.
@@ -208,10 +209,10 @@ class JobServer(object):
 		mb.notify('A new document was uploaded')
 
 class Devel(object):
-	tl = TemplateLoader([
-		loader.package(__name__, 'view/devel'),
-		loader.package(__name__, 'view'),
-		])
+	tl = genshi.template.TemplateLoader([
+		genshi.template.loader.package(__name__, 'view/devel'),
+		genshi.template.loader.package(__name__, 'view'),
+	])
 
 	def __init__(self, server):
 		self.server = server
@@ -268,7 +269,7 @@ def start_server(configs):
 	cherrypy.engine.exit()
 
 class Command(object):
-	__metaclass__ = LeafClassesMeta
+	__metaclass__ = meta.LeafClassesMeta
 
 	def __init__(self, *configs):
 		self.configs = configs
