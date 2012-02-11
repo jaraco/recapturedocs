@@ -1,10 +1,12 @@
-from __future__ import print_function, absolute_import
-import os
+from __future__ import print_function, absolute_import, division
+
+import itertools
 import mimetypes
 import hashlib
 import datetime
 from cStringIO import StringIO
 import logging
+import math
 
 from jaraco.util.itertools import one
 from jaraco.util.string import local_format as lf
@@ -188,6 +190,7 @@ class ConversionJob(object):
 	@staticmethod
 	def split_pdf(source_stream):
 		input = PdfFileReader(source_stream)
+
 		def get_page_data(page):
 			output = PdfFileWriter()
 			output.addPage(page)
@@ -248,12 +251,19 @@ def get_all_hits(conn):
 	page_size = 100
 	search_rs = conn.search_hits(page_size=page_size)
 	total_records = int(search_rs.TotalNumResults)
+
 	def get_page_hits(page):
 		search_rs = conn.search_hits(page_size=page_size, page_number=page)
 		if not search_rs.status:
-			fmt = 'Error performing search, code:%s, message:%s'
-			msg = fmt%(search_rs.Code, search_rs.Message)
-			raise Exception(msg)
+			raise Exception(lf('Error performing search, code:'
+				'{search_rs.Code}, message:{search_rs.Message}'))
 		return search_rs
-	hit_sets = map(get_page_hits, get_pages(page_size, total_records))
-	return list(itertools.chain(*hit_sets))
+
+	def get_page_numbers(page_size, total_records):
+		# TODO, is this zero-based or 1-based? If it's zero, based, change
+		#  start to 0.
+		limit = math.ceil(total_records / page_size)
+		return itertools.islice(itertools.count(start=1), limit)
+
+	hit_sets = map(get_page_hits, get_page_numbers(page_size, total_records))
+	return list(itertools.chain.from_iterable(hit_sets))
