@@ -25,6 +25,7 @@ class BotoResultSetHandler(jsonpickle.handlers.BaseHandler):
 
 class OldStyleClassParamsHandler(jsonpickle.handlers.BaseHandler):
 	params = ()
+
 	def flatten(self, obj, data):
 		data.update(self._base.flatten(vars(obj)))
 		return data
