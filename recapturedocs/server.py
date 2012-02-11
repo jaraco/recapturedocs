@@ -4,7 +4,7 @@ import os
 import functools
 import itertools
 import argparse
-from contextlib import contextmanager
+import contextlib
 import pkg_resources
 import urlparse
 import inspect
@@ -12,6 +12,7 @@ import docutils.io
 import docutils.core
 import logging
 import importlib
+import code
 
 import cherrypy
 from genshi.template import TemplateLoader, loader
@@ -19,6 +20,7 @@ import genshi
 from jaraco.util.string import local_format as lf
 from jaraco.util.meta import LeafClassesMeta
 from jaraco.util.dictlib import IdentityOverrideMap
+from jaraco.net import notification
 import jaraco.util.logging
 import boto
 
@@ -142,16 +144,17 @@ class JobServer(object):
 		Fulfill a request of a client who's been sent from AMT. This
 		will be rendered in an iFrame, so don't use the template.
 		"""
-		# rename a few variables to use the PEP-8 syntax
-		assignment_id = assignmentId
-		hit_id = hitId
-		worker_id = workerId
-		turk_submit_to = turkSubmitTo
-		preview = assignment_id == 'ASSIGNMENT_ID_NOT_AVAILABLE'
-		page_url = lf('/image/{hit_id}') if not preview else '/static/Lorem ipsum.pdf'
-		tmpl = self.tl.load('retype page.xhtml')
-		params = dict(vars())
-		del params['self']
+		preview = assignmentId == 'ASSIGNMENT_ID_NOT_AVAILABLE',
+		params = dict(
+			assignment_id = assignmentId,
+			hit_id = hitId,
+			worker_id = workerId,
+			preview = preview,
+			turk_submit_to = turkSubmitTo,
+			page_url = lf('/image/{hit_id}')
+				if not preview else '/static/Lorem ipsum.pdf',
+		)
+		tmpl = self.tl.load('retype page.xhtml'),
 		return tmpl.generate(**params).render('xhtml')
 
 	def _get_job_for_id(self, job_id):
@@ -181,11 +184,11 @@ class JobServer(object):
 	def text(self, name):
 		path = 'text/' + name + '.rst'
 		rst = pkg_resources.resource_stream('recapturedocs', path)
-		icls = docutils.io.FileInput
 		parts = docutils.core.publish_parts(source=rst,
 			source_class=docutils.io.FileInput, writer_name='html',)
 		html = genshi.HTML(parts['html_body'])
-		return self.tl.load('simple.xhtml').generate(content=html).render('xhtml')
+		tmpl = self.tl.load('simple.xhtml')
+		return tmpl.generate(content=html).render('xhtml')
 
 	def __iter__(self):
 		return model.ConversionJob.load_all()
@@ -196,11 +199,11 @@ class JobServer(object):
 			job.remove()
 
 	def send_notice(self):
-		config = self._app.config
-		if 'notification' not in config: return
-		config = config['notification']
-		addr_to = config['smtp_to']
-		host = config['smtp_host']
+		app_config = self._app.config
+		if 'notification' not in app_config: return
+		notn_config = app_config['notification']
+		addr_to = notn_config['smtp_to']
+		host = notn_config['smtp_host']
 		mb = notification.SMTPMailbox(addr_to=addr_to, host=host)
 		mb.notify('A new document was uploaded')
 
@@ -209,6 +212,7 @@ class Devel(object):
 		loader.package(__name__, 'view/devel'),
 		loader.package(__name__, 'view'),
 		])
+
 	def __init__(self, server):
 		self.server = server
 
@@ -224,7 +228,7 @@ class Devel(object):
 		server).
 		"""
 		disabled = model.RetypePageHIT.disable_all()
-		del server[:]
+		del self.server[:]
 		msg = 'Disabled {disabled} HITs (do not forget to remove them from other servers).'
 		return lf(msg)
 
@@ -238,7 +242,7 @@ class Devel(object):
 		job.register_hits()
 		return lf('<a href="/status/{job_id}">Payment simulated; click here for status.</a>')
 
-@contextmanager
+@contextlib.contextmanager
 def start_server(configs):
 	"""
 	The main entry point for the service, regardless of how it's used.
@@ -246,7 +250,6 @@ def start_server(configs):
 	cherrypy.config.update.
 	"""
 	importlib.import_module('.agency', __package__)
-	global server
 	server = JobServer()
 	if hasattr(cherrypy.engine, "signal_handler"):
 		cherrypy.engine.signal_handler.subscribe()
@@ -259,13 +262,14 @@ def start_server(configs):
 		dev_app = cherrypy.tree.mount(Devel(server), '/devel')
 		map(dev_app.merge, configs)
 		boto.set_stream_logger('recapturedocs')
-		aws.ConnectionFactory.production=False
+		aws.ConnectionFactory.production = False
 	cherrypy.engine.start()
 	yield server
 	cherrypy.engine.exit()
 
 class Command(object):
 	__metaclass__ = LeafClassesMeta
+
 	def __init__(self, *configs):
 		self.configs = configs
 		self.configure()
@@ -323,19 +327,19 @@ class Serve(Command):
 class Interact(Command):
 	def configure(self):
 		# change some config that's problemmatic in interactive mode
-		config = {
+		g_config = {
 			'global':
 				{
 				'autoreload.on': False,
 				'log.screen': False,
 				},
 			}
-		self.configs = list(itertools.chain([config], self.configs))
+		self.configs = list(itertools.chain([g_config], self.configs))
 		super(Interact, self).configure()
 
 	def run(self):
 		with start_server(self.configs):
-			import code; code.interact(local=globals())
+			code.interact(locals=globals())
 
 class Daemon(Command):
 	def run(self):
@@ -356,7 +360,7 @@ def get_package_configs(args):
 
 def handle_command_line():
 	usage = inspect.getdoc(handle_command_line)
-	parser = argparse.ArgumentParser()
+	parser = argparse.ArgumentParser(usage=usage)
 	jaraco.util.logging.add_arguments(parser)
 	Command.add_subparsers(parser)
 	args = parser.parse_args()

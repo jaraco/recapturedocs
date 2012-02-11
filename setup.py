@@ -4,7 +4,7 @@ from setuptools import find_packages
 name = 'recapturedocs'
 
 def py_ver_dependencies():
-	if sys.version_info < (2,7):
+	if sys.version_info < (2, 7):
 		yield 'argparse'
 		yield 'importlib'
 

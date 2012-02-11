@@ -13,19 +13,18 @@ def get_error_file():
 	return get_config_dir() / 'error.txt'
 
 def get_config_dir():
-	#candidate = path(sys.prefix) / 'var'
-	#if candidate.isdir():
-	#	return candidate
 	@ensure_dir_exists
 	def get_log_root_win32():
 		return path(os.environ['APPDATA']) / appname
+
 	@ensure_dir_exists
 	def get_log_root_linux2():
 		if sys.prefix == '/usr':
 			return path('/var') / appname.lower()
 		return path(sys.prefix) / 'var' / appname.lower()
-	getter = locals()['get_log_root_'+sys.platform]
+	getter = locals()['get_log_root_' + sys.platform]
 	base = getter()
+
 	@ensure_dir_exists
 	def resolve_base():
 		# todo: consider adding an honest setting for the config identifier
