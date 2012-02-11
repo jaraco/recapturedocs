@@ -344,8 +344,11 @@ class Interact(Command):
 		super(Interact, self).configure()
 
 	def run(self):
-		with start_server(self.configs):
-			code.interact(locals=globals())
+		with start_server(self.configs) as server:
+			# although the client could get the server from
+			# cherrypy.tree.apps[''].root, let's make an alias
+			globals().update(server=server)
+			code.interact(local=globals())
 
 class Daemon(Command):
 	def run(self):
