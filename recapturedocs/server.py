@@ -371,7 +371,7 @@ def handle_command_line():
 	Command.add_subparsers(parser)
 	args = parser.parse_args()
 	jaraco.util.logging.setup(args)
-	user_configs = args.configs + get_package_configs(args)
+	user_configs = get_package_configs(args) + args.configs()
 	command = args.action(*user_configs)
 	command.run()
 
