@@ -31,7 +31,11 @@ def install_env():
 @task
 def update_staging():
 	run('envs/staging/bin/easy_install -U -f http://dl.dropbox.com/u/54081/cheeseshop/index.html recapturedocs')
-	run('./stage-recapturedocs')
+	with settings(warn_only=True):
+		run('pkill -f staging/bin/python')
+		run('sleep 3')
+	run('mkdir -p envs/staging/var/log')
+	run('envs/staging/bin/recapture-docs daemon')
 
 @task
 def update_production():
