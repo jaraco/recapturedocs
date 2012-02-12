@@ -155,7 +155,7 @@ class JobServer(object):
 			page_url = lf('/image/{hit_id}')
 				if not preview else '/static/Lorem ipsum.pdf',
 		)
-		tmpl = self.tl.load('retype page.xhtml'),
+		tmpl = self.tl.load('retype page.xhtml')
 		return tmpl.generate(**params).render('xhtml')
 
 	def _get_job_for_id(self, job_id):
