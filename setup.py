@@ -30,11 +30,11 @@ setup_params = dict(
 			],
 	},
 	install_requires=[
-		'cherrypy>=3.2.0,<3.3dev',
-		'genshi',
+		'cherrypy >= 3.2.0, <3.3dev',
+		'genshi >= 0.6',
 		'boto == 2.0b4',  # easy_install http://github.com/jaraco/boto/tarball/master
 		'PyPDF >= 1.12',
-		'keyring',
+		'keyring >= 0.7.1',
 		'jaraco.util >= 5.1',
 		'path.py',
 		'docutils',

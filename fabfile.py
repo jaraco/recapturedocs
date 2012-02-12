@@ -1,7 +1,7 @@
 import socket
 
-from fabric.api import sudo, run, settings, task, hosts, env
-from fabric.contrib import files
+from fabric.api import sudo, run, settings, task, env
+#from fabric.contrib import files
 
 from jaraco.util.string import local_format as lf
 import yg.deploy.fabric.python
