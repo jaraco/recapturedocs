@@ -44,7 +44,10 @@ def update_production():
 
 @task
 def setup_mongodb_firewall():
-	allowed_ips = '127.0.0.1', '66.92.166.0/24'
+	allowed_ips = ('127.0.0.1', '66.92.166.0/24',
+		'166.147.76.218',  # AT&T mobile IP
+		'206.169.60.21',  # Flying Star Paseo
+	)
 	allowed_ips += (socket.gethostbyname('mongs.whit537.org'),)
 	with settings(warn_only=True):
 		sudo('iptables --new-chain mongodb')
