@@ -80,7 +80,7 @@
 			<div class="intro-head">HOW IT WORKS</div>
 			<div class="intro">
 				<ul>
-					<li py:if="user_agent.browser.name == 'Internet Explorer' and useragent_browser.version &lt; 9.0">
+					<li py:if="user_agent and user_agent.browser.name == 'Internet Explorer' and user_agent.browser.version &lt; 9.0">
 						<a href="http://www.microsoft.com/ie9">Upgrade your browser</a> or download <a href="http://getfirefox.com">Firefox</a> or <a href="http://www.google.com/chrome">Chrome</a> or <a href="http://www.apple.com/safari">Safari</a>.
 					</li>
 					<li>Upload your PDF file.</li>
