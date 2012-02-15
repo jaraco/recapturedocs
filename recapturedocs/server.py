@@ -152,7 +152,7 @@ class JobServer(object):
 			worker_id = workerId,
 			preview = preview,
 			turk_submit_to = turkSubmitTo,
-			page_url = lf('/image/{hit_id}')
+			page_url = lf('/image/{hitId}')
 				if not preview else '/static/Lorem ipsum.pdf',
 		)
 		cherrypy.log(lf("params are {params}"))
