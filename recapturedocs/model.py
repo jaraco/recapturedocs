@@ -25,10 +25,6 @@ log = logging.getLogger(__name__)
 class ConversionError(BaseException):
 	pass
 
-def save_credentials(access_key, secret_key):
-	import keyring
-	keyring.set_password('AWS', access_key, secret_key)
-
 class DollarAmount(float):
 	def __str__(self):
 		string = super(DollarAmount, self).__str__()

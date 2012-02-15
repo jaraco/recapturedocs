@@ -1,4 +1,4 @@
-
+import keyring
 import os
 
 from jaraco.util.string import local_format as lf
@@ -12,11 +12,15 @@ def set_connection_environment(access_key='0ZWJV1BMM1Q6GXJ9J2G2'):
 	the environment, so pull the encrypted key out and put it in the
 	environment.
 	"""
-	import keyring
+	if 'AWS_SECRET_ACCESS_KEY' in os.environ:
+		return
 	secret_key = keyring.get_password('AWS', access_key)
 	assert secret_key, "Secret key is null"
 	os.environ['AWS_ACCESS_KEY_ID'] = access_key
 	os.environ['AWS_SECRET_ACCESS_KEY'] = secret_key
+
+def save_credentials(access_key, secret_key):
+	keyring.set_password('AWS', access_key, secret_key)
 
 class ConnectionFactory(object):
 	production = True
@@ -30,14 +34,12 @@ class ConnectionFactory(object):
 
 	@classmethod
 	def get_fps_connection(class_):
-		set_connection_environment()
-		host = ['fps.sandbox.amazonaws.com', 'fps.amazonaws.com'][
-			class_.production]
+		host = ('fps.amazonaws.com' if class_.production else
+			'fps.sandbox.amazonaws.com')
 		return boto.fps.connection.FPSConnection(host=host)
 
 	@classmethod
 	def get_mturk_connection(class_):
-		set_connection_environment()
 		host = ['mechanicalturk.sandbox.amazonaws.com',
 			'mechanicalturk.amazonaws.com'][class_.production]
 		return boto.mturk.connection.MTurkConnection(host=host)

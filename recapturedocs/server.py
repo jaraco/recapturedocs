@@ -252,6 +252,7 @@ def start_server(configs):
 	cherrypy.config.update.
 	"""
 	importlib.import_module('.agency', __package__)
+	aws.set_connection_environment()
 	server = JobServer()
 	if hasattr(cherrypy.engine, "signal_handler"):
 		cherrypy.engine.signal_handler.subscribe()
