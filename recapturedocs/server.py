@@ -145,7 +145,7 @@ class JobServer(object):
 		Fulfill a request of a client who's been sent from AMT. This
 		will be rendered in an iFrame, so don't use the template.
 		"""
-		preview = assignmentId == 'ASSIGNMENT_ID_NOT_AVAILABLE',
+		preview = assignmentId == 'ASSIGNMENT_ID_NOT_AVAILABLE'
 		params = dict(
 			assignment_id = assignmentId,
 			hit_id = hitId,
