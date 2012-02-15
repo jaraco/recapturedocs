@@ -155,6 +155,7 @@ class JobServer(object):
 			page_url = lf('/image/{hit_id}')
 				if not preview else '/static/Lorem ipsum.pdf',
 		)
+		cherrypy.log(lf("params are {params}"))
 		tmpl = self.tl.load('retype page.xhtml')
 		return tmpl.generate(**params).render('xhtml')
 
