@@ -1,4 +1,5 @@
 import socket
+import urllib2
 
 from fabric.api import sudo, run, settings, task, env
 #from fabric.contrib import files
@@ -44,10 +45,7 @@ def update_production():
 
 @task
 def setup_mongodb_firewall():
-	allowed_ips = ('127.0.0.1', '66.92.166.0/24',
-		'166.147.76.218',  # AT&T mobile IP
-		'206.169.60.21',  # Flying Star Paseo
-	)
+	allowed_ips = ('127.0.0.1', '66.92.166.0/24')
 	allowed_ips += (socket.gethostbyname('mongs.whit537.org'),)
 	with settings(warn_only=True):
 		sudo('iptables --new-chain mongodb')
@@ -56,6 +54,13 @@ def setup_mongodb_firewall():
 	sudo('iptables -A INPUT -p tcp --dport 27017 -j mongodb')
 	sudo('iptables -A INPUT -p tcp --dport 28017 -j mongodb')
 	sudo('iptables --flush mongodb')
-	for ip in allowed_ips:
-		sudo(lf('iptables -A mongodb -s {ip} --jump RETURN'))
 	sudo('iptables -A mongodb -j REJECT')
+	map(mongodb_allow_ip, allowed_ips)
+
+@task
+def mongodb_allow_ip(ip=None):
+	if ip is None:
+		url = 'http://automation.whatismyip.com/n09230945.asp'
+		resp = urllib2.urlopen(url)
+		ip = resp.read()
+	sudo(lf('iptables -I mongodb -s {ip} --jump RETURN'))
