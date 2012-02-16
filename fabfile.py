@@ -7,6 +7,10 @@ from fabric.api import sudo, run, settings, task, env
 from jaraco.util.string import local_format as lf
 import yg.deploy.fabric.python
 
+__all__ = ['install_ppa_python', 'install_env', 'update_staging',
+	'update_production', 'setup_mongodb_firewall', 'mongodb_allow_ip',
+]
+
 env.hosts = ['hideaki']
 
 @task
@@ -45,8 +49,9 @@ def update_production():
 
 @task
 def setup_mongodb_firewall():
-	allowed_ips = ('127.0.0.1', '66.92.166.0/24')
-	allowed_ips += (socket.gethostbyname('mongs.whit537.org'),)
+	allowed_ips = ('127.0.0.1', '66.92.166.0/24',
+		socket.gethostbyname('mongs.whit537.org'),
+	)
 	with settings(warn_only=True):
 		sudo('iptables --new-chain mongodb')
 		sudo('iptables -D INPUT -p tcp --dport 27017 -j mongodb')
