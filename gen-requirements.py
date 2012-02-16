@@ -38,6 +38,12 @@ def generate_requirements():
 		install_project()
 		invoke_pip()
 	finally:
+		# shutil will in some environments wipe out the encodings
+		#  directory of the main Python installation, so carefully
+		#  remove that separately first.
+		if platform.system() == 'Windows':
+			os.rmdir('env/Lib/encodings')
+			os.rmdir('env/Include')
 		shutil.rmtree('env')
 
 if __name__ == '__main__':
