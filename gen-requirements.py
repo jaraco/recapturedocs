@@ -26,6 +26,9 @@ def install_project():
 
 def invoke_pip():
 	with open('requirements.txt', 'wb') as req_file:
+		req_file.write(
+			'-f http://dl.dropbox.com/u/54081/cheeseshop/index.html\n'
+		)
 		subprocess.check_call([
 			os.path.join(env_base, 'pip'),
 			'freeze'

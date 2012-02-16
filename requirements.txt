@@ -1,3 +1,4 @@
+-f http://dl.dropbox.com/u/54081/cheeseshop/index.html
 beautifulsoup==3.2.1
 boto==2.2.2
 cherrypy==3.2.2
