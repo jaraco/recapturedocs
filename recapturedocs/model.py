@@ -103,9 +103,9 @@ class RetypePageHIT(object):
 		assignment = one(assignments)
 		answers_set = one(assignment.answers)
 		answer = dict(
-			answer.fields[0]
+			(answer.qid, one(answer.fields))
 			for answer in answers_set
-			)
+		)
 		return answer['content']
 
 	def matches(self, id):
@@ -121,8 +121,8 @@ class ConversionJob(object):
 	Conversion Job, a collection of pages to be retyped
 	"""
 
-	"$1.95 per page"
 	page_cost = DollarAmount(1.95)
+	"Price per page charged to the customer"
 
 	def __init__(self, stream, content_type, server_url, filename=None):
 		self.created = datetime.datetime.now()
@@ -174,7 +174,8 @@ class ConversionJob(object):
 		return all(hit.is_complete() for hit in self.hits)
 
 	def get_data(self):
-		return '\n\n\n'.join(hit.get_data() for hit in self.hits)
+		return '\n\n\n'.join(hit.get_data() for hit in self.hits
+			if hit.is_complete())
 
 	def get_hit(self, hit_id):
 		return next(
@@ -247,6 +248,11 @@ class ConversionJob(object):
 		hitid_loc = 'hits.registration_result.py/seq.HITId'
 		data = persistence.store.jobs.find_one({hitid_loc: hit_id})
 		return cls._restore(data)
+
+	def dump_pages(self):
+		for hit, page in zip(self.hits, self.pages):
+			with open(hit.id + '.pdf', 'wb') as f:
+				f.write(page)
 
 def get_all_hits(conn):
 	page_size = 100
