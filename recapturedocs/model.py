@@ -74,6 +74,11 @@ class RetypePageHIT(object):
 		if not len(self.registration_result) == 1: return None
 		return self.registration_result[0].HITId
 
+	@property
+	def status(self):
+		conn = aws.ConnectionFactory.get_mturk_connection()
+		return one(conn.get_hit(self.id)).HITStatus
+
 	def load_assignments(self):
 		conn = aws.ConnectionFactory.get_mturk_connection()
 		return conn.get_assignments(self.id)
