@@ -1,7 +1,8 @@
-beautifulsoup==3.2.0
-boto==2.0b4
+beautifulsoup==3.2.1
+boto==2.2.2
 cherrypy==3.2.2
 clientform==0.2.10
+distribute==0.6.24
 docutils==0.8.1
 feedparser==5.1
 genshi==0.6
@@ -14,4 +15,4 @@ keyring==0.7.1
 path.py==2.2.2
 pymongo==2.1.1
 pypdf==1.13
-recapturedocs==2.4.2
+recapturedocs==2.4.3
