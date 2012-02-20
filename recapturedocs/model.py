@@ -211,14 +211,14 @@ class ConversionJob(object):
 		"""
 		Only save the job if there isn't already a job with the same hash
 		"""
-		if self.load(self.id): return
-		self.save()
+		query = dict(_id=self.id)
+		persistence.store.jobs.find(query).count() or self.save()
 
 	def save(self):
 		data = jaraco.modb.encode(self)
 		#log.debug("saving {0!r}".format(data))
 		data['_id'] = self.id
-		self._id = persistence.store.jobs.save(data)
+		self._id = persistence.store.jobs.save(data, safe=True)
 
 	def remove(self):
 		assert self.id is not None
