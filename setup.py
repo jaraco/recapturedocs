@@ -1,5 +1,6 @@
 import sys
-from setuptools import find_packages
+
+import setuptools
 
 name = 'recapturedocs'
 
@@ -8,14 +9,16 @@ def py_ver_dependencies():
 		yield 'argparse'
 		yield 'importlib'
 
-setup_params = dict(
+exec(open('pytest-runner/command.py').read())
+
+setup_params = PyTest.install(dict(
 	name = name,
 	use_hg_version=True,
 	description = 'Library for RecaptureDocs.com',
 	author = 'Jason R. Coombs',
 	author_email = 'jaraco@jaraco.com',
 	url = 'http://www.recapturedocs.com/',
-	packages = find_packages(),
+	packages = setuptools.find_packages(),
 	include_package_data=True,
 	license = 'proprietary',
 	classifiers = [
@@ -48,14 +51,12 @@ setup_params = dict(
 	dependency_links = [
 	],
 	tests_require=[
-		'pytest',
 	],
 	test_suite='py.test',
 	setup_requires=[
 		'hgtools',
 	],
-)
+))
 
 if __name__ == '__main__':
-	from setuptools import setup
-	setup(**setup_params)
+	setuptools.setup(**setup_params)
