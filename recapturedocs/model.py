@@ -9,7 +9,7 @@ import logging
 import math
 
 from jaraco.util.itertools import one
-from jaraco.util.string import local_format as lf
+from jaraco.util.string import local_format as lf, indent
 import jaraco.modb
 
 # suppress the deprecation warning in PyPDF
@@ -115,6 +115,11 @@ class RetypePageHIT(object):
 	def get_external_question(self):
 		from boto.mturk.question import ExternalQuestion
 		return ExternalQuestion(external_url=self.server_url, frame_height=600)
+
+	def _report(self):
+		yield lf('hit {self.id} ({self.status})')
+		for assignment in self.load_assignments():
+			yield indent(str(assignment))
 
 class ConversionJob(object):
 	"""
@@ -253,6 +258,15 @@ class ConversionJob(object):
 		for hit, page in zip(self.hits, self.pages):
 			with open(hit.id + '.pdf', 'wb') as f:
 				f.write(page)
+
+	def _report(self):
+		yield lf('Job {self.id}')
+		for hit in self.hits:
+			for line in hit._report():
+				yield indent(line)
+
+	def __str__(self):
+		return '\n'.join(self._report())
 
 def get_all_hits(conn):
 	page_size = 100

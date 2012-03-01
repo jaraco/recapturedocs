@@ -38,7 +38,7 @@ setup_params = PyTest.install(dict(
 		'boto >= 2.2.2',
 		'PyPDF >= 1.12',
 		'keyring >= 0.7.1',
-		'jaraco.util >= 5.1',
+		'jaraco.util >= 5.2',
 		'path.py',
 		'docutils',
 		'jaraco.modb >= 1.0.5',
