@@ -124,9 +124,14 @@ class JobServer(object):
 		conn.pay(float(job.cost), job.sender_token, job.recipient_token,
 			job.caller_token)
 		job.authorized = True
-		job.register_hits()
+		try:
+			job.register_hits()
+			target = lf('/status/{job_id}')
+		except model.InsufficientFunds:
+			# TODO: send e-mail to support
+			target = '/error/our fault'
 		job.save()
-		raise cherrypy.HTTPRedirect(lf('/status/{job_id}'))
+		raise cherrypy.HTTPRedirect(target)
 
 	def verify_URL_signature(self, end_point_url, params):
 		assert params['signatureVersion'] == '2'
@@ -199,6 +204,15 @@ class JobServer(object):
 		jobs = list(iter(self))
 		for job in jobs[key]:
 			job.remove()
+
+	@cherrypy.expose
+	def error(self, why):
+		tmpl = self.tl.load('simple.xhtml')
+		message = lf("An error has occurred ({why}). We apologize for the "
+			"inconvenience. Our staff has "
+			"been notified and should be responding. Please try again "
+			"later, or for immediate assistance, contact our support team.")
+		return tmpl.generate(content=message).render('xhtml')
 
 	def send_notice(self):
 		app_config = self._app.config

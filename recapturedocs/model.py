@@ -11,6 +11,7 @@ import math
 from jaraco.util.itertools import one
 from jaraco.util.string import local_format as lf, indent
 import jaraco.modb
+import boto.mturk.connection
 
 # suppress the deprecation warning in PyPDF
 import warnings
@@ -19,6 +20,7 @@ from pyPdf import PdfFileReader, PdfFileWriter
 
 from . import aws
 from . import persistence
+from . import errors
 
 log = logging.getLogger(__name__)
 
@@ -64,8 +66,13 @@ class RetypePageHIT(object):
 
 	def register(self):
 		conn = aws.ConnectionFactory.get_mturk_connection()
-		res = conn.create_hit(question=self.get_external_question(),
-			**self.type_params)
+		try:
+			res = conn.create_hit(question=self.get_external_question(),
+				**self.type_params)
+		except boto.connection.MTurkRequestError as error:
+			if not error.error_code == 'AWS.MechanicalTurk.InsufficientFunds':
+				raise
+			raise errors.InsufficientFunds()
 		self.registration_result = res
 		return res
 
