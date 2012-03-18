@@ -107,7 +107,7 @@ class RetypePageHIT(object):
 	def get_data(self):
 		assert self.is_complete()
 		assignments = self.assignments_cache
-		assignment = next(assignments)
+		assignment = first(assignments)
 		answers_set = one(assignment.answers)
 		answer = dict(
 			(answer.qid, one(answer.fields))
@@ -295,3 +295,21 @@ def get_all_hits(conn):
 
 	hit_sets = map(get_page_hits, get_page_numbers(page_size, total_records))
 	return list(itertools.chain.from_iterable(hit_sets))
+
+def first(iterable):
+	"""
+	Return the first item from an iterable or raise StopIteration if there's
+	not one item.
+
+	>>> first(['a', 'b'])
+	'a'
+
+	>>> first(xrange(20))
+	0
+
+	>>> first([])
+	Traceback (most recent call last):
+	...
+	StopIteration
+	"""
+	return next(iter(iterable))
