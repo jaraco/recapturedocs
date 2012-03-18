@@ -107,7 +107,7 @@ class RetypePageHIT(object):
 	def get_data(self):
 		assert self.is_complete()
 		assignments = self.assignments_cache
-		assignment = one(assignments)
+		assignment = next(assignments)
 		answers_set = one(assignment.answers)
 		answer = dict(
 			(answer.qid, one(answer.fields))
