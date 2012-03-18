@@ -116,6 +116,7 @@ class JobServer(object):
 			tmpl = self.tl.load('declined.xhtml')
 			params = genshi.Markup(lf('<!-- {params} -->'))
 			res = tmpl.generate(status=status, job=job, params=params)
+			# TODO: send e-mail to support with params
 			return res.render('xhtml')
 		end_point_url = JobServer.construct_url(lf('/complete_payment/{job_id}'))
 		self.verify_URL_signature(end_point_url, params)
