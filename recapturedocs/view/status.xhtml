@@ -12,9 +12,13 @@
     <h1>Job Status - <span py:replace="job.id[:8]">ABCDEF99</span></h1>
 	<div>Recapture job <span py:replace="job.id">ABCDEF991234567801234567890</span> of
 	<span py:replace="len(job)">0</span> pages</div>
-	<py:if test="not job.authorized">
+	<py:if test="not job.authorized and job.can_authorize">
 		<p>This job will cost <span py:replace="job.cost">$0</span> to complete.
 		<a href="/initiate_payment/${job.id}">Click here to pay</a> for the job.</p>
+	</py:if>
+	<py:if test="not job.authorized and not job.can_authorize">
+		<p>RecaptureDocs cannot currently handle this document (our service is
+			not authorized to handle this many pages). Please <a href="mailto:support@recapturedocs.com?Subject=Unable to authorize ${job.id}">e-mail support</a> with your name and phone number. We apologize for the inconvenience and will resolve the issue as soon as possible.</p>
 	</py:if>
 	<py:if test="job.authorized">
 		<!-- for development purposes -->

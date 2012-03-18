@@ -33,11 +33,13 @@ class DollarAmount(float):
 		return lf('${string}')
 
 class RetypePageHIT(object):
+	reward_per_page = DollarAmount(1)
+
 	type_params = dict(
 		title="Type a Page",
 		description="You will read a scanned page and retype its textual contents.",
 		keywords='typing page rekey retype'.split(),
-		reward=1.0,
+		reward=reward_per_page,
 		duration=datetime.timedelta(days=7),
 		)
 
@@ -148,6 +150,16 @@ class ConversionJob(object):
 	@property
 	def cost(self):
 		return DollarAmount(self.page_cost * len(self))
+
+	@property
+	def can_authorize(self):
+		"""
+		A job cannot be authorized if the balance in the Mechanical Turk
+		account is not sufficient to service the job.
+		"""
+		conn = aws.ConnectionFactory.get_mturk_connection()
+		balance = conn.get_account_balance()[0].amount
+		return RetypePageHIT.reward_per_page * len(self) <= balance
 
 	def do_split_pdf(self):
 		msg = "Only PDF content is supported (got {content_type} instead)"
