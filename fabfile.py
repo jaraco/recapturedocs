@@ -43,8 +43,15 @@ def update_staging():
 	run('envs/staging/bin/recapture-docs daemon')
 
 @task
-def update_production():
-	sudo('/recapturedocs/bin/easy_install -U -f http://dl.dropbox.com/u/54081/cheeseshop/index.html recapturedocs')
+def update_production(version=None):
+	if version is None:
+		sudo('/recapturedocs/bin/easy_install -U -f '
+			'http://dl.dropbox.com/u/54081/cheeseshop/index.html '
+			'recapturedocs')
+	else:
+		sudo('/recapturedocs/bin/easy_install -f '
+			'http://dl.dropbox.com/u/54081/cheeseshop/index.html '
+			'recapturedocs=={version}'.format(**vars()))
 	sudo('restart recapture-docs')
 
 @task
