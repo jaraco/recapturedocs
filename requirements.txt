@@ -1,2 +1,19 @@
 -f http://dl.dropbox.com/u/54081/cheeseshop/index.html
-.
+beautifulsoup==3.2.1
+boto==2.2.2
+cherrypy==3.2.3dev-20120408
+clientform==0.2.10
+distribute==0.6.24
+docutils==0.8.1
+feedparser==5.1
+genshi==0.6
+httpagentparser==1.0.1
+jaraco.modb==1.0.5
+jaraco.net==2.0.3
+jaraco.util==5.1
+jsonpickle==0.4.0
+keyring==0.7.1
+path.py==2.2.2
+pymongo==2.1.1
+pypdf==1.13
+recapturedocs==2.5.1
