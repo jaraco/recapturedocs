@@ -33,7 +33,7 @@ setup_params = PyTest.install(dict(
 			],
 	},
 	install_requires=[
-		'cherrypy >= 3.2.0, <3.3dev',
+		'cherrypy >= 3.2.3dev-20120408, <3.3dev',
 		'genshi >= 0.6',
 		'boto >= 2.2.2',
 		'PyPDF >= 1.12',
