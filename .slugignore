@@ -1,0 +1,15 @@
+.hgignore
+.hgsub
+.hgsubstate
+.hgtags
+configure-heroku.py
+fabfile.py
+gen-requirements.py
+Procfile
+release.py
+requirements.txt
+setup.cfg
+setup.py
+recapturedocs
+tests
+ubuntu
