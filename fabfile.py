@@ -9,6 +9,7 @@ import yg.deploy.fabric.python
 
 __all__ = ['install_ppa_python', 'install_env', 'update_staging',
 	'update_production', 'setup_mongodb_firewall', 'mongodb_allow_ip',
+	'install_supervisor'
 ]
 
 env.hosts = ['hideaki']
@@ -76,3 +77,7 @@ def mongodb_allow_ip(ip=None):
 		resp = urllib2.urlopen(url)
 		ip = resp.read()
 	sudo(lf('iptables -I mongodb -s {ip} --jump RETURN'))
+
+@task
+def install_supervisor():
+	sudo('easy_install-2.7 -U supervisor')
