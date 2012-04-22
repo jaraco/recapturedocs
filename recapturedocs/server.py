@@ -5,7 +5,6 @@ import functools
 import itertools
 import argparse
 import contextlib
-import pkg_resources
 import urlparse
 import inspect
 import docutils.io
@@ -14,6 +13,7 @@ import logging
 import importlib
 import code
 
+import pkg_resources
 import cherrypy
 import genshi.template
 import boto
@@ -23,6 +23,7 @@ import jaraco.util.logging
 from jaraco.util.string import local_format as lf
 from jaraco.net import notification
 
+import recapturedocs
 from . import model
 from . import persistence
 from . import aws
@@ -44,6 +45,7 @@ class JobServer(object):
 			message=message,
 			page_cost=model.ConversionJob.page_cost,
 			user_agent=cherrypy.request.user_agent,
+			version = recapturedocs.version,
 			).render('xhtml')
 
 	@staticmethod

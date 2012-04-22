@@ -1,2 +1,2 @@
 -f http://dl.dropbox.com/u/54081/cheeseshop/index.html
-recapturedocs==2.5.1
+recapturedocs==2.6
