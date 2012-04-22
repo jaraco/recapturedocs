@@ -17,11 +17,11 @@ def make_env():
 	])
 
 def install_project():
-	python = os.path.join(env_base, 'python')
+	ei_cmd = os.path.join(env_base, 'easy_install')
 	subprocess.check_call([
-		python,
-		'setup.py',
-		'install',
+		ei_cmd,
+		'-f', 'http://dl.dropbox.com/u/54081/cheeseshop/index.html',
+		'recapturedocs>=0',
 	])
 
 def invoke_pip():
@@ -41,13 +41,13 @@ def generate_requirements():
 		install_project()
 		invoke_pip()
 	finally:
-		# shutil will in some environments wipe out the encodings
-		#  directory of the main Python installation, so carefully
-		#  remove that separately first.
 		if platform.system() == 'Windows':
-			os.rmdir('env/Lib/encodings')
-			os.rmdir('env/Include')
-		shutil.rmtree('env')
+			# shutil will traverse symlinks (such as env/Lib/encodings
+			#  and env/include), deleting the files in the main Python
+			#  installation, so use another technique.
+			subprocess.check_call('cmd /c rmdir /s /q env')
+		else:
+			shutil.rmtree('env')
 
 if __name__ == '__main__':
 	generate_requirements()
