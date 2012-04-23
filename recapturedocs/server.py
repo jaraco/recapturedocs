@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 import os
+import sys
 import functools
 import itertools
 import argparse
@@ -12,6 +13,7 @@ import docutils.core
 import logging
 import importlib
 import code
+import shlex
 
 import pkg_resources
 import cherrypy
@@ -383,12 +385,22 @@ def get_package_config(name):
 	pkg_res = functools.partial(pkg_resources.resource_filename, 'recapturedocs')
 	return pkg_res(name)
 
+def command_line():
+	"""
+	Heroku only allows an application to deviate based
+	on environment variables, so we allow command-line
+	args to be specified as env vars.
+	"""
+	return sys.argv[1:] + (
+		shlex.split(os.environ.get('COMMAND_LINE_ARGS', ''))
+	)
+
 def handle_command_line():
 	usage = inspect.getdoc(handle_command_line)
 	parser = argparse.ArgumentParser(usage=usage)
 	jaraco.util.logging.add_arguments(parser)
 	Command.add_subparsers(parser)
-	args = parser.parse_args()
+	args = parser.parse_args(command_line())
 	jaraco.util.logging.setup(args)
 	user_configs = args.package_configs + args.configs
 	command = args.action(*user_configs)

@@ -1,2 +1,1 @@
-web: recapture-docs serve -C prod
-staging: recapture-docs serve
+web: recapture-docs serve
