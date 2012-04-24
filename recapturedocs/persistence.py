@@ -27,11 +27,10 @@ def init_mongodb():
 	ps = cherrypy._whole_config.get('persistence', dict())
 	storage_uri = ps.get('storage.uri', 'mongodb://localhost')
 	conn, store = mongodb_connect_uri(storage_uri, _connect=False)
-	if store.name == 'admin':
-		store = conn['recapturedocs']
 	is_production = cherrypy.config.get('server.production', False)
-	if not is_production:
-		store = conn[store.name + '_devel']
+	if store.name == 'admin':
+		s_name = 'recapturedocs' if is_production else 'recapturedocs_devel'
+		store = conn[s_name]
 	globals().update(store = store)
 
 def init():
