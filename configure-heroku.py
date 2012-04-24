@@ -1,5 +1,6 @@
 import urllib2
 import urlparse
+import urllib
 import json
 import pprint
 
@@ -43,8 +44,7 @@ def configure_AWS():
 	)
 
 def set_env_vars(*args, **kwargs):
-	vars = dict(*args, **kwargs)
-	do(path='config_vars', data=json.dumps(vars), method='PUT')
+	do(path='config_vars', data=dict(*args, **kwargs), method='PUT')
 
 def check_MongoHQ():
 	do('addons')
@@ -57,12 +57,15 @@ def do(path, **kwargs):
 		'Accept': 'application/json',
 	}
 	headers.update(kwargs.pop('headers', {}))
+	if 'data' in kwargs and isinstance(kwargs['data'], dict):
+		kwargs['data'] = json.dumps(kwargs['data'])
 	base = 'https://api.heroku.com/apps/{app_name}/'.format(**globals())
 	url = urlparse.urljoin(base, path)
 	req = jaraco.net.http.MethodRequest(url = url, headers=headers, **kwargs)
 	res = urllib2.urlopen(req)
-	assert res.code == 200
 	data = json.loads(res.read())
+	if not 200 <= res.code < 300:
+		print "ERROR: ", res.code
 	pprint.pprint(data)
 	return data
 
@@ -75,9 +78,18 @@ def set_production():
 		COMMAND_LINE_ARGS='-C prod'
 	)
 
+def create_app():
+	data = {
+		'app[name]': app_name,
+		'app[stack]': 'cedar',
+	}
+	do('/apps', method='POST', data=urllib.urlencode(data))
+
 if __name__ == '__main__':
 	install_opener()
+	create_app()
 	configure_AWS()
 	check_MongoHQ()
 	add_MongoHQ()
-	set_production()
+	if app_name == 'recapturedocs':
+		set_production()
