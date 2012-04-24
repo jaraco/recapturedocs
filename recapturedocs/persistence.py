@@ -1,24 +1,12 @@
 from __future__ import absolute_import
 
-import urlparse
 import warnings
 
-import pymongo
+import pymongo.uri_parser
 import cherrypy
-import jaraco.util.functools as functools
 
 from .config import get_config_dir
 from . import jsonpickle
-
-@functools.once
-def add_mongodb_scheme():
-	"""
-	urlparse doesn't support the mongodb scheme, but it's easy
-	to make it so.
-	"""
-	lists = [urlparse.uses_relative, urlparse.uses_netloc, urlparse.uses_query]
-	for l in lists:
-		l.append('mongodb')
 
 def mongodb_connect_uri(uri, **kwargs):
 	"""
@@ -26,14 +14,13 @@ def mongodb_connect_uri(uri, **kwargs):
 	Return the connection and database object specified by the URI. If
 	no database is specified, the admin db will be returned.
 	"""
-	add_mongodb_scheme()
-	puri = urlparse.urlparse(uri)
+	puri = pymongo.uri_parser.parse_uri(uri)
 	# in mongodb, if a username is not specified, but a database is included
 	# in the URI, a warning will be emitted. Suppress this warning.
 	with warnings.catch_warnings():
 		cherrypy.log('Connecting to %s' % uri)
 		conn = pymongo.Connection(uri, **kwargs)
-	db_name = puri.path.lstrip('/') or 'admin'
+	db_name = puri['database'] or 'admin'
 	return conn, conn[db_name]
 
 def init_mongodb():
