@@ -1,9 +1,12 @@
 import urllib2
+import urlparse
 import json
 import pprint
 
 import keyring.http
 import jaraco.net.http
+
+app_name = 'recapturedocs'
 
 class FixedUserKeyringPasswordManager(keyring.http.PasswordMgr):
 	def __init__(self, username):
@@ -22,48 +25,59 @@ class FixedUserKeyringPasswordManager(keyring.http.PasswordMgr):
 		keyring.get_keyring().delete_password(realm, user)
 
 def install_opener():
-	auth_manager = FixedUserKeyringPasswordManager(username='')
+	auth_manager = FixedUserKeyringPasswordManager(
+		username='jaraco@jaraco.com')
 	auth_handler = urllib2.HTTPBasicAuthHandler(auth_manager)
 	# build a new opener
 	opener = urllib2.build_opener(auth_handler)
 	# install it
 	urllib2.install_opener(opener)
 
-
 def configure_AWS():
 	access_key = '0ZWJV1BMM1Q6GXJ9J2G2'
 	secret_key = keyring.get_password('AWS', access_key)
 	assert secret_key, "secret key is null"
-	headers = {
-		'Accept': 'application/json',
-	}
-	vars = dict(
+	set_env_vars(
 		AWS_ACCESS_KEY_ID = access_key,
 		AWS_SECRET_ACCESS_KEY = secret_key,
 	)
-	install_opener()
 
-	req = jaraco.net.http.MethodRequest(
-		url='https://api.heroku.com/apps/recapturedocs/config_vars',
-		headers=headers, data=json.dumps(vars), method='PUT')
-	res = urllib2.urlopen(req)
+def set_env_vars(*args, **kwargs):
+	vars = dict(*args, **kwargs)
+	do(path='config_vars', data=json.dumps(vars), method='PUT')
 
-	assert res.code == 200
-	pprint.pprint(json.loads(res.read()))
+def check_MongoHQ():
+	do('addons')
 
 def add_MongoHQ():
+	install_addon('mongohq:free')
+
+def do(path, **kwargs):
 	headers = {
 		'Accept': 'application/json',
 	}
-	req = jaraco.net.http.MethodRequest(
-		url = 'https://api.heroku.com/apps/recapturedocs/addons/mongohq',
-		method = 'POST', headers=headers,
-	)
-	install_opener()
+	headers.update(kwargs.pop('headers', {}))
+	base = 'https://api.heroku.com/apps/{app_name}/'.format(**globals())
+	url = urlparse.urljoin(base, path)
+	req = jaraco.net.http.MethodRequest(url = url, headers=headers, **kwargs)
 	res = urllib2.urlopen(req)
 	assert res.code == 200
-	pprint.pprint(json.loads(res.read()))
+	data = json.loads(res.read())
+	pprint.pprint(data)
+	return data
+
+def install_addon(name):
+	path = 'addons/{name}'.format(name = name)
+	do(path, method='POST')
+
+def set_production():
+	set_env_vars(
+		COMMAND_LINE_ARGS='-C prod'
+	)
 
 if __name__ == '__main__':
+	install_opener()
 	configure_AWS()
+	check_MongoHQ()
 	add_MongoHQ()
+	set_production()
