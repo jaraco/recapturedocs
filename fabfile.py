@@ -5,21 +5,13 @@ from fabric.api import sudo, run, settings, task, env
 #from fabric.contrib import files
 
 from jaraco.util.string import local_format as lf
-import yg.deploy.fabric.python
 
-__all__ = ['install_ppa_python', 'install_env', 'update_staging',
+__all__ = ['install_env', 'update_staging',
 	'update_production', 'setup_mongodb_firewall', 'mongodb_allow_ip',
 	'install_supervisor'
 ]
 
-env.hosts = ['hideaki']
-
-@task
-def install_ppa_python():
-	yg.deploy.fabric.python.install_ppa_python()
-	sudo('aptitude install python2.7-dev')
-	sudo('aptitude install python-distribute-deadsnakes')
-	sudo('/usr/bin/easy_install-2.7 virtualenv')
+env.hosts = ['ichiro']
 
 def create_user():
 	"Create a user under which recapturedocs will run"
@@ -30,7 +22,9 @@ def create_user():
 
 @task
 def install_env():
-	sudo('virtualenv --no-site-packages /recapturedocs')
+	sudo('aptitude install python-setuptools')
+	run('easy_install --user -U virtualenv')
+	sudo('virtualenv --no-site-packages /opt/recapturedocs')
 	# requires libcap2-bin
 	#sudo('setcap "cap_net_bind_service=+ep" /recapturedocs/bin/python')
 
@@ -45,14 +39,12 @@ def update_staging():
 
 @task
 def update_production(version=None):
-	if version is None:
-		sudo('/recapturedocs/bin/easy_install -U -f '
-			'http://dl.dropbox.com/u/54081/cheeseshop/index.html '
-			'recapturedocs')
-	else:
-		sudo('/recapturedocs/bin/easy_install -f '
-			'http://dl.dropbox.com/u/54081/cheeseshop/index.html '
-			'recapturedocs=={version}'.format(**vars()))
+	pkg_spec = 'recapturedocs'
+	if version:
+		pkg_spec += '==' + version
+	sudo('/opt/recapturedocs/bin/easy_install -U -f '
+		'http://dl.dropbox.com/u/54081/cheeseshop/index.html {pkg_spec}'
+		.format(**vars()))
 	sudo('restart recapture-docs')
 
 @task
