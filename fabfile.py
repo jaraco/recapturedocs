@@ -1,3 +1,10 @@
+"""
+Routines for installing, staging, and serving recapturedocs on Ubuntu.
+
+To install on a clean Ubuntu Precise box, simply run
+fab install_env, update_production,
+"""
+
 import socket
 import urllib2
 
@@ -26,6 +33,7 @@ def install_env():
 	sudo('rm -R /opt/recapturedocs || echo -n')
 	sudo('aptitude install -y python-setuptools python-dev')
 	mongodb.distro_install()
+	setup_mongodb_firewall()
 	run('easy_install --user -U virtualenv')
 	sudo('virtualenv --no-site-packages /opt/recapturedocs')
 	access_key = '0ZWJV1BMM1Q6GXJ9J2G2'
