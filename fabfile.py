@@ -2,7 +2,7 @@ import socket
 import urllib2
 
 from fabric.api import sudo, run, settings, task, env
-#from fabric.contrib import files
+from fabric.contrib import files
 
 from jaraco.util.string import local_format as lf
 
@@ -25,6 +25,7 @@ def install_env():
 	sudo('aptitude install python-setuptools')
 	run('easy_install --user -U virtualenv')
 	sudo('virtualenv --no-site-packages /opt/recapturedocs')
+	files.put("ubuntu/recapture-docs.conf", "/etc/init", use_sudo=True)
 	# requires libcap2-bin
 	#sudo('setcap "cap_net_bind_service=+ep" /recapturedocs/bin/python')
 
