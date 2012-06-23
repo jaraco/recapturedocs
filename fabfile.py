@@ -1,6 +1,7 @@
 import socket
 import urllib2
 
+import keyring
 from fabric.api import sudo, run, settings, task, env
 from fabric.contrib import files
 
@@ -22,10 +23,15 @@ def create_user():
 
 @task
 def install_env():
-	sudo('aptitude install python-setuptools')
+	sudo('rm -R /opt/recapturedocs || echo -n')
+	sudo('aptitude install -y python-setuptools python-dev')
 	run('easy_install --user -U virtualenv')
 	sudo('virtualenv --no-site-packages /opt/recapturedocs')
-	files.put("ubuntu/recapture-docs.conf", "/etc/init", use_sudo=True)
+	access_key = '0ZWJV1BMM1Q6GXJ9J2G2'
+	secret_key = keyring.get_password('AWS', access_key)
+	assert secret_key, "secret key is null"
+	files.upload_template("ubuntu/recapture-docs.conf", "/etc/init",
+		use_sudo=True, context=vars())
 	# requires libcap2-bin
 	#sudo('setcap "cap_net_bind_service=+ep" /recapturedocs/bin/python')
 
@@ -46,7 +52,7 @@ def update_production(version=None):
 	sudo('/opt/recapturedocs/bin/easy_install -U -f '
 		'http://dl.dropbox.com/u/54081/cheeseshop/index.html {pkg_spec}'
 		.format(**vars()))
-	sudo('restart recapture-docs')
+	sudo('restart recapture-docs || start recapture-docs')
 
 @task
 def setup_mongodb_firewall():
