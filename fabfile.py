@@ -2,7 +2,7 @@
 Routines for installing, staging, and serving recapturedocs on Ubuntu.
 
 To install on a clean Ubuntu Precise box, simply run
-fab install_env, update_production,
+fab bootstrap
 """
 
 import socket
@@ -12,11 +12,12 @@ import keyring
 from fabric.api import sudo, run, settings, task, env
 from fabric.contrib import files
 import yg.deploy.fabric.mongodb as mongodb
+import yg.deploy.fabric.aptitude as aptitude
 from jaraco.util.string import local_format as lf
 
 __all__ = ['install_env', 'update_staging',
 	'update_production', 'setup_mongodb_firewall', 'mongodb_allow_ip',
-	'install_supervisor'
+	'install_supervisor', 'remove_all', 'bootstrap',
 ]
 
 env.hosts = ['ichiro']
@@ -29,9 +30,14 @@ def create_user():
 	#sudo('chown -R recapturedocs:nogroup ~recapturedocs/.ssh')
 
 @task
+def bootstrap():
+	install_env()
+	update_production()
+
+@task
 def install_env():
 	sudo('rm -R /opt/recapturedocs || echo -n')
-	sudo('aptitude install -y python-setuptools python-dev')
+	sudo('aptitude install -y python-setuptools')
 	mongodb.distro_install()
 	setup_mongodb_firewall()
 	run('easy_install --user -U virtualenv')
@@ -58,9 +64,10 @@ def update_production(version=None):
 	pkg_spec = 'recapturedocs'
 	if version:
 		pkg_spec += '==' + version
-	sudo('/opt/recapturedocs/bin/easy_install -U -f '
-		'http://dl.dropbox.com/u/54081/cheeseshop/index.html {pkg_spec}'
-		.format(**vars()))
+	with aptitude.package_context('python-dev'):
+		sudo('/opt/recapturedocs/bin/easy_install -U -f '
+			'http://dl.dropbox.com/u/54081/cheeseshop/index.html {pkg_spec}'
+			.format(**vars()))
 	sudo('restart recapture-docs || start recapture-docs')
 
 @task
@@ -89,3 +96,10 @@ def mongodb_allow_ip(ip=None):
 @task
 def install_supervisor():
 	sudo('easy_install-2.7 -U supervisor')
+
+@task
+def remove_all():
+	sudo('stop recapture-docs || echo -n')
+	sudo('rm /etc/init/recapture-docs.conf || echo -n')
+	sudo('rm -Rf /opt/recapturedocs')
+	# consider also removing MongoDB
