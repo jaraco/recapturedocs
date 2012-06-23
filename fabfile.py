@@ -21,7 +21,8 @@ __all__ = ['install_env', 'update_staging',
 	'install_supervisor', 'remove_all', 'bootstrap',
 ]
 
-env.hosts = ['ichiro']
+if not env.hosts:
+	env.hosts = ['ichiro']
 
 def create_user():
 	"Create a user under which recapturedocs will run"
@@ -95,6 +96,8 @@ def mongodb_allow_ip(ip=None):
 		url = 'http://automation.whatismyip.com/n09230945.asp'
 		resp = urllib2.urlopen(url)
 		ip = resp.read()
+	else:
+		ip = socket.gethostbyname(ip)
 	sudo(lf('iptables -I mongodb -s {ip} --jump RETURN'))
 
 @task
