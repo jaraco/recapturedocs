@@ -4,7 +4,7 @@ import urllib2
 import keyring
 from fabric.api import sudo, run, settings, task, env
 from fabric.contrib import files
-
+import yg.deploy.fabric.mongodb as mongodb
 from jaraco.util.string import local_format as lf
 
 __all__ = ['install_env', 'update_staging',
@@ -25,6 +25,7 @@ def create_user():
 def install_env():
 	sudo('rm -R /opt/recapturedocs || echo -n')
 	sudo('aptitude install -y python-setuptools python-dev')
+	mongodb.distro_install()
 	run('easy_install --user -U virtualenv')
 	sudo('virtualenv --no-site-packages /opt/recapturedocs')
 	access_key = '0ZWJV1BMM1Q6GXJ9J2G2'
