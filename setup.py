@@ -51,10 +51,12 @@ setup_params = PyTest.install(dict(
 	dependency_links = [
 	],
 	tests_require=[
+		'pytest',
+		'dingus',
 	],
-	test_suite='py.test',
 	setup_requires=[
 		'hgtools',
+		'pytest-runner',
 	],
 ))
 
