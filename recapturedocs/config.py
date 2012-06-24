@@ -1,5 +1,7 @@
 import sys
 import os
+import platform
+
 from path import path
 from jaraco.util.filesystem import ensure_dir_exists
 import cherrypy
@@ -13,16 +15,24 @@ def get_error_file():
 	return get_config_dir() / 'error.txt'
 
 def get_config_dir():
-	@ensure_dir_exists
-	def get_log_root_win32():
-		return path(os.environ['APPDATA']) / appname
+	def get_env_root():
+		if hasattr(sys, 'real_prefix'):
+			# virtualenv
+			return sys.prefix
+		elif os.environ.get('PYTHONUSERBASE', None):
+			# PEP-370 env
+			return os.environ['PYTHONUSERBASE']
 
 	@ensure_dir_exists
-	def get_log_root_linux2():
-		if sys.prefix == '/usr':
-			return path('/var') / appname.lower()
-		return path(sys.prefix) / 'var' / appname.lower()
-	getter = locals()['get_log_root_' + sys.platform]
+	def get_app_root_Windows():
+		return path(get_env_root() or os.environ['APPDATA']) / appname
+
+	@ensure_dir_exists
+	def get_app_root_Linux():
+		return path(get_env_root() or '/var') / appname.lower()
+
+	getter = locals().get('get_app_root_' + platform.system(),
+		'get_app_root_Linux')
 	base = getter()
 
 	@ensure_dir_exists
