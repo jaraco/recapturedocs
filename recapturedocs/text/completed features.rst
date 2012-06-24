@@ -3,6 +3,7 @@ Completed Features
 
 Here are the features we've completed (most recent first):
 
+- Better handling of payment errors
 - Site Design
 - Improved persistence (S3 storage or similar)
 - Same Job Detection

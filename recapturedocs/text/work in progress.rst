@@ -4,7 +4,8 @@ Work in Progress
 Here is a list of tasks we have slated for future releases (in rough
 order of priority):
 
-* Better handling of payment errors
+* Enable better introspection of pending and completed work (admin)
+* Enable bonus/surcharge for documents with excess text
 * Browser support (IE8 has problems with upload form)
 * Detailed instructions for new users
 * Administrative notifications of new jobs
