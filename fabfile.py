@@ -41,14 +41,16 @@ def install_env():
 	mongodb.distro_install()
 	setup_mongodb_firewall()
 	run('easy_install --user -U virtualenv')
-	sudo('virtualenv --no-site-packages /opt/recapturedocs')
+	sudo('~/.local/bin/virtualenv --no-site-packages /opt/recapturedocs')
 	access_key = '0ZWJV1BMM1Q6GXJ9J2G2'
 	secret_key = keyring.get_password('AWS', access_key)
 	assert secret_key, "secret key is null"
 	files.upload_template("ubuntu/recapture-docs.conf", "/etc/init",
 		use_sudo=True, context=vars())
-	# requires libcap2-bin
-	#sudo('setcap "cap_net_bind_service=+ep" /recapturedocs/bin/python')
+
+def enable_non_root_bind():
+	sudo('aptitude install libcap2-bin')
+	sudo('setcap "cap_net_bind_service=+ep" /recapturedocs/bin/python')
 
 @task
 def update_staging():
