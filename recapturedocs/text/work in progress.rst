@@ -6,6 +6,7 @@ order of priority):
 
 * Enable better introspection of pending and completed work (admin)
 * Enable bonus/surcharge for documents with excess text
+* Improved handling of multiple assignments per page
 * Browser support (IE8 has problems with upload form)
 * Detailed instructions for new users
 * Administrative notifications of new jobs
