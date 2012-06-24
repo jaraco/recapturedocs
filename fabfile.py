@@ -24,6 +24,8 @@ __all__ = ['install_env', 'update_staging',
 if not env.hosts:
 	env.hosts = ['ichiro']
 
+install_root = '/opt/recapturedocs'
+
 def create_user():
 	"Create a user under which recapturedocs will run"
 	#sudo('adduser --system --disabled-password --no-create-home recapturedocs')
@@ -38,42 +40,55 @@ def bootstrap():
 
 @task
 def install_env():
-	sudo('rm -R /opt/recapturedocs || echo -n')
+	sudo('rm -R {install_root} || echo -n'.format(**globals()))
 	sudo('aptitude install -y python-setuptools')
 	mongodb.distro_install()
 	setup_mongodb_firewall()
 	access_key = '0ZWJV1BMM1Q6GXJ9J2G2'
 	secret_key = keyring.get_password('AWS', access_key)
-	install_root = '/opt/recapturedocs'
 	assert secret_key, "secret key is null"
+	context = dict(
+		access_key = access_key,
+		secret_key = secret_key,
+		install_root = globals()['install_root'],
+	)
 	files.upload_template("ubuntu/recapture-docs.conf", "/etc/init",
-		use_sudo=True, context=vars())
+		use_sudo=True, context=context)
 
 def enable_non_root_bind():
 	sudo('aptitude install libcap2-bin')
-	sudo('setcap "cap_net_bind_service=+ep" /recapturedocs/bin/python')
+	sudo('setcap "cap_net_bind_service=+ep" /usr/bin/python')
 
 @task
 def update_staging():
-	run('envs/staging/bin/easy_install -U -f http://dl.dropbox.com/u/54081/cheeseshop/index.html recapturedocs')
+	install_to('envs/staging')
 	with settings(warn_only=True):
 		run('pkill -f staging/bin/python')
 		run('sleep 3')
 	run('mkdir -p envs/staging/var/log')
-	run('envs/staging/bin/recapture-docs daemon')
+	run('PYTHONUSERBASE=envs/staging envs/staging/bin/recapture-docs daemon')
 
 @task
 def update_production(version=None):
+	install_to(install_root, version, use_sudo=True)
+	sudo('restart recapture-docs || start recapture-docs')
+
+def install_to(root, version=None, use_sudo=False):
+	"""
+	Install RecaptureDocs to a PEP-370 environment at root. If version is
+	not None, install that version specifically. Otherwise, use the latest.
+	"""
+	action = sudo if use_sudo else run
 	pkg_spec = 'recapturedocs'
 	if version:
 		pkg_spec += '==' + version
-	sudo('mkdir -p /opt/recapturedocs/lib/python2.7/site-packages')
+	action('mkdir -p {root}/lib/python2.7/site-packages'.format(**vars()))
 	with aptitude.package_context('python-dev'):
-		with ygutil.shell_env(PYTHONUSERBASE='/opt/recapturedocs'):
-			sudo('easy_install --user -U -f '
-				'http://dl.dropbox.com/u/54081/cheeseshop/index.html {pkg_spec}'
-				.format(**vars()))
-	sudo('restart recapture-docs || start recapture-docs')
+		with ygutil.shell_env(PYTHONUSERBASE=root):
+			action('easy_install --user -U -f '
+				'http://dl.dropbox.com/u/54081/cheeseshop/index.html '
+				'{pkg_spec}'.format(**vars()))
+
 
 @task
 def setup_mongodb_firewall():
