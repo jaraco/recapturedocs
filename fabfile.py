@@ -13,6 +13,7 @@ from fabric.api import sudo, run, settings, task, env
 from fabric.contrib import files
 import yg.deploy.fabric.mongodb as mongodb
 import yg.deploy.fabric.aptitude as aptitude
+import yg.deploy.fabric.util as ygutil
 from jaraco.util.string import local_format as lf
 
 __all__ = ['install_env', 'update_staging',
@@ -40,10 +41,9 @@ def install_env():
 	sudo('aptitude install -y python-setuptools')
 	mongodb.distro_install()
 	setup_mongodb_firewall()
-	run('easy_install --user -U virtualenv')
-	sudo('~/.local/bin/virtualenv --no-site-packages /opt/recapturedocs')
 	access_key = '0ZWJV1BMM1Q6GXJ9J2G2'
 	secret_key = keyring.get_password('AWS', access_key)
+	install_root = '/opt/recapturedocs'
 	assert secret_key, "secret key is null"
 	files.upload_template("ubuntu/recapture-docs.conf", "/etc/init",
 		use_sudo=True, context=vars())
@@ -66,10 +66,12 @@ def update_production(version=None):
 	pkg_spec = 'recapturedocs'
 	if version:
 		pkg_spec += '==' + version
+	sudo('mkdir -p /opt/recapturedocs/lib/python2.7/site-packages')
 	with aptitude.package_context('python-dev'):
-		sudo('/opt/recapturedocs/bin/easy_install -U -f '
-			'http://dl.dropbox.com/u/54081/cheeseshop/index.html {pkg_spec}'
-			.format(**vars()))
+		with ygutil.shell_env(PYTHONUSERBASE='/opt/recapturedocs'):
+			sudo('easy_install --user -U -f '
+				'http://dl.dropbox.com/u/54081/cheeseshop/index.html {pkg_spec}'
+				.format(**vars()))
 	sudo('restart recapture-docs || start recapture-docs')
 
 @task
