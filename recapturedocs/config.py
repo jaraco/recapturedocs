@@ -42,4 +42,5 @@ def get_config_dir():
 		if not cherrypy.config.get('server.production', False):
 			dir = base / 'dev'
 		return dir
-	return resolve_base()
+	# return an absolute Path because CherryPy requires one
+	return resolve_base().abspath()
