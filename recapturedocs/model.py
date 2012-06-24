@@ -47,18 +47,35 @@ class RetypePageHIT(object):
 		self.server_url = server_url
 
 	@classmethod
-	def disable_all(cls):
+	def _local_hits(cls):
 		"""
-		Disable all hits that match this hit type
+		Return all HITs that match this HIT type
 		"""
 		conn = aws.ConnectionFactory.get_mturk_connection()
 		all_hits = conn.get_all_hits()
 		hit_type = cls.get_hit_type()
 		is_local_hit = lambda h: h.HITTypeId == hit_type
-		local_hits = filter(is_local_hit, all_hits)
+		return filter(is_local_hit, all_hits)
+
+	@classmethod
+	def disable_all(cls):
+		"""
+		Disable all hits that match this hit type
+		"""
+		local_hits = list(cls._local_hits())
+		conn = aws.ConnectionFactory.get_mturk_connection()
 		for hit in local_hits:
 			conn.disable_hit(hit.HITId)
 		return len(local_hits)
+
+	@classmethod
+	def load_all(cls):
+		return [cls._from_existing(hit) for hit in cls._local_hits()]
+
+	@classmethod
+	def _from_existing(cls, res):
+		hit = cls(None)
+		hit.registration_result = res
 
 	@classmethod
 	def get_hit_type(cls):
