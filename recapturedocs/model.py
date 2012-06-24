@@ -29,15 +29,15 @@ class ConversionError(BaseException):
 
 class DollarAmount(float):
 	def __str__(self):
-		string = super(DollarAmount, self).__str__()
-		return lf('${string}')
+		return '$' + super(DollarAmount, self).__str__()
 
 class RetypePageHIT(object):
 	reward_per_page = DollarAmount(1)
 
 	type_params = dict(
 		title="Type a Page",
-		description="You will read a scanned page and retype its textual contents.",
+		description="You will read a scanned page and retype its textual "
+			"contents.",
 		keywords='typing page rekey retype'.split(),
 		reward=reward_per_page,
 		duration=datetime.timedelta(days=7),

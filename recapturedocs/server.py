@@ -250,8 +250,8 @@ class Devel(object):
 		"""
 		disabled = model.RetypePageHIT.disable_all()
 		del self.server[:]
-		msg = 'Disabled {disabled} HITs (do not forget to remove them from other servers).'
-		return lf(msg)
+		return lf('Disabled {disabled} HITs (do not forget to remove them '
+			'from other servers).')
 
 	@cherrypy.expose
 	def pay(self, job_id):
