@@ -63,7 +63,7 @@ def enable_non_root_bind():
 def update_staging():
 	install_to('envs/staging')
 	with settings(warn_only=True):
-		run('pkill -f staging/bin/python')
+		run('pkill -f staging/bin/recapture-docs')
 		run('sleep 3')
 	run('mkdir -p envs/staging/var/log')
 	run('PYTHONUSERBASE=envs/staging envs/staging/bin/recapture-docs daemon')
