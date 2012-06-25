@@ -228,9 +228,9 @@ class JobServer(object):
 		mb = notification.SMTPMailbox(addr_to=addr_to, host=host)
 		mb.notify('A new document was uploaded')
 
-class Devel(object):
+class Admin(object):
 	tl = genshi.template.TemplateLoader([
-		genshi.template.loader.package(__name__, 'view/devel'),
+		genshi.template.loader.package(__name__, 'view/admin'),
 		genshi.template.loader.package(__name__, 'view'),
 	])
 
@@ -280,9 +280,19 @@ def start_server(configs):
 	app = cherrypy.tree.mount(server, '/')
 	server._app = app
 	map(app.merge, configs)
+	admin_app = cherrypy.tree.mount(Admin(server), '/admin')
+	devel_configs = list(configs) + [{
+		'/': {
+			'tools.auth_basic.on': True,
+			'tools.auth_basic.realm': 'RecaptureDocs admin',
+			'tools.auth_basic.checkpassword':
+				cherrypy.lib.auth_basic.checkpassword_dict(dict(
+					admin='g0tch4-h4x0r',
+				)),
+		},
+	}]
+	map(admin_app.merge, devel_configs)
 	if not cherrypy.config.get('server.production', False):
-		dev_app = cherrypy.tree.mount(Devel(server), '/devel')
-		map(dev_app.merge, configs)
 		boto.set_stream_logger('recapturedocs')
 		aws.ConnectionFactory.production = False
 	cherrypy.engine.start()
@@ -311,7 +321,7 @@ class Command(object):
 				'tools.encode.on': True,
 				'tools.encode.encoding': 'utf-8',
 				'tools.agent_parser.on': True,
-			}
+			},
 		}
 		static_dir = pkg_resources.resource_filename('recapturedocs', 'static')
 		static_config = {'/static':
