@@ -9,9 +9,7 @@ def py_ver_dependencies():
 		yield 'argparse'
 		yield 'importlib'
 
-exec(open('pytest-runner/command.py').read())
-
-setup_params = PyTest.install(dict(
+setup_params = dict(
 	name = name,
 	use_hg_version=True,
 	description = 'Library for RecaptureDocs.com',
@@ -58,7 +56,7 @@ setup_params = PyTest.install(dict(
 		'hgtools',
 		'pytest-runner',
 	],
-))
+)
 
 if __name__ == '__main__':
 	setuptools.setup(**setup_params)
