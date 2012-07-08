@@ -131,15 +131,15 @@ class JobServer(object):
 		end_point_url = JobServer.construct_url(lf('/complete_payment/{job_id}'))
 		self.verify_URL_signature(end_point_url, params)
 		job.sender_token = tokenID
+		job.save()
 		conn = aws.ConnectionFactory.get_fps_connection()
-		conn.pay(
+		resp = conn.pay(
 			SenderTokenId = job.sender_token,
 			RecipientTokenId = job.recipient_token,
-			CallerTokenId = job.caller_token,
-			ChargeFeeTo = "Recipient",
 			CallerReference = job.id,
 			TransactionAmount = float(job.cost),
 		)
+		job.pay_result = resp.PayResult
 		job.authorized = True
 		try:
 			job.register_hits()
