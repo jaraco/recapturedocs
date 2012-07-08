@@ -30,6 +30,7 @@ from . import model
 from . import persistence
 from . import aws
 from . import config
+from . import errors
 
 class JobServer(object):
 	"""
@@ -91,10 +92,6 @@ class JobServer(object):
 	def initiate_payment(self, job_id):
 		conn = aws.ConnectionFactory.get_fps_connection()
 		job = self._get_job_for_id(job_id)
-		job.caller_token = conn.install_payment_instruction(
-			PaymentInstruction="MyRole=='Caller';",
-			TokenType='Unrestricted',
-		).InstallPaymentInstructionResult.TokenId
 		job.recipient_token = conn.install_payment_instruction(
 			PaymentInstruction="MyRole=='Recipient';",
 			TokenType='Unrestricted',
@@ -144,7 +141,7 @@ class JobServer(object):
 		try:
 			job.register_hits()
 			target = lf('/status/{job_id}')
-		except model.InsufficientFunds:
+		except errors.InsufficientFunds:
 			# TODO: send e-mail to support
 			target = '/error/our fault'
 		job.save()
