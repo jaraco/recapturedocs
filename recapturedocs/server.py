@@ -159,7 +159,10 @@ class JobServer(object):
 		# http://lists.dlitz.net/pipermail/pycrypto/2009q3/000112.html
 
 		conn = aws.ConnectionFactory.get_fps_connection()
-		conn.verify_signature(end_point_url, cherrypy.request.query_string)
+		conn.verify_signature(
+			UrlEndPoint = end_point_url,
+			HttpParameters = cherrypy.request.query_string,
+		)
 
 	@cherrypy.expose
 	def process(self, hitId, assignmentId, workerId=None, turkSubmitTo=None, **kwargs):
