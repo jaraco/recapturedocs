@@ -91,8 +91,14 @@ class JobServer(object):
 	def initiate_payment(self, job_id):
 		conn = aws.ConnectionFactory.get_fps_connection()
 		job = self._get_job_for_id(job_id)
-		job.caller_token = conn.install_caller_instruction()
-		job.recipient_token = conn.install_recipient_instruction()
+		job.caller_token = conn.install_payment_instruction(
+			PaymentInstruction="MyRole=='Caller';",
+			TokenType='Unrestricted',
+		).InstallPaymentInstructionResult.TokenId
+		job.recipient_token = conn.install_payment_instruction(
+			PaymentInstruction="MyRole=='Recipient';",
+			TokenType='Unrestricted',
+		).InstallPaymentInstructionResult.TokenId
 		job.save()
 		raise cherrypy.HTTPRedirect(
 			self.construct_payment_url(job, conn, job.recipient_token)
@@ -110,7 +116,7 @@ class JobServer(object):
 			transactionAmount = str(float(job.cost)),
 			recipientToken = recipient_token,
 			)
-		url = conn.make_url(**params)
+		url = conn.cbui_url(**params)
 		return url
 
 	@cherrypy.expose
