@@ -106,23 +106,23 @@ class JobServer(object):
 
 	@staticmethod
 	def construct_payment_url(job, conn, recipient_token):
-		n_pages = len(job)
-		params = dict(
+		reason = 'RecaptureDocs conversion - {n_pages} pages'.format(
+			n_pages = len(job),
+		)
+		return conn.cbui_url(
 			callerKey = os.environ['AWS_ACCESS_KEY_ID'],  # My access key
 			pipelineName = 'SingleUse',
 			returnURL = JobServer.construct_url(lf('/complete_payment/{job.id}')),
 			callerReference = job.id,
-			paymentReason = lf('RecaptureDocs conversion - {n_pages} pages'),
+			paymentReason = reason,
 			transactionAmount = str(float(job.cost)),
 			recipientToken = recipient_token,
-			)
-		url = conn.cbui_url(**params)
-		return url
+		)
 
 	@cherrypy.expose
 	def complete_payment(self, job_id, status, tokenID=None, **params):
 		job = self._get_job_for_id(job_id)
-		if not status == 'SC':
+		if not status == 'SC': # success
 			tmpl = self.tl.load('declined.xhtml')
 			params = genshi.Markup(lf('<!-- {params} -->'))
 			res = tmpl.generate(status=status, job=job, params=params)
