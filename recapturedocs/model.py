@@ -80,7 +80,7 @@ class RetypePageHIT(object):
 	@classmethod
 	def get_hit_type(cls):
 		conn = aws.ConnectionFactory.get_mturk_connection()
-		result = conn.register_hit_type(**cls.type_params)
+		result = one(conn.register_hit_type(**cls.type_params))
 		return result.HITTypeId
 
 	def register(self):
