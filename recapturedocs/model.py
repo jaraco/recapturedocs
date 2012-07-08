@@ -39,7 +39,7 @@ class RetypePageHIT(object):
 		description="You will read a scanned page and retype its textual "
 			"contents.",
 		keywords='typing page rekey retype'.split(),
-		reward=reward_per_page,
+		reward=float(reward_per_page),
 		duration=datetime.timedelta(days=7),
 		)
 
