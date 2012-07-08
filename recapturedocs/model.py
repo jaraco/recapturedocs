@@ -88,7 +88,7 @@ class RetypePageHIT(object):
 		try:
 			res = conn.create_hit(question=self.get_external_question(),
 				**self.type_params)
-		except boto.connection.MTurkRequestError as error:
+		except boto.mturk.connection.MTurkRequestError as error:
 			if not error.error_code == 'AWS.MechanicalTurk.InsufficientFunds':
 				raise
 			raise errors.InsufficientFunds()
