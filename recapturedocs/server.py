@@ -132,8 +132,14 @@ class JobServer(object):
 		self.verify_URL_signature(end_point_url, params)
 		job.sender_token = tokenID
 		conn = aws.ConnectionFactory.get_fps_connection()
-		conn.pay(float(job.cost), job.sender_token, job.recipient_token,
-			job.caller_token)
+		conn.pay(
+			SenderTokenId = job.sender_token,
+			RecipientTokenId = job.recipient_token,
+			CallerTokenId = job.caller_token,
+			ChargeFeeTo = "Recipient",
+			CallerReference = job.id,
+			TransactionAmount = float(job.cost),
+		)
 		job.authorized = True
 		try:
 			job.register_hits()
