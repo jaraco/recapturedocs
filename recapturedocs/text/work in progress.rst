@@ -4,7 +4,6 @@ Work in Progress
 Here is a list of tasks we have slated for future releases (in rough
 order of priority):
 
-* Fix error in initiating payment
 * Prevent collecting funds from client when there is unsufficient MTurk funds
   to process the job.
 * Better error handling (send error to admin and send nice message to client)

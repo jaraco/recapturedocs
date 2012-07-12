@@ -3,6 +3,7 @@ Completed Features
 
 Here are the features we've completed (most recent first):
 
+- Fix error in initiating payment
 - Better handling of payment errors
 - Site Design
 - Improved persistence (S3 storage or similar)
