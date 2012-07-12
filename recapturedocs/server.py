@@ -266,6 +266,16 @@ class Admin(object):
 			'from other servers).')
 
 	@cherrypy.expose
+	def cancel_all_payment_tokens(self):
+		fps = aws.ConnectionFactory.get_fps_connection()
+		tokens = fps.get_tokens().GetTokensResult.Token
+		for token in tokens:
+			resp = fps.cancel_token(TokenId=token.TokenId)
+			req_id = resp.ResponseMetadata.RequestId
+			yield lf("Cancelled ({req_id})<br/>")
+		yield "Cancelled {n_cancelled} tokens".format(n_cancelled=len(tokens))
+
+	@cherrypy.expose
 	def pay(self, job_id):
 		"""
 		Force payment for a given job.
