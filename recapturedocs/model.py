@@ -148,6 +148,7 @@ class ConversionJob(object):
 	Conversion Job, a collection of pages to be retyped
 	"""
 
+	can_authorize=True
 	page_cost = DollarAmount(1.95)
 	"Price per page charged to the customer"
 
