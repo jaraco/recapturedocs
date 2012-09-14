@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 
+import pkg_resources
 import boto.mturk.connection
 
 from recapturedocs import model
@@ -25,3 +26,11 @@ class TestRetypePageHIT(object):
 		assert len(mturk_hit.HITId) == 30
 		assert mturk_hit.HITId == hit.id
 		assert mturk_hit.HITTypeId == hit.get_hit_type()
+
+class TestConversionJob(object):
+	def test_load_pdf(self):
+		lorem_ipsum = pkg_resources.resource_stream('recapturedocs',
+			'static/Lorem Ipsum.pdf')
+		job = model.ConversionJob(lorem_ipsum, 'application/pdf',
+			'http://localhost/')
+		assert len(job.pages) == 4
