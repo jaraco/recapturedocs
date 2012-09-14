@@ -46,7 +46,7 @@ class JobServer(object):
 		message = "Welcome to RecaptureDocs"
 		return tmpl.generate(
 			message=message,
-			page_cost=model.ConversionJob.page_cost,
+			page_cost=model.MTurkConversionJob.page_cost,
 			user_agent=cherrypy.request.user_agent,
 			version = recapturedocs.version,
 			).render('xhtml')
@@ -74,7 +74,7 @@ class JobServer(object):
 		if not content_type == 'application/pdf':
 			msg = "Got content other than PDF: {content_type}"
 			cherrypy.log(msg.format(**vars(file)), severity=logging.WARNING)
-		job = model.ConversionJob(
+		job = model.MTurkConversionJob(
 			file.file, content_type, server_url, file.filename,
 		)
 		job.save_if_new()
@@ -182,7 +182,7 @@ class JobServer(object):
 		return tmpl.generate(**params).render('xhtml')
 
 	def _get_job_for_id(self, job_id):
-		return model.ConversionJob.load(job_id)
+		return model.MTurkConversionJob.load(job_id)
 
 	@cherrypy.expose
 	def get_results(self, job_id):
@@ -195,7 +195,7 @@ class JobServer(object):
 	@cherrypy.expose
 	def image(self, hit_id):
 		# find the appropriate image
-		job = model.ConversionJob.for_hitid(hit_id)
+		job = model.MTurkConversionJob.for_hitid(hit_id)
 		if not job: raise cherrypy.NotFound
 		cherrypy.response.headers['Content-Type'] = job.content_type
 		return job.page_for_hit(hit_id)
@@ -215,7 +215,7 @@ class JobServer(object):
 		return tmpl.generate(content=html).render('xhtml')
 
 	def __iter__(self):
-		return model.ConversionJob.load_all()
+		return model.MTurkConversionJob.load_all()
 
 	def __delitem__(self, key):
 		jobs = list(iter(self))

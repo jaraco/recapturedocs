@@ -168,16 +168,6 @@ class ConversionJob(object):
 	def cost(self):
 		return DollarAmount(self.page_cost * len(self))
 
-	@property
-	def can_authorize(self):
-		"""
-		A job cannot be authorized if the balance in the Mechanical Turk
-		account is not sufficient to service the job.
-		"""
-		conn = aws.ConnectionFactory.get_mturk_connection()
-		balance = conn.get_account_balance()[0].amount
-		return RetypePageHIT.reward_per_page * len(self) <= balance
-
 	def do_split_pdf(self):
 		msg = "Only PDF content is supported (got {content_type} instead)"
 		assert self.content_type == 'application/pdf', msg.format(**vars(self))
@@ -189,19 +179,6 @@ class ConversionJob(object):
 		content_type, encoding = mimetypes.guess_type(filename)
 		return cls_(open(filename, 'rb'), content_type, filename)
 
-	def register_hits(self):
-		"""
-		Create a hit for each page in the job.
-
-		The mapping of HIT to page is implicit - they're kept arranged
-		in order so that zip(self.pages, self.hits) always produces
-		pairs of each page with its HIT.
-		"""
-		self.hits = [RetypePageHIT(self.server_url) for page in self.pages]
-		for hit in self.hits:
-			hit.register()
-		assert all(hit.registration_result.status == True for hit in self.hits)
-
 	@property
 	def id(self):
 		"""
@@ -210,25 +187,6 @@ class ConversionJob(object):
 		hash = hashlib.md5()
 		map(hash.update, self.pages)
 		return hash.hexdigest()
-
-	def is_complete(self):
-		return all(hit.is_complete() for hit in self.hits)
-
-	def get_data(self):
-		return '\n\n\n'.join(hit.get_data() for hit in self.hits
-			if hit.is_complete())
-
-	def get_hit(self, hit_id):
-		return next(
-			hit for hit in self.hits if hit.id == hit_id
-			)
-
-	def page_for_hit(self, hit_id):
-		pages = dict(
-			(hit.id, page)
-			for hit, page in zip(self.hits, self.pages)
-			)
-		return pages[hit_id]
 
 	@staticmethod
 	def split_pdf(source_stream):
@@ -283,6 +241,50 @@ class ConversionJob(object):
 				"{result.id}"))
 		return result
 
+
+class MTurkConversionJob(ConversionJob):
+	def register_hits(self):
+		"""
+		Create a hit for each page in the job.
+
+		The mapping of HIT to page is implicit - they're kept arranged
+		in order so that zip(self.pages, self.hits) always produces
+		pairs of each page with its HIT.
+		"""
+		self.hits = [RetypePageHIT(self.server_url) for page in self.pages]
+		for hit in self.hits:
+			hit.register()
+		assert all(hit.registration_result.status == True for hit in self.hits)
+
+	@property
+	def can_authorize(self):
+		"""
+		A job cannot be authorized if the balance in the Mechanical Turk
+		account is not sufficient to service the job.
+		"""
+		conn = aws.ConnectionFactory.get_mturk_connection()
+		balance = conn.get_account_balance()[0].amount
+		return RetypePageHIT.reward_per_page * len(self) <= balance
+
+	def is_complete(self):
+		return all(hit.is_complete() for hit in self.hits)
+
+	def get_data(self):
+		return '\n\n\n'.join(hit.get_data() for hit in self.hits
+			if hit.is_complete())
+
+	def get_hit(self, hit_id):
+		return next(
+			hit for hit in self.hits if hit.id == hit_id
+			)
+
+	def page_for_hit(self, hit_id):
+		pages = dict(
+			(hit.id, page)
+			for hit, page in zip(self.hits, self.pages)
+			)
+		return pages[hit_id]
+
 	@classmethod
 	def for_hitid(cls, hit_id):
 		# the hitID is stored in the database here
@@ -303,6 +305,7 @@ class ConversionJob(object):
 
 	def __str__(self):
 		return '\n'.join(self._report())
+
 
 def get_all_hits(conn):
 	page_size = 100
