@@ -121,9 +121,9 @@ class JobServer(object):
 		job = self._get_job_for_id(job_id)
 		if not status == 'SC': # success
 			tmpl = self.tl.load('declined.xhtml')
-			params = genshi.Markup(lf('<!-- {params} -->'))
-			res = tmpl.generate(status=status, job=job, params=params)
-			# TODO: send e-mail to support with params
+			params_mk = genshi.Markup(lf('<!-- {params} -->'))
+			res = tmpl.generate(status=status, job=job, params=params_mk)
+			self.send_notice(lf("Payment denied - {job.id}, {params}"))
 			return res.render('xhtml')
 		end_point_url = JobServer.construct_url(lf('/complete_payment/{job_id}'))
 		self.verify_URL_signature(end_point_url, params)
@@ -142,7 +142,8 @@ class JobServer(object):
 			job.register_hits()
 			target = lf('/status/{job_id}')
 		except errors.InsufficientFunds:
-			# TODO: send e-mail to support
+			self.send_notice(lf("insufficient funds registering hits for "
+				"{job_id}"))
 			target = '/error/our fault'
 		job.save()
 		raise cherrypy.HTTPRedirect(target)
@@ -291,6 +292,8 @@ def start_server(configs):
 	importlib.import_module('.agency', __package__)
 	aws.set_connection_environment()
 	server = JobServer()
+	server.send_notice("RecaptureDocs server starting on {hostname}".format(
+		hostname=socket.getfqdn()))
 	if hasattr(cherrypy.engine, "signal_handler"):
 		cherrypy.engine.signal_handler.subscribe()
 	if hasattr(cherrypy.engine, "console_control_handler"):
