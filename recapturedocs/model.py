@@ -12,10 +12,6 @@ from jaraco.util.itertools import one, first
 from jaraco.util.string import local_format as lf, indent
 import jaraco.modb
 import boto.mturk.connection
-
-# suppress the deprecation warning in PyPDF
-import warnings
-warnings.filterwarnings('ignore', module='pyPdf.pdf', lineno=52)
 from pyPdf import PdfFileReader, PdfFileWriter
 
 from . import aws

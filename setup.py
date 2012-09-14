@@ -34,7 +34,7 @@ setup_params = dict(
 		'cherrypy >= 3.2.3dev-20120408, <3.3dev',
 		'genshi >= 0.6',
 		'boto >= 2.4',
-		'PyPDF >= 1.12',
+		'PyPDF >= 1.13',
 		'keyring >= 0.7.1',
 		'jaraco.util >= 5.2',
 		'path.py',
