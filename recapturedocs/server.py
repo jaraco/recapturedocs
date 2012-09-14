@@ -293,8 +293,6 @@ def start_server(configs):
 	importlib.import_module('.agency', __package__)
 	aws.set_connection_environment()
 	server = JobServer()
-	server.send_notice("RecaptureDocs server starting on {hostname}".format(
-		hostname=socket.getfqdn()))
 	if hasattr(cherrypy.engine, "signal_handler"):
 		cherrypy.engine.signal_handler.subscribe()
 	if hasattr(cherrypy.engine, "console_control_handler"):
@@ -317,6 +315,9 @@ def start_server(configs):
 	if not cherrypy.config.get('server.production', False):
 		boto.set_stream_logger('recapturedocs')
 		aws.ConnectionFactory.production = False
+	server.send_notice("RecaptureDocs {version} server starting on {hostname}"
+		.format(hostname=socket.getfqdn(),
+			version=pkg_resources.require('recapturedocs')[0].version))
 	cherrypy.engine.start()
 	yield server
 	cherrypy.engine.exit()
