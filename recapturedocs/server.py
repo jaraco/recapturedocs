@@ -14,6 +14,7 @@ import logging
 import importlib
 import code
 import shlex
+import socket
 
 import pkg_resources
 import cherrypy
