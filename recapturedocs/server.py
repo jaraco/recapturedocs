@@ -78,7 +78,7 @@ class JobServer(object):
 			file.file, content_type, server_url, file.filename,
 		)
 		job.save_if_new()
-		self.send_notice()
+		self.send_notice(lf("A new document was uploaded ({job.id})"))
 		raise cherrypy.HTTPRedirect(lf("status/{job.id}"))
 
 	@cherrypy.expose
@@ -227,14 +227,14 @@ class JobServer(object):
 			"later, or for immediate assistance, contact our support team.")
 		return tmpl.generate(content=message).render('xhtml')
 
-	def send_notice(self):
+	def send_notice(self, msg):
 		app_config = self._app.config
 		if 'notification' not in app_config: return
 		notn_config = app_config['notification']
 		addr_to = notn_config['smtp_to']
 		host = notn_config['smtp_host']
 		mb = notification.SMTPMailbox(to_addrs=[addr_to], host=host)
-		mb.notify('A new document was uploaded')
+		mb.notify(msg)
 
 class Admin(object):
 	tl = genshi.template.TemplateLoader([
