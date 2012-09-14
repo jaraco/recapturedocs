@@ -235,7 +235,7 @@ class JobServer(object):
 		notn_config = app_config['notification']
 		addr_to = notn_config['smtp_to']
 		host = notn_config['smtp_host']
-		mb = notification.SMTPMailbox(to_addrs=[addr_to], host=host)
+		mb = notification.SMTPMailbox(to_addrs=addr_to, host=host)
 		mb.notify(msg)
 
 class Admin(object):
