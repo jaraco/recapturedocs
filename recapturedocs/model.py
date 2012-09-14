@@ -4,7 +4,7 @@ import itertools
 import mimetypes
 import hashlib
 import datetime
-from cStringIO import StringIO
+import io
 import logging
 import math
 
@@ -191,7 +191,7 @@ class ConversionJob(object):
 		def get_page_data(page):
 			output = PdfFileWriter()
 			output.addPage(page)
-			stream = StringIO()
+			stream = io.BytesIO()
 			output.write(stream)
 			return stream.getvalue()
 		return map(get_page_data, input.pages)
