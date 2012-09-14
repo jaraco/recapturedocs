@@ -61,7 +61,8 @@ class JobServer(object):
 		return cherrypy.config.get('server.production', False)
 
 	@cherrypy.expose
-	def upload(self, file):
+	def upload(self, file, class_='MTurkConversionJob'):
+		job_class = getattr(model, class_)
 		server_url = self.construct_url('/process')
 		content_type_map = dictlib.IdentityOverrideMap(
 			{
@@ -72,12 +73,10 @@ class JobServer(object):
 			},
 		)
 		content_type = content_type_map[unicode(file.content_type)]
-		if not content_type == 'application/pdf':
+		if content_type != 'application/pdf':
 			msg = "Got content other than PDF: {content_type}"
 			cherrypy.log(msg.format(**vars(file)), severity=logging.WARNING)
-		job = model.MTurkConversionJob(
-			file.file, content_type, server_url, file.filename,
-		)
+		job = job_class(file.file, content_type, server_url, file.filename)
 		job.save_if_new()
 		self.send_notice(lf("A new document was uploaded ({job.id})"))
 		raise cherrypy.HTTPRedirect(lf("status/{job.id}"))
