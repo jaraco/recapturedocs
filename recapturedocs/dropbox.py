@@ -1,10 +1,14 @@
 from __future__ import absolute_import, print_function
 
+import os
+
 import keyring
 import dropbox
 
 def get_session(access_key='ld83qebudvbirmj'):
-	secret = keyring.get_password('Dropbox RecaptureDocs', access_key)
+	secret = os.environ.setdefault('DROPBOX_SECRET_KEY',
+		keyring.get_password('Dropbox RecaptureDocs', access_key)
+		)
 	assert secret, "Dropbox secret is null"
 	return dropbox.session.DropboxSession(access_key, secret, 'app_folder')
 

@@ -16,7 +16,8 @@ import yg.deploy.fabric.aptitude as aptitude
 import yg.deploy.fabric.util as ygutil
 from jaraco.util.string import local_format as lf
 
-__all__ = ['install_env', 'update_staging',
+__all__ = [
+	'install_env', 'update_staging', 'install_upstart_conf',
 	'update_production', 'setup_mongodb_firewall', 'mongodb_allow_ip',
 	'install_supervisor', 'remove_all', 'bootstrap',
 ]
@@ -44,16 +45,19 @@ def install_env():
 	sudo('aptitude install -y python-setuptools')
 	mongodb.distro_install()
 	setup_mongodb_firewall()
-	access_key = '0ZWJV1BMM1Q6GXJ9J2G2'
-	secret_key = keyring.get_password('AWS', access_key)
-	assert secret_key, "secret key is null"
-	context = dict(
-		access_key = access_key,
-		secret_key = secret_key,
-		install_root = globals()['install_root'],
-	)
+	install_upstart_conf()
+
+@task
+def install_upstart_conf(install_root=install_root):
+	aws_access_key = '0ZWJV1BMM1Q6GXJ9J2G2'
+	aws_secret_key = keyring.get_password('AWS', aws_access_key)
+	assert aws_secret_key, "AWS secret key is null"
+	dropbox_access_key = 'ld83qebudvbirmj'
+	dropbox_secret_key = keyring.get_password('Dropbox RecaptureDocs',
+		dropbox_access_key)
+	assert dropbox_secret_key, "Dropbox secret key is null"
 	files.upload_template("ubuntu/recapture-docs.conf", "/etc/init",
-		use_sudo=True, context=context)
+		use_sudo=True, context=vars())
 
 def enable_non_root_bind():
 	sudo('aptitude install libcap2-bin')
