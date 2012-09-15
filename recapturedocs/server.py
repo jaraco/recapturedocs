@@ -32,6 +32,7 @@ from . import persistence
 from . import aws
 from . import config
 from . import errors
+from . import dropbox
 
 class JobServer(object):
 	"""
@@ -249,6 +250,54 @@ class JobServer(object):
 		mb = notification.SMTPMailbox(to_addrs=addr_to, host=host)
 		mb.notify(msg)
 
+class GGCServer(object):
+	"""
+	Server for Global Giving Community with Dropbox-hosted jobs
+	"""
+
+	tl = genshi.template.TemplateLoader([
+		genshi.template.loader.package(__name__, 'view/ggc'),
+		genshi.template.loader.package(__name__, 'view'),
+	])
+
+	tokens = dict()
+
+	@cherrypy.expose
+	def index(self):
+		return '<a href="authorize">authorize</a>'
+
+	@cherrypy.expose
+	def authorize(self):
+		sess = dropbox.get_session()
+		request_token = sess.obtain_request_token()
+		self.tokens[request_token.key] = request_token
+		callback = cherrypy.url(lf('save_token'))
+		url = sess.build_authorize_url(request_token, oauth_callback=callback)
+		raise cherrypy.HTTPRedirect(url)
+
+	@cherrypy.expose
+	def save_token(self, oauth_token, uid, **kwargs):
+		sess = dropbox.get_session()
+		# access_token =
+		sess.obtain_access_token(self.tokens[oauth_token])
+		persistence.store.dropbox.tokens.update(
+			dict(
+				_id = uid,
+			),
+			dict(
+				_id = uid,
+				token = oauth_token,
+				token_secret = self.tokens[oauth_token].secret,
+			),
+			upsert=True)
+		info = dropbox.get_client(sess).account_info()
+		tmpl = self.tl.load('simple.xhtml')
+		message = (
+			"Welcome, {display_name}. Your account has now been linked."
+			.format(**info))
+		return tmpl.generate(content=message).render('xhtml')
+
+
 class Admin(object):
 	tl = genshi.template.TemplateLoader([
 		genshi.template.loader.package(__name__, 'view/admin'),
@@ -323,6 +372,7 @@ def start_server(configs):
 		},
 	}]
 	map(admin_app.merge, devel_configs)
+	cherrypy.tree.mount(GGCServer(), '/ggc')
 	if not cherrypy.config.get('server.production', False):
 		boto.set_stream_logger('recapturedocs')
 		aws.ConnectionFactory.production = False
