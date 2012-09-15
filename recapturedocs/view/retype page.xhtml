@@ -35,7 +35,7 @@ or has been configured not to display inline frames.
 You can access <a href="${page_url}">the document</a>
 via a link though.]</iframe></p>
 <p>Type the content of the page here.</p>
-<form action="${turk_submit_to}/mturk/externalSubmit" method="POST">
+<form action="${submit_url}" method="POST">
 	<input type="hidden" value="${assignment_id}" name="assignmentId" />
 	<p><textarea rows="15" cols="80" name="content"
 		py:attrs="dict(disabled='disabled') if preview else dict()"

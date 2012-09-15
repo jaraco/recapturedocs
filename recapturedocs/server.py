@@ -159,18 +159,30 @@ class JobServer(object):
 		)
 
 	@cherrypy.expose
-	def process(self, hitId, assignmentId, workerId=None, turkSubmitTo=None, **kwargs):
+	def process_page(self, job_id, page_number):
+		job = model.ConversionJob.load(job_id)
+		tmpl = self.tl.load('retype page.xhtml')
+		params = dict(
+			assignment_id = lf('{job_id}-{page_number}'),
+			submit_url = 'submit_text',
+		)
+		return tmpl.generate(**params).render('xhtml')
+
+	@cherrypy.expose
+	def process(self, hitId, assignmentId, workerId=None, turkSubmitTo=None,
+			**kwargs):
 		"""
 		Fulfill a request of a client who's been sent from AMT. This
 		will be rendered in an iFrame, so don't use the template.
 		"""
 		preview = assignmentId == 'ASSIGNMENT_ID_NOT_AVAILABLE'
+		submit_url = turkSubmitTo + '/mturk/externalSubmit'
 		params = dict(
 			assignment_id = assignmentId,
 			hit_id = hitId,
 			worker_id = workerId,
 			preview = preview,
-			turk_submit_to = turkSubmitTo,
+			submit_url = submit_url,
 			page_url = lf('/image/{hitId}')
 				if not preview else '/static/Lorem ipsum.pdf',
 		)
