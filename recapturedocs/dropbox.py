@@ -2,6 +2,7 @@ from __future__ import absolute_import, print_function
 
 import keyring
 import dropbox
+import oauth.oauth
 
 def get_session(access_key='ld83qebudvbirmj'):
 	secret = keyring.get_password('Dropbox RecaptureDocs', access_key)
@@ -9,6 +10,12 @@ def get_session(access_key='ld83qebudvbirmj'):
 	return dropbox.session.DropboxSession(access_key, secret, 'app_folder')
 
 def get_client(sess):
+	return dropbox.client.DropboxClient(sess)
+
+def load_client(token_info):
+	sess = get_session()
+	token = oauth.oauth.OAuthToken(token_info['key'], token_info['secret'])
+	sess.obtain_access_token(token)
 	return dropbox.client.DropboxClient(sess)
 
 def test_session():

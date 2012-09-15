@@ -286,8 +286,8 @@ class GGCServer(object):
 			),
 			dict(
 				_id = uid,
-				token = oauth_token,
-				token_secret = self.tokens[oauth_token].secret,
+				key = oauth_token,
+				secret = self.tokens[oauth_token].secret,
 			),
 			upsert=True)
 		info = dropbox.get_client(sess).account_info()
@@ -296,6 +296,18 @@ class GGCServer(object):
 			"Welcome, {display_name}. Your account has now been linked."
 			.format(**info))
 		return tmpl.generate(content=message).render('xhtml')
+
+	@cherrypy.expose
+	def list(self):
+		def pdf_list(client):
+			md = client.metadata('/')
+			info = client.account_info()['display_name']
+			return info, [item['path'] for item in md['contents']
+				if item['mime-type'] == 'application/pdf']
+		lists = map(pdf_list, map(dropbox.load_client,
+			persistence.store.dropbox.tokens.find()))
+		tmpl = self.tl.load('list.xhtml')
+		return tmpl.generate(lists=lists).render('xhtml')
 
 
 class Admin(object):
