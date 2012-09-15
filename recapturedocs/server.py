@@ -278,16 +278,15 @@ class GGCServer(object):
 	@cherrypy.expose
 	def save_token(self, oauth_token, uid, **kwargs):
 		sess = dropbox.get_session()
-		# access_token =
-		sess.obtain_access_token(self.tokens[oauth_token])
+		access_token = sess.obtain_access_token(self.tokens[oauth_token])
 		persistence.store.dropbox.tokens.update(
 			dict(
 				_id = uid,
 			),
 			dict(
 				_id = uid,
-				key = oauth_token,
-				secret = self.tokens[oauth_token].secret,
+				key = access_token.key,
+				secret = access_token.secret,
 			),
 			upsert=True)
 		info = dropbox.get_client(sess).account_info()
@@ -303,7 +302,7 @@ class GGCServer(object):
 			md = client.metadata('/')
 			info = client.account_info()['display_name']
 			return info, [item['path'] for item in md['contents']
-				if item['mime-type'] == 'application/pdf']
+				if item['mime_type'] == 'application/pdf']
 		lists = map(pdf_list, map(dropbox.load_client,
 			persistence.store.dropbox.tokens.find()))
 		tmpl = self.tl.load('list.xhtml')

@@ -2,7 +2,6 @@ from __future__ import absolute_import, print_function
 
 import keyring
 import dropbox
-import oauth.oauth
 
 def get_session(access_key='ld83qebudvbirmj'):
 	secret = keyring.get_password('Dropbox RecaptureDocs', access_key)
@@ -14,8 +13,7 @@ def get_client(sess):
 
 def load_client(token_info):
 	sess = get_session()
-	token = oauth.oauth.OAuthToken(token_info['key'], token_info['secret'])
-	sess.obtain_access_token(token)
+	sess.set_token(token_info['key'], token_info['secret'])
 	return dropbox.client.DropboxClient(sess)
 
 def test_session():
@@ -27,7 +25,8 @@ def test_session():
 	print("Please 'allow' this app at the above URL")
 	raw_input()
 
-	access_token = sess.obtain_access_token(request_token)
+	# access_token =
+	sess.obtain_access_token(request_token)
 	client = get_client(sess)
 	print("linked account:", client.account_info())
 
