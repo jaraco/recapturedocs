@@ -43,6 +43,7 @@ setup_params = dict(
 		'pymongo >= 1.9',
 		'jaraco.net >= 2.0.1',
 		'httpagentparser >= 1.0.1',
+		'dropbox',
 	] + list(py_ver_dependencies()),
 	extras_require = {
 	},
