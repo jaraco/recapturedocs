@@ -177,7 +177,7 @@ class JobServer(object):
 		will be rendered in an iFrame, so don't use the template.
 		"""
 		preview = assignmentId == 'ASSIGNMENT_ID_NOT_AVAILABLE'
-		submit_url = turkSubmitTo + '/mturk/externalSubmit'
+		submit_url = '{turkSubmitTo}/mturk/externalSubmit'.format(**vars())
 		params = dict(
 			assignment_id = assignmentId,
 			hit_id = hitId,
