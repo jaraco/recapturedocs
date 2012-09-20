@@ -36,7 +36,7 @@ class RetypePageHIT(object):
 			"contents.",
 		keywords='typing page rekey retype'.split(),
 		reward=float(reward_per_page),
-		duration=datetime.timedelta(days=7),
+		duration=datetime.timedelta(hours=2),
 		)
 
 	def __init__(self, server_url):
@@ -71,7 +71,8 @@ class RetypePageHIT(object):
 	@classmethod
 	def _from_existing(cls, res):
 		hit = cls(None)
-		hit.registration_result = res
+		hit.registration_result = [res]
+		return hit
 
 	@classmethod
 	def get_hit_type(cls):
