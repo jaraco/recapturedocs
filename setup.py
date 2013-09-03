@@ -1,16 +1,7 @@
-import sys
-
 import setuptools
 
-name = 'recapturedocs'
-
-def py_ver_dependencies():
-	if sys.version_info < (2, 7):
-		yield 'argparse'
-		yield 'importlib'
-
 setup_params = dict(
-	name = name,
+	name = 'recapturedocs',
 	use_hg_version=True,
 	description = 'Library for RecaptureDocs.com',
 	author = 'Jason R. Coombs',
@@ -44,7 +35,7 @@ setup_params = dict(
 		'jaraco.net >= 2.0.1',
 		'httpagentparser >= 1.0.1',
 		'dropbox',
-	] + list(py_ver_dependencies()),
+	],
 	extras_require = {
 	},
 	dependency_links = [
