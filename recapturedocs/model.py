@@ -12,7 +12,7 @@ from jaraco.util.itertools import one, first
 from jaraco.util.string import local_format as lf, indent
 import jaraco.modb
 import boto.mturk.connection
-from pyPdf import PdfFileReader, PdfFileWriter
+from PyPDF2 import PdfFileReader, PdfFileWriter
 
 from . import aws
 from . import persistence
