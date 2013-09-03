@@ -31,7 +31,7 @@ setup_params = dict(
 			],
 	},
 	install_requires=[
-		'cherrypy >= 3.2.3dev-20120619, <3.3dev',
+		'cherrypy >= 3.2.3',
 		'genshi >= 0.6',
 		'boto >= 2.4',
 		'PyPDF2',
