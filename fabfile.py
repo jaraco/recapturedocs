@@ -59,6 +59,7 @@ def install_upstart_conf(install_root=install_root):
 	assert dropbox_secret_key, "Dropbox secret key is null"
 	new_relic_license_key = six.moves.input('New Relic license> ')
 	new_relic_license_key
+	files.upload_template("newrelic.ini", install_root, use_sudo=True)
 	files.upload_template("ubuntu/recapture-docs.conf", "/etc/init",
 		use_sudo=True, context=vars())
 
