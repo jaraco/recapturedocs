@@ -8,6 +8,7 @@ fab bootstrap
 import socket
 import urllib2
 
+import six
 import keyring
 from fabric.api import sudo, run, settings, task, env
 from fabric.contrib import files
@@ -56,6 +57,8 @@ def install_upstart_conf(install_root=install_root):
 	dropbox_secret_key = keyring.get_password('Dropbox RecaptureDocs',
 		dropbox_access_key)
 	assert dropbox_secret_key, "Dropbox secret key is null"
+	new_relic_license_key = six.moves.input('New Relic license> ')
+	new_relic_license_key
 	files.upload_template("ubuntu/recapture-docs.conf", "/etc/init",
 		use_sudo=True, context=vars())
 

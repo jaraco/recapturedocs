@@ -35,6 +35,7 @@ setup_params = dict(
 		'jaraco.net >= 2.0.1',
 		'httpagentparser >= 1.0.1',
 		'dropbox',
+		'newrelic',
 	],
 	extras_require = {
 	},
