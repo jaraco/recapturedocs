@@ -19,6 +19,16 @@ What RecaptureDocs does is employ a dynamic team of typists to retype
 each page by hand. This provides an extremely high level of quality, as
 each word is read and re-keyed by a human operator.
 
+What kinds of documents can RecaptureDocs handle?
+-------------------------------------------------
+
+The site currently accepts any PDF document, but that doesn't mean that a
+typist can re-key just any content. RecaptureDocs works best with prose or
+other narrative text such as legal documents or handwritten notes of about 500
+words per page or less. Results from other
+document types, such as blueprints, datasheets, fine-print, or other
+non-English content are not guaranteed.
+
 How does it work?
 -----------------
 
