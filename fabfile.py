@@ -12,9 +12,9 @@ import six
 import keyring
 from fabric.api import sudo, run, settings, task, env
 from fabric.contrib import files
-import yg.deploy.fabric.mongodb as mongodb
-import yg.deploy.fabric.aptitude as aptitude
-import yg.deploy.fabric.util as ygutil
+from jaraco.fabric import mongodb
+from jaraco.fabric import apt
+from jaraco.fabric import context
 from jaraco.util.string import local_format as lf
 
 __all__ = [
@@ -91,8 +91,8 @@ def install_to(root, version=None, use_sudo=False):
 	if version:
 		pkg_spec += '==' + version
 	action('mkdir -p {root}/lib/python2.7/site-packages'.format(**vars()))
-	with aptitude.package_context('python-dev'):
-		with ygutil.shell_env(PYTHONUSERBASE=root):
+	with apt.package_context('python-dev'):
+		with context.shell_env(PYTHONUSERBASE=root):
 			action('easy_install --user -U -f '
 				'http://dl.dropbox.com/u/54081/cheeseshop/index.html '
 				'{pkg_spec}'.format(**vars()))
