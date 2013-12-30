@@ -43,7 +43,7 @@ setup_params = dict(
 	],
 	tests_require=[
 		'pytest',
-		'dingus',
+		'mock',
 	],
 	setup_requires=[
 		'hgtools',
