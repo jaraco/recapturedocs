@@ -36,6 +36,7 @@ setup_params = dict(
 		'httpagentparser >= 1.0.1',
 		'dropbox >= 1.5',
 		'newrelic',
+		'six',
 	],
 	extras_require = {
 	},

@@ -6,7 +6,6 @@ import functools
 import itertools
 import argparse
 import contextlib
-import urlparse
 import inspect
 import docutils.io
 import docutils.core
@@ -25,6 +24,7 @@ import jaraco.util.dictlib as dictlib
 import jaraco.util.logging
 from jaraco.util.string import local_format as lf
 from jaraco.net import notification
+from six.moves import urllib
 
 import recapturedocs
 from . import model
@@ -55,7 +55,7 @@ class JobServer(object):
 
 	@staticmethod
 	def construct_url(path):
-		return urlparse.urljoin(cherrypy.request.base, path)
+		return urllib.parse.urljoin(cherrypy.request.base, path)
 
 	@staticmethod
 	def is_production():
