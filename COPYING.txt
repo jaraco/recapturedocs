@@ -1,0 +1,4 @@
+The code in the RecaptureDocs project is Copyright Jason R. Coombs.
+
+The code is made publically available for educational purposes only. No
+license is granted to use or copy the code.
