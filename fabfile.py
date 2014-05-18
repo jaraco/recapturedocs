@@ -44,6 +44,7 @@ def bootstrap():
 def install_env():
 	sudo('rm -R {install_root} || echo -n'.format(**globals()))
 	sudo('aptitude install -y python-setuptools')
+	sudo('aptitude build-dep -y python-lxml')
 	mongodb.distro_install()
 	setup_mongodb_firewall()
 	install_upstart_conf()
