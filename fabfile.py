@@ -104,6 +104,8 @@ def install_to(root, version=None, use_sudo=False):
 def setup_mongodb_firewall():
 	allowed_ips = (
 		'127.0.0.1',
+		socket.gethostbyname('elektra'),
+		socket.gethostbyname('ichiro'),
 		socket.gethostbyname('mongs.whit537.org'),
 	)
 	with settings(warn_only=True):
