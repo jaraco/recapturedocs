@@ -1,7 +1,7 @@
 """
 Routines for installing, staging, and serving recapturedocs on Ubuntu.
 
-To install on a clean Ubuntu Precise box, simply run
+To install on a clean Ubuntu Trusty box, simply run
 fab bootstrap
 """
 
@@ -24,7 +24,7 @@ __all__ = [
 ]
 
 if not env.hosts:
-	env.hosts = ['ichiro']
+	env.hosts = ['elektra']
 
 install_root = '/opt/recapturedocs'
 
