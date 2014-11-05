@@ -252,7 +252,7 @@ class MTurkConversionJob(ConversionJob):
 		self.hits = [RetypePageHIT(self.server_url) for page in self.pages]
 		for hit in self.hits:
 			hit.register()
-		assert all(hit.registration_result.status == True for hit in self.hits)
+		assert all(hit.registration_result.status is True for hit in self.hits)
 
 	@property
 	def can_authorize(self):
