@@ -88,8 +88,8 @@ class JobServer(object):
 	def status(self, job_id):
 		tmpl = self.tl.load('status.xhtml')
 		job = self._get_job_for_id(job_id)
-		return tmpl.generate(job=job, production=self.is_production()
-			).render('xhtml')
+		tmpl_gen = tmpl.generate(job=job, production=self.is_production())
+		return tmpl_gen.render('xhtml')
 
 	@cherrypy.expose
 	def initiate_payment(self, job_id):
