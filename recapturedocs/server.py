@@ -15,6 +15,9 @@ import code
 import shlex
 import socket
 
+from six.moves import urllib
+
+import six
 import pkg_resources
 import cherrypy
 import genshi.template
@@ -24,7 +27,6 @@ import jaraco.util.dictlib as dictlib
 import jaraco.util.logging
 from jaraco.util.string import local_format as lf
 from jaraco.net import notification
-from six.moves import urllib
 
 import recapturedocs
 from . import model
@@ -73,7 +75,7 @@ class JobServer(object):
 				'application/x-pdf': 'application/pdf',
 			},
 		)
-		content_type = content_type_map[unicode(file.content_type)]
+		content_type = content_type_map[six.text_type(file.content_type)]
 		if content_type != 'application/pdf':
 			msg = "Got content other than PDF: {content_type}"
 			cherrypy.log(msg.format(**vars(file)), severity=logging.WARNING)
