@@ -5,35 +5,12 @@ import pprint
 
 from six.moves import urllib
 
+import requests
 import keyring.http
-import jaraco.net.http
 
 app_name = 'recapturedocs'
 
-class FixedUserKeyringPasswordManager(keyring.http.PasswordMgr):
-	def __init__(self, username):
-		self.username = username
-
-	def get_username(self, realm, authuri):
-		print('realm is', realm)
-		print('authuri is', authuri)
-		return self.username
-
-	# provide clear_password until delete_password is officially
-	#  implemented.
-	def clear_password(self, realm, authuri):
-		user = self.get_username(realm, authuri)
-		# this call will only succeed on WinVault for now
-		keyring.get_keyring().delete_password(realm, user)
-
-def install_opener():
-	auth_manager = FixedUserKeyringPasswordManager(
-		username='jaraco@jaraco.com')
-	auth_handler = urllib.request.HTTPBasicAuthHandler(auth_manager)
-	# build a new opener
-	opener = urllib.request.build_opener(auth_handler)
-	# install it
-	urllib.request.install_opener(opener)
+session = requests.Session()
 
 def configure_AWS():
 	access_key = '0ZWJV1BMM1Q6GXJ9J2G2'
@@ -53,20 +30,27 @@ def check_MongoHQ():
 def add_MongoHQ():
 	install_addon('mongohq:free')
 
-def do(path, **kwargs):
+def get_auth():
+	username = 'jaraco@jaraco.com'
+	password = keyring.get_password('Heroku', username)
+	if not password:
+		tmpl = "Need to set password for Heroku / {username}"
+		raise ValueError(tmpl.format(**locals()))
+	return username, password
+
+def do(path, method='GET', **kwargs):
 	headers = {
 		'Accept': 'application/json',
 	}
+	auth = get_auth()
 	headers.update(kwargs.pop('headers', {}))
 	if 'data' in kwargs and isinstance(kwargs['data'], dict):
 		kwargs['data'] = json.dumps(kwargs['data'])
 	base = 'https://api.heroku.com/apps/{app_name}/'.format(**globals())
 	url = urllib.parse.urljoin(base, path)
-	req = jaraco.net.http.MethodRequest(url = url, headers=headers, **kwargs)
-	res = urllib.request.urlopen(req)
-	data = json.loads(res.read())
-	if not 200 <= res.code < 300:
-		print("ERROR: ", res.code)
+	resp = session.request(method, url, headers=headers, auth=auth, **kwargs)
+	resp.raise_for_status()
+	data = resp.json()
 	pprint.pprint(data)
 	return data
 
@@ -87,7 +71,6 @@ def create_app():
 	do('/apps', method='POST', data=urllib.parse.urlencode(data))
 
 if __name__ == '__main__':
-	install_opener()
 	create_app()
 	configure_AWS()
 	check_MongoHQ()
