@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import urllib2
 import urlparse
 import urllib
@@ -14,8 +16,8 @@ class FixedUserKeyringPasswordManager(keyring.http.PasswordMgr):
 		self.username = username
 
 	def get_username(self, realm, authuri):
-		print 'realm is', realm
-		print 'authuri is', authuri
+		print('realm is', realm)
+		print('authuri is', authuri)
 		return self.username
 
 	# provide clear_password until delete_password is officially
@@ -65,7 +67,7 @@ def do(path, **kwargs):
 	res = urllib2.urlopen(req)
 	data = json.loads(res.read())
 	if not 200 <= res.code < 300:
-		print "ERROR: ", res.code
+		print("ERROR: ", res.code)
 	pprint.pprint(data)
 	return data
 
