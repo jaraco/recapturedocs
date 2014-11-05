@@ -52,7 +52,7 @@ class JobServer(object):
 			message=message,
 			page_cost=model.MTurkConversionJob.page_cost,
 			user_agent=cherrypy.request.user_agent,
-			version = recapturedocs.version,
+			version=recapturedocs.version,
 			).render('xhtml')
 
 	@staticmethod
@@ -110,13 +110,13 @@ class JobServer(object):
 			n_pages = len(job),
 		)
 		return conn.cbui_url(
-			callerKey = os.environ['AWS_ACCESS_KEY_ID'],  # My access key
-			pipelineName = 'SingleUse',
-			returnURL = JobServer.construct_url(lf('/complete_payment/{job.id}')),
-			callerReference = job.id,
-			paymentReason = reason,
-			transactionAmount = str(float(job.cost)),
-			recipientToken = recipient_token,
+			callerKey=os.environ['AWS_ACCESS_KEY_ID'],  # My access key
+			pipelineName='SingleUse',
+			returnURL=JobServer.construct_url(lf('/complete_payment/{job.id}')),
+			callerReference=job.id,
+			paymentReason=reason,
+			transactionAmount=str(float(job.cost)),
+			recipientToken=recipient_token,
 		)
 
 	@cherrypy.expose
@@ -134,10 +134,10 @@ class JobServer(object):
 		job.save()
 		conn = aws.ConnectionFactory.get_fps_connection()
 		resp = conn.pay(
-			SenderTokenId = job.sender_token,
-			RecipientTokenId = job.recipient_token,
-			CallerReference = job.id,
-			TransactionAmount = float(job.cost),
+			SenderTokenId=job.sender_token,
+			RecipientTokenId=job.recipient_token,
+			CallerReference=job.id,
+			TransactionAmount=float(job.cost),
 		)
 		job.pay_result = resp.PayResult
 		job.authorized = True
@@ -157,8 +157,8 @@ class JobServer(object):
 
 		conn = aws.ConnectionFactory.get_fps_connection()
 		conn.verify_signature(
-			UrlEndPoint = end_point_url,
-			HttpParameters = cherrypy.request.query_string,
+			UrlEndPoint=end_point_url,
+			HttpParameters=cherrypy.request.query_string,
 		)
 
 	@cherrypy.expose
@@ -166,8 +166,8 @@ class JobServer(object):
 		job = model.ConversionJob.load(job_id)
 		tmpl = self.tl.load('retype page.xhtml')
 		params = dict(
-			assignment_id = lf('{job_id}-{page_number}'),
-			submit_url = 'submit_text',
+			assignment_id=lf('{job_id}-{page_number}'),
+			submit_url='submit_text',
 		)
 		return tmpl.generate(**params).render('xhtml')
 
@@ -181,12 +181,12 @@ class JobServer(object):
 		preview = assignmentId == 'ASSIGNMENT_ID_NOT_AVAILABLE'
 		submit_url = '{turkSubmitTo}/mturk/externalSubmit'.format(**vars())
 		params = dict(
-			assignment_id = assignmentId,
-			hit_id = hitId,
-			worker_id = workerId,
-			preview = preview,
-			submit_url = submit_url,
-			page_url = lf('/image/{hitId}')
+			assignment_id=assignmentId,
+			hit_id=hitId,
+			worker_id=workerId,
+			preview=preview,
+			submit_url=submit_url,
+			page_url=lf('/image/{hitId}')
 				if not preview else '/static/Lorem ipsum.pdf',
 		)
 		cherrypy.log(lf("params are {params}"))
@@ -283,12 +283,12 @@ class GGCServer(object):
 		access_token = sess.obtain_access_token(self.tokens[oauth_token])
 		persistence.store.dropbox.tokens.update(
 			dict(
-				_id = uid,
+				_id=uid,
 			),
 			dict(
-				_id = uid,
-				key = access_token.key,
-				secret = access_token.secret,
+				_id=uid,
+				key=access_token.key,
+				secret=access_token.secret,
 			),
 			upsert=True)
 		info = dropbox.get_client(sess).account_info()
