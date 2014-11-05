@@ -2,6 +2,8 @@ from __future__ import absolute_import, print_function
 
 import os
 
+from six.moves import input
+
 import keyring
 import dropbox
 
@@ -27,7 +29,7 @@ def test_session():
 	url = sess.build_authorize_url(request_token, oauth_callback=callback)
 	print("url:", url)
 	print("Please 'allow' this app at the above URL")
-	raw_input()
+	input()
 
 	# access_token =
 	sess.obtain_access_token(request_token)
