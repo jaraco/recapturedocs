@@ -1,10 +1,9 @@
 from __future__ import print_function
 
-import urllib2
-import urlparse
-import urllib
 import json
 import pprint
+
+from six.moves import urllib
 
 import keyring.http
 import jaraco.net.http
@@ -30,11 +29,11 @@ class FixedUserKeyringPasswordManager(keyring.http.PasswordMgr):
 def install_opener():
 	auth_manager = FixedUserKeyringPasswordManager(
 		username='jaraco@jaraco.com')
-	auth_handler = urllib2.HTTPBasicAuthHandler(auth_manager)
+	auth_handler = urllib.request.HTTPBasicAuthHandler(auth_manager)
 	# build a new opener
-	opener = urllib2.build_opener(auth_handler)
+	opener = urllib.request.build_opener(auth_handler)
 	# install it
-	urllib2.install_opener(opener)
+	urllib.request.install_opener(opener)
 
 def configure_AWS():
 	access_key = '0ZWJV1BMM1Q6GXJ9J2G2'
@@ -62,9 +61,9 @@ def do(path, **kwargs):
 	if 'data' in kwargs and isinstance(kwargs['data'], dict):
 		kwargs['data'] = json.dumps(kwargs['data'])
 	base = 'https://api.heroku.com/apps/{app_name}/'.format(**globals())
-	url = urlparse.urljoin(base, path)
+	url = urllib.parse.urljoin(base, path)
 	req = jaraco.net.http.MethodRequest(url = url, headers=headers, **kwargs)
-	res = urllib2.urlopen(req)
+	res = urllib.request.urlopen(req)
 	data = json.loads(res.read())
 	if not 200 <= res.code < 300:
 		print("ERROR: ", res.code)
@@ -85,7 +84,7 @@ def create_app():
 		'app[name]': app_name,
 		'app[stack]': 'cedar',
 	}
-	do('/apps', method='POST', data=urllib.urlencode(data))
+	do('/apps', method='POST', data=urllib.parse.urlencode(data))
 
 if __name__ == '__main__':
 	install_opener()
