@@ -462,12 +462,11 @@ class Interact(Command):
 	def configure(self):
 		# change some config that's problemmatic in interactive mode
 		g_config = {
-			'global':
-				{
+			'global': {
 				'autoreload.on': False,
 				'log.screen': False,
-				},
-			}
+			},
+		}
 		self.configs = list(itertools.chain([g_config], self.configs))
 		super(Interact, self).configure()
 
