@@ -95,9 +95,14 @@ def install_to(root, version=None, use_sudo=False):
 	action('mkdir -p {root}/lib/python2.7/site-packages'.format(**vars()))
 	with apt.package_context('python-dev'):
 		with context.shell_env(PYTHONUSERBASE=root):
-			action('easy_install --user -U -f '
-				'http://dl.dropbox.com/u/54081/cheeseshop/index.html '
-				'{pkg_spec}'.format(**vars()))
+			cmd = [
+				'easy_install',
+				'--user',
+				'-U',
+				'-f', 'http://dl.dropbox.com/u/54081/cheeseshop/index.html',
+				pkg_spec,
+			]
+			action(' '.join(cmd))
 
 
 @task
