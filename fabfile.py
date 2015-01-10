@@ -20,7 +20,7 @@ from jaraco.util.string import local_format as lf
 __all__ = [
 	'install_env', 'update_staging', 'install_upstart_conf',
 	'update_production', 'setup_mongodb_firewall', 'mongodb_allow_ip',
-	'install_supervisor', 'remove_all', 'bootstrap',
+	'install_supervisor', 'remove_all', 'bootstrap', 'configure_nginx',
 ]
 
 if not env.hosts:
@@ -138,3 +138,16 @@ def remove_all():
 	sudo('rm /etc/init/recapture-docs.conf || echo -n')
 	sudo('rm -Rf /opt/recapturedocs')
 	# consider also removing MongoDB
+
+@task
+def configure_nginx():
+	sudo('aptitude install -y nginx')
+	source = "ubuntu/nginx config"
+	target = "/etc/nginx/sites-available/recapturedocs.com"
+	files.upload_template(filename=source, destination=target, use_sudo=True)
+	sudo(
+		'ln -sf '
+		'../sites-available/recapturedocs.com '
+		'/etc/nginx/sites-enabled/'
+	)
+	sudo('service nginx restart')
