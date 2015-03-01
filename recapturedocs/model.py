@@ -8,8 +8,8 @@ import io
 import logging
 import math
 
-from jaraco.util.itertools import one, first
-from jaraco.util.string import local_format as lf, indent
+from jaraco.itertools import one, first
+from jaraco.text import local_format as lf, indent
 import jaraco.modb
 import boto.mturk.connection
 from PyPDF2 import PdfFileReader, PdfFileWriter

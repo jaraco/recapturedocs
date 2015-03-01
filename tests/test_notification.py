@@ -1,5 +1,5 @@
 import mock
-from jaraco.util.itertools import first
+from jaraco.itertools import first
 
 from recapturedocs import server
 

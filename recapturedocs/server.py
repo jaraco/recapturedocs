@@ -22,10 +22,10 @@ import pkg_resources
 import cherrypy
 import genshi.template
 import boto
-import jaraco.util.meta as meta
-import jaraco.util.dictlib as dictlib
-import jaraco.util.logging
-from jaraco.util.string import local_format as lf
+import jaraco.collections as dictlib
+import jaraco.logging
+from jaraco.classes import meta
+from jaraco.text import local_format as lf
 from jaraco.net import notification
 
 import recapturedocs
@@ -504,10 +504,10 @@ def command_line():
 def handle_command_line():
 	usage = inspect.getdoc(handle_command_line)
 	parser = argparse.ArgumentParser(usage=usage)
-	jaraco.util.logging.add_arguments(parser)
+	jaraco.logging.add_arguments(parser)
 	Command.add_subparsers(parser)
 	args = parser.parse_args(command_line())
-	jaraco.util.logging.setup(args)
+	jaraco.logging.setup(args)
 	user_configs = args.package_configs + args.configs
 	command = args.action(*user_configs)
 	command.run()

@@ -1,7 +1,7 @@
 import keyring
 import os
 
-from jaraco.util.string import local_format as lf
+from jaraco.text import local_format as lf
 import boto.fps.connection
 import boto.mturk.connection
 

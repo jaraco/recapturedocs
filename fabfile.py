@@ -15,7 +15,7 @@ from fabric.contrib import files
 from jaraco.fabric import mongodb
 from jaraco.fabric import apt
 from jaraco.fabric import context
-from jaraco.util.string import local_format as lf
+from jaraco.text import local_format as lf
 
 __all__ = [
 	'install_env', 'update_staging', 'install_upstart_conf',
