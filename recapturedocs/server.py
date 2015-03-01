@@ -26,7 +26,7 @@ import jaraco.collections as dictlib
 import jaraco.logging
 from jaraco.classes import meta
 from jaraco.text import local_format as lf
-from jaraco.net import notification
+from jaraco.email import notification
 
 import recapturedocs
 from . import model

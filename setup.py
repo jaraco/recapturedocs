@@ -31,7 +31,6 @@ setup_params = dict(
 		'docutils',
 		'jaraco.modb >= 3.2',
 		'pymongo >= 1.9',
-		'jaraco.net >= 2.0.1',
 		'httpagentparser >= 1.0.1',
 		'dropbox >= 1.5',
 		'newrelic',
@@ -42,6 +41,7 @@ setup_params = dict(
 		'jaraco.collections',
 		'jaraco.classes',
 		'jaraco.functools>=1.2',
+		'jaraco.email',
 	],
 	extras_require = {
 	},
