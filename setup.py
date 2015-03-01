@@ -29,7 +29,7 @@ setup_params = dict(
 		'keyring >= 0.7.1',
 		'path.py',
 		'docutils',
-		'jaraco.modb >= 1.0.5',
+		'jaraco.modb >= 3.2',
 		'pymongo >= 1.9',
 		'jaraco.net >= 2.0.1',
 		'httpagentparser >= 1.0.1',
