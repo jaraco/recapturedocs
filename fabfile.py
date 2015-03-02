@@ -121,7 +121,7 @@ def setup_mongodb_firewall():
 	sudo('iptables -A INPUT -p tcp --dport 28017 -j mongodb')
 	sudo('iptables --flush mongodb')
 	sudo('iptables -A mongodb -j REJECT')
-	map(mongodb_allow_ip, allowed_ips)
+	list(map(mongodb_allow_ip, allowed_ips))
 
 @task
 def mongodb_allow_ip(ip=None):

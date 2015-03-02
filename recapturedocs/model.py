@@ -183,7 +183,7 @@ class ConversionJob(object):
 		Compute the id of this job as the hash of the content.
 		"""
 		hash = hashlib.md5()
-		map(hash.update, self.pages)
+		list(map(hash.update, self.pages))
 		return hash.hexdigest()
 
 	@staticmethod
@@ -196,7 +196,7 @@ class ConversionJob(object):
 			stream = io.BytesIO()
 			output.write(stream)
 			return stream.getvalue()
-		return map(get_page_data, input.pages)
+		return list(map(get_page_data, input.pages))
 
 	def __len__(self):
 		return len(self.pages)
