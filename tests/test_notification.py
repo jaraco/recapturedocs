@@ -1,3 +1,5 @@
+import six
+
 import mock
 from jaraco.itertools import first
 
@@ -21,5 +23,5 @@ class TestNotification(object):
 		smtp_ob = smtp_class.return_value
 		name, args, kwargs = first(smtp_ob.method_calls)
 		assert name == 'sendmail'
-		assert 'test send message' in unicode(args)
-		assert isinstance(args[1][0], basestring)
+		assert 'test send message' in six.text_type(args)
+		assert isinstance(args[1][0], six.string_types)
