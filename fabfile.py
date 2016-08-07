@@ -1,39 +1,33 @@
 """
 Routines for installing, staging, and serving recapturedocs on Ubuntu.
 
-To install on a clean Ubuntu Trusty box, simply run
+To install on a clean Ubuntu Xenial box, simply run
 fab bootstrap
 """
 
 import socket
-import urllib2
+import urllib.request
 
 import six
 import keyring
 from fabric.api import sudo, run, settings, task, env
 from fabric.contrib import files
+from fabric.context_managers import shell_env
 from jaraco.fabric import mongodb
 from jaraco.fabric import apt
-from jaraco.fabric import context
 from jaraco.text import local_format as lf
 
 __all__ = [
-	'install_env', 'update_staging', 'install_upstart_conf',
+	'install_env', 'update_staging', 'install_service',
 	'update_production', 'setup_mongodb_firewall', 'mongodb_allow_ip',
-	'install_supervisor', 'remove_all', 'bootstrap', 'configure_nginx',
+	'remove_all', 'bootstrap', 'configure_nginx',
 ]
 
 if not env.hosts:
-	env.hosts = ['elektra']
+	env.hosts = ['punisher']
 
 install_root = '/opt/recapturedocs'
 
-def create_user():
-	"Create a user under which recapturedocs will run"
-	#sudo('adduser --system --disabled-password --no-create-home recapturedocs')
-	#sudo('mkdir -m 700 -p ~recapturedocs/.ssh')
-	#files.append('~recapturedocs/.ssh/authorized_keys', [jaraco_pub], use_sudo=True)
-	#sudo('chown -R recapturedocs:nogroup ~recapturedocs/.ssh')
 
 @task
 def bootstrap():
@@ -43,14 +37,13 @@ def bootstrap():
 @task
 def install_env():
 	sudo('rm -R {install_root} || echo -n'.format(**globals()))
-	sudo('aptitude install -y python-setuptools')
-	sudo('aptitude build-dep -y python-lxml')
-	mongodb.distro_install()
+	sudo('aptitude -q install -y python-setuptools python-lxml')
+	mongodb.distro_install('3.2')
 	setup_mongodb_firewall()
-	install_upstart_conf()
+	install_service()
 
 @task
-def install_upstart_conf(install_root=install_root):
+def install_service(install_root=install_root):
 	aws_access_key = '0ZWJV1BMM1Q6GXJ9J2G2'
 	aws_secret_key = keyring.get_password('AWS', aws_access_key)
 	assert aws_secret_key, "AWS secret key is null"
@@ -62,7 +55,7 @@ def install_upstart_conf(install_root=install_root):
 	new_relic_license_key
 	sudo(lf('mkdir -p {install_root}'))
 	files.upload_template("newrelic.ini", install_root, use_sudo=True)
-	files.upload_template("ubuntu/recapture-docs.conf", "/etc/init",
+	files.upload_template("ubuntu/recapture-docs.service", "/etc/systemd/system",
 		use_sudo=True, context=vars())
 
 def enable_non_root_bind():
@@ -81,7 +74,7 @@ def update_staging():
 @task
 def update_production(version=None):
 	install_to(install_root, version, use_sudo=True)
-	sudo('restart recapture-docs || start recapture-docs')
+	sudo('systemctl restart recapture-docs')
 
 def install_to(root, version=None, use_sudo=False):
 	"""
@@ -92,9 +85,10 @@ def install_to(root, version=None, use_sudo=False):
 	pkg_spec = 'recapturedocs'
 	if version:
 		pkg_spec += '==' + version
-	action('mkdir -p {root}/lib/python2.7/site-packages'.format(**vars()))
-	with apt.package_context('python-dev'):
-		with context.shell_env(PYTHONUSERBASE=root):
+	if True: #with apt.package_context('python-dev'):
+		with shell_env(PYTHONUSERBASE=root):
+			usp = run('python -c "import site; print(site.getusersitepackages())"')
+			action('mkdir -p {usp}'.format(**locals()))
 			cmd = [
 				'easy_install',
 				'--user',
@@ -109,9 +103,8 @@ def install_to(root, version=None, use_sudo=False):
 def setup_mongodb_firewall():
 	allowed_ips = (
 		'127.0.0.1',
+		socket.gethostbyname('punisher'),
 		socket.gethostbyname('elektra'),
-		socket.gethostbyname('ichiro'),
-		socket.gethostbyname('mongs.whit537.org'),
 	)
 	with settings(warn_only=True):
 		sudo('iptables --new-chain mongodb')
@@ -127,22 +120,17 @@ def setup_mongodb_firewall():
 def mongodb_allow_ip(ip=None):
 	if ip is None:
 		url = 'http://automation.whatismyip.com/n09230945.asp'
-		resp = urllib2.urlopen(url)
+		resp = urllib.request.urlopen(url)
 		ip = resp.read()
 	else:
 		ip = socket.gethostbyname(ip)
 	sudo(lf('iptables -I mongodb -s {ip} --jump RETURN'))
 
 @task
-def install_supervisor():
-	sudo('easy_install-2.7 -U supervisor')
-
-@task
 def remove_all():
-	sudo('stop recapture-docs || echo -n')
-	sudo('rm /etc/init/recapture-docs.conf || echo -n')
+	sudo('systemctl stop recapture-docs || echo -n')
+	sudo('rm /etc/systemd/system/recapture-docs.service || echo -n')
 	sudo('rm -Rf /opt/recapturedocs')
-	# consider also removing MongoDB
 
 @task
 def configure_nginx():
