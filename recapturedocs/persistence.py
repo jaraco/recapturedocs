@@ -1,37 +1,19 @@
 from __future__ import absolute_import
 
-import warnings
-
-import pymongo.uri_parser
 import cherrypy
+from jaraco.mongodb import helper
 
 from .config import get_config_dir
 from . import jsonpickle
 
-def mongodb_connect_uri(uri, **kwargs):
-	"""
-	Connect to the mongodb database specified by the URI.
-	Return the connection and database object specified by the URI. If
-	no database is specified, the admin db will be returned.
-	"""
-	puri = pymongo.uri_parser.parse_uri(uri)
-	# in mongodb, if a username is not specified, but a database is included
-	# in the URI, a warning will be emitted. Suppress this warning.
-	with warnings.catch_warnings():
-		cherrypy.log('Connecting to %s' % uri)
-		conn = pymongo.Connection(uri, **kwargs)
-	db_name = puri['database'] or 'admin'
-	return conn, conn[db_name]
 
 def init_mongodb():
 	ps = cherrypy._whole_config.get('persistence', dict())
 	storage_uri = ps.get('storage.uri', 'mongodb://localhost')
-	conn, store = mongodb_connect_uri(storage_uri, _connect=False)
 	is_production = cherrypy.config.get('server.production', False)
-	if store.name == 'admin':
-		s_name = 'recapturedocs' if is_production else 'recapturedocs_devel'
-		store = conn[s_name]
-	globals().update(store = store)
+	s_name = 'recapturedocs' if is_production else 'recapturedocs_devel'
+	store = helper.connect_db(storage_uri, default_db_name=s_name)
+	globals().update(store=store)
 
 def init():
 	init_mongodb()

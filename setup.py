@@ -52,6 +52,7 @@ setup_params = dict(
 		'jaraco.classes',
 		'jaraco.functools>=1.2',
 		'jaraco.email',
+		'jaraco.mongodb',
 	],
 	extras_require={
 	},
