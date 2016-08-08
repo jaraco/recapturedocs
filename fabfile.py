@@ -14,7 +14,6 @@ from fabric.api import sudo, run, settings, task, env
 from fabric.contrib import files
 from fabric.context_managers import shell_env
 from jaraco.fabric import mongodb
-from jaraco.fabric import apt
 from jaraco.text import local_format as lf
 
 __all__ = [
@@ -57,6 +56,7 @@ def install_service(install_root=install_root):
 	files.upload_template("newrelic.ini", install_root, use_sudo=True)
 	files.upload_template("ubuntu/recapture-docs.service", "/etc/systemd/system",
 		use_sudo=True, context=vars())
+	sudo('systemctl enable recapture-docs')
 
 def enable_non_root_bind():
 	sudo('aptitude install libcap2-bin')
