@@ -12,9 +12,9 @@ import six
 import keyring
 from fabric.api import sudo, run, settings, task, env
 from fabric.contrib import files
-from fabric.context_managers import shell_env
 from jaraco.fabric import mongodb
 from jaraco.text import local_format as lf
+from jaraco.fabric import apt
 
 __all__ = [
 	'install_env', 'update_staging', 'install_service',
@@ -78,25 +78,24 @@ def update_production(version=None):
 
 def install_to(root, version=None, use_sudo=False):
 	"""
-	Install RecaptureDocs to a PEP-370 environment at root. If version is
+	Install RecaptureDocs to root. If version is
 	not None, install that version specifically. Otherwise, use the latest.
 	"""
 	action = sudo if use_sudo else run
 	pkg_spec = 'recapturedocs'
 	if version:
 		pkg_spec += '==' + version
-	if True: #with apt.package_context('python-dev'):
-		with shell_env(PYTHONUSERBASE=root):
-			usp = run('python -c "import site; print(site.getusersitepackages())"')
-			action('mkdir -p {usp}'.format(**locals()))
-			cmd = [
-				'easy_install',
-				'--user',
-				'-U',
-				'-f', 'http://dl.dropbox.com/u/54081/cheeseshop/index.html',
-				pkg_spec,
-			]
-			action(' '.join(cmd))
+	run('python3 -m pip install --user -U rwt')
+	sudo('python3 -m rwt virtualenv -- -m virtualenv --python python2.7 ' + root)
+	pkgs = 'python-dev', 'libffi-dev', 'libssl-dev'
+	with apt.package_context(pkgs):
+		cmd = [
+			root + '/bin/pip',
+			'install',
+			'-U',
+			pkg_spec,
+		]
+		action(' '.join(cmd))
 
 
 @task
