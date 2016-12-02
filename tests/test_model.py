@@ -16,7 +16,7 @@ class TestRetypePageHIT(object):
 		model.RetypePageHIT.get_hit_type()
 
 	def test_register(self):
-		hit = model.RetypePageHIT('http://localhost/foo')
+		hit = model.RetypePageHIT('https://localhost/foo')
 		hit.register()
 		assert hasattr(hit, 'registration_result')
 		assert len(hit.registration_result) == 1
