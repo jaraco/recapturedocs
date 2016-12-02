@@ -99,8 +99,8 @@ def install_to(root, version=None, action=run):
 def ensure_env(root, action):
 	if files.exists(root):
 		return
-	run('python3 -m pip install --user -U rwt')
-	action('python3 -m rwt virtualenv -- -m virtualenv --python python2.7 ' + root)
+	with apt.package_context('python3-venv'):
+		action('python3 -m venv ' + root)
 
 
 @task
