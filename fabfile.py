@@ -73,15 +73,14 @@ def update_staging():
 
 @task
 def update_production(version=None):
-	install_to(install_root, version, use_sudo=True)
+	install_to(install_root, version, action=sudo)
 	sudo('systemctl restart recapture-docs')
 
-def install_to(root, version=None, use_sudo=False):
+def install_to(root, version=None, action=run):
 	"""
 	Install RecaptureDocs to root. If version is
 	not None, install that version specifically. Otherwise, use the latest.
 	"""
-	action = sudo if use_sudo else run
 	pkg_spec = 'recapturedocs'
 	if version:
 		pkg_spec += '==' + version
