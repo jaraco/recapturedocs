@@ -86,7 +86,7 @@ def install_to(root, version=None, use_sudo=False):
 	if version:
 		pkg_spec += '==' + version
 	run('python3 -m pip install --user -U rwt')
-	sudo('python3 -m rwt virtualenv -- -m virtualenv --python python2.7 ' + root)
+	action('python3 -m rwt virtualenv -- -m virtualenv --python python2.7 ' + root)
 	pkgs = 'python-dev', 'libffi-dev', 'libssl-dev'
 	with apt.package_context(pkgs):
 		cmd = [
