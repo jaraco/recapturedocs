@@ -359,8 +359,8 @@ def start_server(configs):
 	yield server
 	cherrypy.engine.exit()
 
+@six.add_metaclass(meta.LeafClassesMeta)
 class Command(object):
-	__metaclass__ = meta.LeafClassesMeta
 
 	def __init__(self, *configs):
 		self.configs = configs
