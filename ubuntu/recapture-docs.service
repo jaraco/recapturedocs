@@ -5,7 +5,7 @@ After=mongod.service
 [Service]
 WorkingDirectory=%(install_root)s
 Environment=PYTHONUSERBASE=%(install_root)s PORT=5001 AWS_ACCESS_KEY_ID=%(aws_access_key)s AWS_SECRET_ACCESS_KEY=%(aws_secret_key)s DROPBOX_ACCESS_KEY=%(dropbox_access_key)s DROPBOX_SECRET_KEY=%(dropbox_secret_key)s PYTHONUSERBASE=%(install_root)s NEW_RELIC_LICENSE_KEY=%(new_relic_license_key)s NEW_RELIC_CONFIG_FILE=newrelic.ini
-ExecStart=%(install_root)s/bin/newrelic-admin run-program bin/recapture-docs serve -C prod
+ExecStart=%(install_root)s/bin/newrelic-admin run-program python -m recapturedocs.server serve -C prod
 
 [Install]
 WantedBy=multi-user.target
