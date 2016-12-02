@@ -1,8 +1,6 @@
 import keyring
 import os
 
-from jaraco.text import local_format as lf
-import boto.fps.connection
 import boto.mturk.connection
 
 def set_connection_environment(access_key='0ZWJV1BMM1Q6GXJ9J2G2'):
@@ -24,19 +22,6 @@ def save_credentials(access_key, secret_key):
 
 class ConnectionFactory(object):
 	production = True
-
-	@classmethod
-	def get_fps_endpoint(class_):
-		host = 'authorize.payments-sandbox.amazon.com'
-		if class_.production:
-			host = host.replace('payments-sandbox', 'payments')
-		return lf('https://{host}/cobranded-ui/actions/start')
-
-	@classmethod
-	def get_fps_connection(class_):
-		host = ('fps.amazonaws.com' if class_.production else
-			'fps.sandbox.amazonaws.com')
-		return boto.fps.connection.FPSConnection(host=host)
 
 	@classmethod
 	def get_mturk_connection(class_):

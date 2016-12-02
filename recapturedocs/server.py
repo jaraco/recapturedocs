@@ -93,54 +93,37 @@ class JobServer(object):
 
 	@cherrypy.expose
 	def initiate_payment(self, job_id):
-		conn = aws.ConnectionFactory.get_fps_connection()
+		"""
+		Given a job ID, redirect to a site to initiate payment for that
+		job.
+		"""
+		raise NotImplemented()
 		job = self._get_job_for_id(job_id)
-		job.recipient_token = conn.install_payment_instruction(
-			PaymentInstruction="MyRole=='Recipient';",
-			TokenType='Unrestricted',
-		).InstallPaymentInstructionResult.TokenId
-		job.save()
-		raise cherrypy.HTTPRedirect(
-			self.construct_payment_url(job, conn, job.recipient_token)
-			)
+		url = self.construct_payment_url(job)
+		raise cherrypy.HTTPRedirect(url)
 
 	@staticmethod
-	def construct_payment_url(job, conn, recipient_token):
-		reason = 'RecaptureDocs conversion - {n_pages} pages'.format(
-			n_pages = len(job),
-		)
-		return conn.cbui_url(
-			callerKey=os.environ['AWS_ACCESS_KEY_ID'],  # My access key
-			pipelineName='SingleUse',
-			returnURL=JobServer.construct_url(lf('/complete_payment/{job.id}')),
-			callerReference=job.id,
-			paymentReason=reason,
-			transactionAmount=str(float(job.cost)),
-			recipientToken=recipient_token,
-		)
+	def construct_payment_url(job):
+		tmpl = 'RecaptureDocs conversion - {n_pages} pages'
+		reason = tmpl.format(n_pages=len(job))
+		return_url = lf('/complete_payment/{job.id}')
+		transaction_amount = str(float(job.cost))
+		# TODO: construct URL from details
+		raise NotImplemented()
 
 	@cherrypy.expose
-	def complete_payment(self, job_id, status, tokenID=None, **params):
+	def complete_payment(self, job_id, **params):
 		job = self._get_job_for_id(job_id)
-		if not status == 'SC': # success
+		# TODO: using params, process the payment
+		success = params['success'] == 'true'
+		if success:
 			tmpl = self.tl.load('declined.xhtml')
 			params_mk = genshi.Markup(lf('<!-- {params} -->'))
-			res = tmpl.generate(status=status, job=job, params=params_mk)
+			res = tmpl.generate(job=job, params=params_mk)
 			self.send_notice(lf("Payment denied - {job.id}, {params}"))
 			return res.render('xhtml')
-		end_point_url = JobServer.construct_url(lf('/complete_payment/{job_id}'))
-		self.verify_URL_signature(end_point_url, params)
-		job.sender_token = tokenID
-		job.save()
-		conn = aws.ConnectionFactory.get_fps_connection()
-		resp = conn.pay(
-			SenderTokenId=job.sender_token,
-			RecipientTokenId=job.recipient_token,
-			CallerReference=job.id,
-			TransactionAmount=float(job.cost),
-		)
-		job.pay_result = resp.PayResult
-		job.authorized = True
+		# TODO: perform any additional validation and save
+		# any details on the job.
 		try:
 			job.register_hits()
 			target = lf('/status/{job_id}')
@@ -150,16 +133,6 @@ class JobServer(object):
 			target = '/error/our fault'
 		job.save()
 		raise cherrypy.HTTPRedirect(target)
-
-	def verify_URL_signature(self, end_point_url, params):
-		assert params['signatureVersion'] == '2'
-		assert params['signatureMethod'] == 'RSA-SHA1'
-
-		conn = aws.ConnectionFactory.get_fps_connection()
-		conn.verify_signature(
-			UrlEndPoint=end_point_url,
-			HttpParameters=cherrypy.request.query_string,
-		)
 
 	@cherrypy.expose
 	def process_page(self, job_id, page_number):
@@ -335,16 +308,6 @@ class Admin(object):
 		del self.server[:]
 		return lf('Disabled {disabled} HITs (do not forget to remove them '
 			'from other servers).')
-
-	@cherrypy.expose
-	def cancel_all_payment_tokens(self):
-		fps = aws.ConnectionFactory.get_fps_connection()
-		tokens = fps.get_tokens().GetTokensResult.Token
-		for token in tokens:
-			resp = fps.cancel_token(TokenId=token.TokenId)
-			req_id = resp.ResponseMetadata.RequestId
-			yield lf("Cancelled ({req_id})<br/>")
-		yield "Cancelled {n_cancelled} tokens".format(n_cancelled=len(tokens))
 
 	@cherrypy.expose
 	def pay(self, job_id):

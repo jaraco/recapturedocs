@@ -11,7 +11,7 @@
 <body>
 	<div>
 		Payment for job <span py:replace="job.id">job id</span> was
-		declined with a status of <span py:replace="status">status
+		declined with a status of <span py:replace="params['status']">status
 		code</span>.  <a href="/initiate_payment/${job.id}">Click
 		here</a> to try again.
 	</div>
