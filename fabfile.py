@@ -69,7 +69,7 @@ def update_staging():
 		run('pkill -f staging/bin/recapture-docs')
 		run('sleep 3')
 	run('mkdir -p envs/staging/var/log')
-	run('PYTHONUSERBASE=envs/staging envs/staging/bin/recapture-docs daemon')
+	run('envs/staging/bin/recapture-docs daemon')
 
 @task
 def update_production(version=None):
