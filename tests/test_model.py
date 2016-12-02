@@ -30,7 +30,7 @@ class TestRetypePageHIT(object):
 class TestConversionJob(object):
 	def test_load_pdf(self):
 		lorem_ipsum = pkg_resources.resource_stream('recapturedocs',
-			'static/Lorem Ipsum.pdf')
+			'static/Lorem ipsum.pdf')
 		job = model.ConversionJob(lorem_ipsum, 'application/pdf',
 			'http://localhost/')
 		assert len(job.pages) == 4
