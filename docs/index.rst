@@ -1,4 +1,4 @@
-Welcome to skeleton documentation!
+Welcome to recapturedocs documentation!
 ========================================
 
 .. toctree::
@@ -7,7 +7,7 @@ Welcome to skeleton documentation!
    history
 
 
-.. automodule:: skeleton
+.. automodule:: recapturedocs
     :members:
     :undoc-members:
     :show-inheritance:
