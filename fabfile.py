@@ -84,8 +84,7 @@ def install_to(root, version=None, action=run):
 	pkg_spec = 'recapturedocs'
 	if version:
 		pkg_spec += '==' + version
-	run('python3 -m pip install --user -U rwt')
-	action('python3 -m rwt virtualenv -- -m virtualenv --python python2.7 ' + root)
+	ensure_env(root, action)
 	pkgs = 'python-dev', 'libffi-dev', 'libssl-dev'
 	with apt.package_context(pkgs):
 		cmd = [
@@ -95,6 +94,13 @@ def install_to(root, version=None, action=run):
 			pkg_spec,
 		]
 		action(' '.join(cmd))
+
+
+def ensure_env(root, action):
+	if files.exists(root):
+		return
+	run('python3 -m pip install --user -U rwt')
+	action('python3 -m rwt virtualenv -- -m virtualenv --python python2.7 ' + root)
 
 
 @task
