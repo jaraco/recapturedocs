@@ -6,10 +6,10 @@ fab bootstrap
 """
 
 import socket
-import urllib.request
 
 import six
 import keyring
+import requests
 from fabric.api import sudo, run, settings, task, env
 from fabric.contrib import files
 from jaraco.fabric import mongodb
@@ -108,7 +108,6 @@ def setup_mongodb_firewall():
 	allowed_ips = (
 		'127.0.0.1',
 		socket.gethostbyname('punisher'),
-		socket.gethostbyname('elektra'),
 	)
 	with settings(warn_only=True):
 		sudo('iptables --new-chain mongodb')
@@ -123,9 +122,8 @@ def setup_mongodb_firewall():
 @task
 def mongodb_allow_ip(ip=None):
 	if ip is None:
-		url = 'http://automation.whatismyip.com/n09230945.asp'
-		resp = urllib.request.urlopen(url)
-		ip = resp.read()
+		url = 'https://api.ipify.org'
+		ip = requests.get(url).text
 	else:
 		ip = socket.gethostbyname(ip)
 	sudo(lf('iptables -I mongodb -s {ip} --jump RETURN'))
