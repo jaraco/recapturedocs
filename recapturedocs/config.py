@@ -10,11 +10,14 @@ appname = 'RecaptureDocs'
 
 ensure_dir_exists = jaraco.functools.apply(lambda p: p.makedirs_p())
 
+
 def get_log_file():
 	return get_config_dir() / 'log.txt'
 
+
 def get_error_file():
 	return get_config_dir() / 'error.txt'
+
 
 def get_config_dir():
 	def get_env_root():
@@ -33,7 +36,8 @@ def get_config_dir():
 	def get_app_root_Linux():
 		return Path(get_env_root() or '/var') / appname.lower()
 
-	getter = locals().get('get_app_root_' + platform.system(),
+	getter = locals().get(
+		'get_app_root_' + platform.system(),
 		'get_app_root_Linux')
 	base = getter()
 

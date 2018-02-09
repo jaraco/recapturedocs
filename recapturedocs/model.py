@@ -20,12 +20,15 @@ from . import errors
 
 log = logging.getLogger(__name__)
 
+
 class ConversionError(BaseException):
 	pass
+
 
 class DollarAmount(float):
 	def __str__(self):
 		return '$' + super(DollarAmount, self).__str__()
+
 
 class RetypePageHIT(object):
 	reward_per_page = DollarAmount(1)
@@ -33,11 +36,11 @@ class RetypePageHIT(object):
 	type_params = dict(
 		title="Type a Page",
 		description="You will read a scanned page and retype its textual "
-			"contents.",
+		"contents.",
 		keywords='typing page rekey retype'.split(),
 		reward=float(reward_per_page),
 		duration=datetime.timedelta(hours=2),
-		)
+	)
 
 	def __init__(self, server_url):
 		self.server_url = server_url
@@ -50,7 +53,9 @@ class RetypePageHIT(object):
 		conn = aws.ConnectionFactory.get_mturk_connection()
 		all_hits = conn.get_all_hits()
 		hit_type = cls.get_hit_type()
-		is_local_hit = lambda h: h.HITTypeId == hit_type
+
+		def is_local_hit(h):
+			return h.HITTypeId == hit_type
 		return filter(is_local_hit, all_hits)
 
 	@classmethod
@@ -83,7 +88,8 @@ class RetypePageHIT(object):
 	def register(self):
 		conn = aws.ConnectionFactory.get_mturk_connection()
 		try:
-			res = conn.create_hit(question=self.get_external_question(),
+			res = conn.create_hit(
+				question=self.get_external_question(),
 				**self.type_params)
 		except boto.mturk.connection.MTurkRequestError as error:
 			if not error.error_code == 'AWS.MechanicalTurk.InsufficientFunds':
@@ -94,7 +100,8 @@ class RetypePageHIT(object):
 
 	@property
 	def id(self):
-		if not len(self.registration_result) == 1: return None
+		if len(self.registration_result) != 1:
+			return None
 		return self.registration_result[0].HITId
 
 	@property
@@ -111,7 +118,8 @@ class RetypePageHIT(object):
 		return int(res) if res else 1
 
 	def is_complete(self):
-		if not self.id: return False
+		if not self.id:
+			return False
 		assignments = self.load_assignments()
 		some_results = int(assignments.NumResults) >= 1
 		complete_status = ('Submitted', 'Approved')
@@ -144,12 +152,13 @@ class RetypePageHIT(object):
 		for assignment in self.load_assignments():
 			yield indent(str(assignment))
 
+
 class ConversionJob(object):
 	"""
 	Conversion Job, a collection of pages to be retyped
 	"""
 
-	can_authorize=True
+	can_authorize = True
 	page_cost = DollarAmount(1.95)
 	"Price per page charged to the customer"
 
@@ -213,7 +222,7 @@ class ConversionJob(object):
 
 	def save(self):
 		data = jaraco.modb.encode(self)
-		#log.debug("saving {0!r}".format(data))
+		# log.debug("saving {0!r}".format(data))
 		data['_id'] = self.id
 		self._id = persistence.store.jobs.save(data, safe=True)
 
@@ -235,8 +244,8 @@ class ConversionJob(object):
 		id = data.pop('_id')
 		result = jaraco.modb.decode(data)
 		if not result.id == id:
-			raise ValueError(lf("ID mutated on load: {id} became "
-				"{result.id}"))
+			raise ValueError(
+				lf("ID mutated on load: {id} became {result.id}"))
 		return result
 
 
@@ -268,19 +277,21 @@ class MTurkConversionJob(ConversionJob):
 		return all(hit.is_complete() for hit in self.hits)
 
 	def get_data(self):
-		return '\n\n\n'.join(hit.get_data() for hit in self.hits
-			if hit.is_complete())
+		return '\n\n\n'.join(
+			hit.get_data() for hit in self.hits
+			if hit.is_complete()
+		)
 
 	def get_hit(self, hit_id):
 		return next(
 			hit for hit in self.hits if hit.id == hit_id
-			)
+		)
 
 	def page_for_hit(self, hit_id):
 		pages = dict(
 			(hit.id, page)
 			for hit, page in zip(self.hits, self.pages)
-			)
+		)
 		return pages[hit_id]
 
 	@classmethod
@@ -313,8 +324,10 @@ def get_all_hits(conn):
 	def get_page_hits(page):
 		search_rs = conn.search_hits(page_size=page_size, page_number=page)
 		if not search_rs.status:
-			raise Exception(lf('Error performing search, code:'
-				'{search_rs.Code}, message:{search_rs.Message}'))
+			raise Exception(lf(
+				'Error performing search, code:{search_rs.Code}, '
+				'message:{search_rs.Message}'
+			))
 		return search_rs
 
 	def get_page_numbers(page_size, total_records):

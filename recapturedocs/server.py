@@ -36,6 +36,7 @@ from . import config
 from . import errors
 from . import dropbox
 
+
 class JobServer(object):
 	"""
 	The job server is both a CherryPy server and a list of jobs
@@ -53,7 +54,7 @@ class JobServer(object):
 			page_cost=model.MTurkConversionJob.page_cost,
 			user_agent=cherrypy.request.user_agent,
 			version=recapturedocs.version,
-			).render('xhtml')
+		).render('xhtml')
 
 	@staticmethod
 	def construct_url(path):
@@ -109,7 +110,7 @@ class JobServer(object):
 		return_url = lf('/complete_payment/{job.id}')
 		transaction_amount = str(float(job.cost))
 		# TODO: construct URL from details
-		raise NotImplemented()
+		raise NotImplemented(locals())
 
 	@cherrypy.expose
 	def complete_payment(self, job_id, **params):
@@ -128,15 +129,14 @@ class JobServer(object):
 			job.register_hits()
 			target = lf('/status/{job_id}')
 		except errors.InsufficientFunds:
-			self.send_notice(lf("insufficient funds registering hits for "
-				"{job_id}"))
+			self.send_notice(
+				lf("insufficient funds registering hits for {job_id}"))
 			target = '/error/our fault'
 		job.save()
 		raise cherrypy.HTTPRedirect(target)
 
 	@cherrypy.expose
 	def process_page(self, job_id, page_number):
-		job = model.ConversionJob.load(job_id)
 		tmpl = self.tl.load('retype page.xhtml')
 		params = dict(
 			assignment_id=lf('{job_id}-{page_number}'),
@@ -145,8 +145,9 @@ class JobServer(object):
 		return tmpl.generate(**params).render('xhtml')
 
 	@cherrypy.expose
-	def process(self, hitId, assignmentId, workerId=None, turkSubmitTo=None,
-			**kwargs):
+	def process(
+		self, hitId, assignmentId, workerId=None, turkSubmitTo=None,
+		**kwargs):
 		"""
 		Fulfill a request of a client who's been sent from AMT. This
 		will be rendered in an iFrame, so don't use the template.
@@ -160,7 +161,7 @@ class JobServer(object):
 			preview=preview,
 			submit_url=submit_url,
 			page_url=lf('/image/{hitId}')
-				if not preview else '/static/Lorem ipsum.pdf',
+			if not preview else '/static/Lorem ipsum.pdf',
 		)
 		cherrypy.log(lf("params are {params}"))
 		tmpl = self.tl.load('retype page.xhtml')
@@ -181,7 +182,8 @@ class JobServer(object):
 	def image(self, hit_id):
 		# find the appropriate image
 		job = model.MTurkConversionJob.for_hitid(hit_id)
-		if not job: raise cherrypy.NotFound
+		if not job:
+			raise cherrypy.NotFound
 		cherrypy.response.headers['Content-Type'] = job.content_type
 		return job.page_for_hit(hit_id)
 
@@ -193,7 +195,8 @@ class JobServer(object):
 	def text(self, name):
 		path = 'text/' + name + '.rst'
 		rst = pkg_resources.resource_stream('recapturedocs', path)
-		parts = docutils.core.publish_parts(source=rst,
+		parts = docutils.core.publish_parts(
+			source=rst,
 			source_class=docutils.io.FileInput, writer_name='html',)
 		html = genshi.HTML(parts['html_body'])
 		tmpl = self.tl.load('simple.xhtml')
@@ -210,7 +213,8 @@ class JobServer(object):
 	@cherrypy.expose
 	def error(self, why):
 		tmpl = self.tl.load('simple.xhtml')
-		message = lf("An error has occurred ({why}). We apologize for the "
+		message = lf(
+			"An error has occurred ({why}). We apologize for the "
 			"inconvenience. Our staff has "
 			"been notified and should be responding. Please try again "
 			"later, or for immediate assistance, contact our support team.")
@@ -218,12 +222,14 @@ class JobServer(object):
 
 	def send_notice(self, msg):
 		app_config = self._app.config
-		if 'notification' not in app_config: return
+		if 'notification' not in app_config:
+			return
 		notn_config = app_config['notification']
 		addr_to = notn_config['smtp_to']
 		host = notn_config['smtp_host']
 		mb = notification.SMTPMailbox(to_addrs=addr_to, host=host)
 		mb.notify(msg)
+
 
 class GGCServer(object):
 	"""
@@ -276,9 +282,11 @@ class GGCServer(object):
 		def pdf_list(client):
 			md = client.metadata('/')
 			info = client.account_info()['display_name']
-			return info, [item['path'] for item in md['contents']
+			return info, [
+				item['path'] for item in md['contents']
 				if item['mime_type'] == 'application/pdf']
-		lists = map(pdf_list, map(dropbox.load_client,
+		lists = map(pdf_list, map(
+			dropbox.load_client,
 			persistence.store.dropbox.tokens.find()))
 		tmpl = self.tl.load('list.xhtml')
 		return tmpl.generate(lists=lists).render('xhtml')
@@ -306,8 +314,10 @@ class Admin(object):
 		"""
 		disabled = model.RetypePageHIT.disable_all()
 		del self.server[:]
-		return lf('Disabled {disabled} HITs (do not forget to remove them '
-			'from other servers).')
+		return (
+			'Disabled {disabled} HITs (do not forget to remove them '
+			'from other servers).'
+		).format(**locals())
 
 	@cherrypy.expose
 	def pay(self, job_id):
@@ -317,7 +327,9 @@ class Admin(object):
 		job = self.server._get_job_for_id(job_id)
 		job.authorized = True
 		job.register_hits()
-		return lf('<a href="/status/{job_id}">Payment simulated; click here for status.</a>')
+		return lf(
+			'<a href="/status/{job_id}">Payment simulated; click here for status.</a>')
+
 
 @contextlib.contextmanager
 def start_server(configs):
@@ -352,12 +364,15 @@ def start_server(configs):
 	if not cherrypy.config.get('server.production', False):
 		boto.set_stream_logger('recapturedocs')
 		aws.ConnectionFactory.production = False
-	server.send_notice("RecaptureDocs {version} server starting on {hostname}"
-		.format(hostname=socket.getfqdn(),
+	server.send_notice(
+		"RecaptureDocs {version} server starting on {hostname}"
+		.format(
+			hostname=socket.getfqdn(),
 			version=pkg_resources.require('recapturedocs')[0].version))
 	cherrypy.engine.start()
 	yield server
 	cherrypy.engine.exit()
+
 
 @six.add_metaclass(meta.LeafClassesMeta)
 class Command(object):
@@ -384,8 +399,8 @@ class Command(object):
 			},
 		}
 		static_dir = pkg_resources.resource_filename('recapturedocs', 'static')
-		static_config = {'/static':
-			{
+		static_config = {
+			'/static': {
 				'tools.staticdir.on': True,
 				'tools.staticdir.dir': static_dir,
 			},
@@ -409,17 +424,21 @@ class Command(object):
 	def add_parser(cls, subparsers):
 		parser = subparsers.add_parser(cls.__name__.lower())
 		parser.set_defaults(action=cls)
-		parser.add_argument('-C', '--package-config', dest="package_configs",
+		parser.add_argument(
+			'-C', '--package-config', dest="package_configs",
 			default=[], action="append", type=get_package_config,
 			help="Add config recipe as found in the package (e.g. prod)",)
-		parser.add_argument('configs', nargs='*', default=[],
+		parser.add_argument(
+			'configs', nargs='*', default=[],
 			help='Config filename')
+
 
 class Serve(Command):
 	def run(self):
 		with start_server(self.configs):
 			cherrypy.engine.block()
 		raise SystemExit(0)
+
 
 class Interact(Command):
 	def configure(self):
@@ -440,19 +459,23 @@ class Interact(Command):
 			globals().update(server=server)
 			code.interact(local=globals())
 
+
 class Daemon(Command):
 	def run(self):
 		from cherrypy.process.plugins import Daemonizer
-		d = Daemonizer(cherrypy.engine, stdout=config.get_log_file(),
+		d = Daemonizer(
+			cherrypy.engine, stdout=config.get_log_file(),
 			stderr=config.get_error_file())
 		d.subscribe()
 		with start_server(self.configs):
 			cherrypy.engine.block()
 
+
 def get_package_config(name):
 	name = name if name.endswith('.conf') else name + '.conf'
 	pkg_res = functools.partial(pkg_resources.resource_filename, 'recapturedocs')
 	return pkg_res(name)
+
 
 def command_line():
 	"""
@@ -464,6 +487,7 @@ def command_line():
 		shlex.split(os.environ.get('COMMAND_LINE_ARGS', ''))
 	)
 
+
 def handle_command_line():
 	usage = inspect.getdoc(handle_command_line)
 	parser = argparse.ArgumentParser(usage=usage)
@@ -474,6 +498,7 @@ def handle_command_line():
 	user_configs = args.package_configs + args.configs
 	command = args.action(*user_configs)
 	command.run()
+
 
 if __name__ == '__main__':
 	handle_command_line()

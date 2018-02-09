@@ -15,10 +15,12 @@ def init_mongodb():
 	store = helper.connect_db(storage_uri, default_db_name=s_name)
 	globals().update(store=store)
 
+
 def init():
 	init_mongodb()
 	patch_boto_config()
 	jsonpickle.setup_handlers()
+
 
 def patch_boto_config():
 	"""

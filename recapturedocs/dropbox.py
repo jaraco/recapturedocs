@@ -7,20 +7,25 @@ from six.moves import input
 import keyring
 import dropbox
 
+
 def get_session(access_key='ld83qebudvbirmj'):
-	secret = os.environ.setdefault('DROPBOX_SECRET_KEY',
-		keyring.get_password('Dropbox RecaptureDocs', access_key)
-		)
+	secret = os.environ.setdefault(
+		'DROPBOX_SECRET_KEY',
+		keyring.get_password('Dropbox RecaptureDocs', access_key),
+	)
 	assert secret, "Dropbox secret is null"
 	return dropbox.session.DropboxSession(access_key, secret, 'app_folder')
 
+
 def get_client(sess):
 	return dropbox.client.DropboxClient(sess)
+
 
 def load_client(token_info):
 	sess = get_session()
 	sess.set_token(token_info['key'], token_info['secret'])
 	return dropbox.client.DropboxClient(sess)
+
 
 def test_session():
 	sess = get_session()
@@ -38,6 +43,7 @@ def test_session():
 
 	folder_metadata = client.metadata('/')
 	print("metadata:", folder_metadata)
+
 
 if __name__ == '__main__':
 	test_session()
