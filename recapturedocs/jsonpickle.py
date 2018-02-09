@@ -8,6 +8,7 @@ import jsonpickle
 from boto.resultset import ResultSet
 from boto.mturk.connection import HIT
 
+
 class BotoResultSetHandler(jsonpickle.handlers.BaseHandler):
 	def flatten(self, obj, data):
 		data[jsonpickle.tags.SEQ] = self._base.flatten(list(obj))
@@ -23,6 +24,7 @@ class BotoResultSetHandler(jsonpickle.handlers.BaseHandler):
 		obj.__dict__.update(self._base.restore(data))
 		return obj
 
+
 class OldStyleClassParamsHandler(jsonpickle.handlers.BaseHandler):
 	params = ()
 
@@ -36,8 +38,10 @@ class OldStyleClassParamsHandler(jsonpickle.handlers.BaseHandler):
 		obj.__dict__.update(self._base.restore(data))
 		return obj
 
+
 class OldStyleClassParamsHandler_None(OldStyleClassParamsHandler):
 	params = None,
+
 
 def setup_handlers():
 	jsonpickle.handlers.registry.register(ResultSet, BotoResultSetHandler)
