@@ -6,6 +6,10 @@ fab bootstrap
 """
 
 import socket
+import shutil
+import subprocess
+import os
+import sys
 
 import six
 import keyring
@@ -14,13 +18,6 @@ from fabric.api import sudo, run, settings, task, env
 from fabric.contrib import files
 from jaraco.fabric import mongodb
 from jaraco.text import local_format as lf
-from jaraco.fabric import apt
-
-__all__ = [
-	'install_env', 'update_staging', 'install_service',
-	'update_production', 'setup_mongodb_firewall', 'mongodb_allow_ip',
-	'remove_all', 'bootstrap', 'configure_nginx',
-]
 
 if not env.hosts:
 	env.hosts = ['punisher']
@@ -30,16 +27,36 @@ install_root = '/opt/recapturedocs'
 
 @task
 def bootstrap():
+	install_dependencies()
 	install_env()
-	update_production()
+	install_mongodb()
+	update()
+	install_service()
+
+
+@task
+def install_dependencies():
+	sudo('apt install -y software-properties-common')
+	sudo('add-apt-repository -y ppa:deadsnakes/ppa')
+	sudo('apt update -y')
+	sudo('apt install -y python3.6 python3.6-venv')
+
 
 @task
 def install_env():
-	sudo('rm -R {install_root} || echo -n'.format(**globals()))
-	sudo('aptitude -q install -y python-setuptools python-lxml')
+	user = run('whoami')
+	sudo(f'rm -R {install_root} || echo -n')
+	sudo(f'mkdir -p {install_root}')
+	sudo(f'chown {user} {install_root}')
+	run(f'python3.6 -m venv {install_root}')
+	run(f'{install_root}/bin/python -m pip install -U setuptools pip')
+
+
+@task
+def install_mongodb():
 	mongodb.distro_install('3.2')
 	setup_mongodb_firewall()
-	install_service()
+
 
 @task
 def install_service(install_root=install_root):
@@ -47,60 +64,38 @@ def install_service(install_root=install_root):
 	aws_secret_key = keyring.get_password('AWS', aws_access_key)
 	assert aws_secret_key, "AWS secret key is null"
 	dropbox_access_key = 'ld83qebudvbirmj'
-	dropbox_secret_key = keyring.get_password('Dropbox RecaptureDocs',
+	dropbox_secret_key = keyring.get_password(
+		'Dropbox RecaptureDocs',
 		dropbox_access_key)
 	assert dropbox_secret_key, "Dropbox secret key is null"
 	new_relic_license_key = six.moves.input('New Relic license> ')
 	new_relic_license_key
 	sudo(lf('mkdir -p {install_root}'))
 	files.upload_template("newrelic.ini", install_root, use_sudo=True)
-	files.upload_template("ubuntu/recapture-docs.service", "/etc/systemd/system",
+	files.upload_template(
+		"ubuntu/recapture-docs.service", "/etc/systemd/system",
 		use_sudo=True, context=vars())
 	sudo('systemctl enable recapture-docs')
+
 
 def enable_non_root_bind():
 	sudo('aptitude install libcap2-bin')
 	sudo('setcap "cap_net_bind_service=+ep" /usr/bin/python')
 
-@task
-def update_staging():
-	install_to('envs/staging')
-	with settings(warn_only=True):
-		run('pkill -f staging/bin/recapture-docs')
-		run('sleep 3')
-	run('mkdir -p envs/staging/var/log')
-	run('envs/staging/bin/recapture-docs daemon')
 
 @task
-def update_production(version=None):
-	install_to(install_root, version, action=sudo)
+def update():
+	install()
 	sudo('systemctl restart recapture-docs')
 
-def install_to(root, version=None, action=run):
-	"""
-	Install RecaptureDocs to root. If version is
-	not None, install that version specifically. Otherwise, use the latest.
-	"""
-	pkg_spec = 'recapturedocs'
-	if version:
-		pkg_spec += '==' + version
-	ensure_env(root, action)
-	pkgs = 'python-dev', 'libffi-dev', 'libssl-dev'
-	with apt.package_context(pkgs):
-		cmd = [
-			root + '/bin/pip',
-			'install',
-			'-U',
-			pkg_spec,
-		]
-		action(' '.join(cmd))
 
-
-def ensure_env(root, action):
-	if files.exists(root):
-		return
-	with apt.package_context('python3-venv'):
-		action('python3 -m venv ' + root)
+def install():
+	shutil.rmtree('dist')
+	subprocess.run([sys.executable, 'setup.py', 'bdist_wheel'])
+	dist, = os.listdir('dist')
+	run('mkdir -p install')
+	files.put(f'dist/{dist}', 'install/')
+	run(f'{install_root}/bin/pip install ~/install/{dist}')
 
 
 @task
@@ -119,6 +114,7 @@ def setup_mongodb_firewall():
 	sudo('iptables -A mongodb -j REJECT')
 	list(map(mongodb_allow_ip, allowed_ips))
 
+
 @task
 def mongodb_allow_ip(ip=None):
 	if ip is None:
@@ -128,11 +124,13 @@ def mongodb_allow_ip(ip=None):
 		ip = socket.gethostbyname(ip)
 	sudo(lf('iptables -I mongodb -s {ip} --jump RETURN'))
 
+
 @task
 def remove_all():
 	sudo('systemctl stop recapture-docs || echo -n')
 	sudo('rm /etc/systemd/system/recapture-docs.service || echo -n')
-	sudo('rm -Rf /opt/recapturedocs')
+	sudo(f'rm -Rf {install_root}')
+
 
 @task
 def configure_nginx():
