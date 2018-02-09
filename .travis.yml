@@ -1,28 +1,39 @@
+dist: trusty
 sudo: false
 language: python
+
 python:
-- 2.7
 - 3.5
-install:
-- pip install tox "setuptools>=28.2"
-script:
-- tox
-branches:
-  except:
-  - skeleton
-deploy:
-  provider: pypi
-  server: https://upload.pypi.org/legacy/
-  on:
-    tags: true
-    all_branches: true
-    python: 3.5
-  user: jaraco
-  distributions: dists
-  password:
-    secure: fiaov4FZwM7eYE3IVN4Dxn+8M3kXgQSpyma9BJoTEHozOu8BLiWrRRdG+4d41DxAT5/42lt3FFzqX6lHb+5irzKC1G2g8pPMKFqPBFCrLR4BLKLoo2hygm6AXSIDXKVm/VfaHm4EQM1oRifZi11zMt6xhHX7vYZh8rONlNZv2m8nH89OTLnlszCwNEX8bolmhYWRsRpevlmbJnrehyad1FF7SXf2Bd4kU5Ap2gFTqtLAtQ9OSlstJiZGFk74FbWBPZuPWv/lzrVIwhrLx+UTALx6f9bYGn0oQzJd5z27yqmujlkWA0Xv5vfFhek7DAkmFuXz7nzw1xdU1HKXK9RhFHlah++SVKQUj95esJ3tF7zzu4qYQ89KucUa5wVU3m/uVr/lAiDSVlWlpdDFJOEPkGRNTnzKpNJF4AKAegMr/AsGdg+WHXbl2GlhgO1iQfWnIF1BevEAqa1cEhnVDUzt21xU4eXyc8ivH5Mxlt3Nxv3rmYTIWtKv5NJ12pLHv6ZX49dmIC9rhP6kX1MDftzS5qnXguheVOFFHwbzt9NsQmqJMofkpcSMsfSuL8EEh/cQhcC9ceuLXd2jQjHpyJ518oM+vCz+Vyv41zdGs4uS3fF0EjNKWJ5SG8VCjra4N8+Wu4xJE4sY9byt3pBWP27wW6nFwNBsdC+zVLcBl1tSEIs=
+- &latest_py3 3.6
+
+jobs:
+  fast_finish: true
+  include:
+  - stage: deploy
+    if: tag IS present
+    python: *latest_py3
+    install: skip
+    script: skip
+    deploy:
+      provider: pypi
+      on:
+        tags: true
+        all_branches: true
+      user: jaraco
+      password:
+        secure: fiaov4FZwM7eYE3IVN4Dxn+8M3kXgQSpyma9BJoTEHozOu8BLiWrRRdG+4d41DxAT5/42lt3FFzqX6lHb+5irzKC1G2g8pPMKFqPBFCrLR4BLKLoo2hygm6AXSIDXKVm/VfaHm4EQM1oRifZi11zMt6xhHX7vYZh8rONlNZv2m8nH89OTLnlszCwNEX8bolmhYWRsRpevlmbJnrehyad1FF7SXf2Bd4kU5Ap2gFTqtLAtQ9OSlstJiZGFk74FbWBPZuPWv/lzrVIwhrLx+UTALx6f9bYGn0oQzJd5z27yqmujlkWA0Xv5vfFhek7DAkmFuXz7nzw1xdU1HKXK9RhFHlah++SVKQUj95esJ3tF7zzu4qYQ89KucUa5wVU3m/uVr/lAiDSVlWlpdDFJOEPkGRNTnzKpNJF4AKAegMr/AsGdg+WHXbl2GlhgO1iQfWnIF1BevEAqa1cEhnVDUzt21xU4eXyc8ivH5Mxlt3Nxv3rmYTIWtKv5NJ12pLHv6ZX49dmIC9rhP6kX1MDftzS5qnXguheVOFFHwbzt9NsQmqJMofkpcSMsfSuL8EEh/cQhcC9ceuLXd2jQjHpyJ518oM+vCz+Vyv41zdGs4uS3fF0EjNKWJ5SG8VCjra4N8+Wu4xJE4sY9byt3pBWP27wW6nFwNBsdC+zVLcBl1tSEIs=
+      distributions: dists
+      skip_cleanup: true
+      skip_upload_docs: true
+
 env:
   global:
   - AWS_ACCESS_KEY_ID=0ZWJV1BMM1Q6GXJ9J2G2
   - secure: haQEjydmfiT6svexu3yrRjTGgwSq6qstffM8Fytdud+L8wM0elCA7Bu/Og/aZAuWwqHZMoCQT4VSWCMGfTnGlQoPLX6jFk+cuzXbjKbzx/f3waAq5un79oLkwBmW3E2q6ivKYaIR185oOnqCL+Ji4pbnLVIYnX1McPYgjeCsz+HQljUNNOe6v5z7aW5Wz7zJKAQE7zK5X+Wm1C5qRqlfhrNX/PdW+4Mw/N+VtukIRob9gr5x+SusLwouAEHOphuxGi0iRNnlMk9BonmrsrlU0/fZkKnuS+LIkRNXiPc1KpP7nLIPeT6mGdBxI5PizCoDXWX4DD8xYeH7P/rSbamKquHG6aDvt2j1zE5SJH/4xhYtV2NiiGQJOIftdwEjqPejwDNYnd7wzVFrRFRZWUiMTFPnQVDkBWaZWgRebujIub8TtLuBhDlSnkK94Jza+8KojzSl+5i1nz1+2/0fg0qYe3MNsJ761VQZBESFmxV2ghkA+YEwh1H3YwsCv9eIUP4VSlz9i2ZhT0ofKOebDfkFtzJoZmyV528cwzo3hFMG4T/uVWUixDHmK45VgSFhMg/aAW0H0NyXyGdaZ0VzAMlMGDFR98tSb2fzxkl4yO3bIx55N5s1Ax0AuyFTCO6BWRLLLtyF+KFtKrcRhAeG76gwPRU3nodUBLzQH8elX+/5X8k=
 
+cache: pip
+
+install:
+- pip install tox tox-venv
+
+script: tox
