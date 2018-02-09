@@ -7,9 +7,7 @@ fab bootstrap
 
 import socket
 import shutil
-import subprocess
 import os
-import sys
 
 import six
 import keyring
@@ -18,6 +16,8 @@ from fabric.api import sudo, run, settings, task, env
 from fabric.contrib import files
 from jaraco.fabric import mongodb
 from jaraco.text import local_format as lf
+import rwt.deps
+import rwt.launch
 
 if not env.hosts:
 	env.hosts = ['punisher']
@@ -90,8 +90,10 @@ def update():
 
 
 def install():
-	shutil.rmtree('dist')
-	subprocess.run([sys.executable, 'setup.py', 'bdist_wheel'])
+	shutil.rmtree('dist', ignore_errors=True)
+	with rwt.deps.load('wheel') as home:
+		code = rwt.launch.with_path(home, ['setup.py', 'bdist_wheel'])
+		assert code == 0
 	dist, = os.listdir('dist')
 	run('mkdir -p install')
 	files.put(f'dist/{dist}', 'install/')
