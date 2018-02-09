@@ -2,7 +2,7 @@ import sys
 import os
 import platform
 
-from path import path
+from path import Path
 import jaraco.functools
 import cherrypy
 
@@ -27,11 +27,11 @@ def get_config_dir():
 
 	@ensure_dir_exists
 	def get_app_root_Windows():
-		return path(get_env_root() or os.environ['APPDATA']) / appname
+		return Path(get_env_root() or os.environ['APPDATA']) / appname
 
 	@ensure_dir_exists
 	def get_app_root_Linux():
-		return path(get_env_root() or '/var') / appname.lower()
+		return Path(get_env_root() or '/var') / appname.lower()
 
 	getter = locals().get('get_app_root_' + platform.system(),
 		'get_app_root_Linux')
