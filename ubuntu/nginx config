@@ -8,6 +8,19 @@ server {
 
         server_name recapturedocs.com www.recapturedocs.com;
 
+        return 301 https://$host$request_uri;
+}
+
+server {
+        listen 443;
+        listen [::]:443;
+
+        ssl on;
+        ssl_certificate /etc/letsencrypt/live/jaraco.com/fullchain.pem;
+        ssl_certificate_key /etc/letsencrypt/live/jaraco.com/privkey.pem;
+
+        server_name recapturedocs.com www.recapturedocs.com;
+
         location / {
                 proxy_pass http://procs;
                 proxy_redirect off;
