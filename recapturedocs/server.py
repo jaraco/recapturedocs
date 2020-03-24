@@ -356,10 +356,9 @@ def start_server(configs):
             '/': {
                 'tools.auth_basic.on': True,
                 'tools.auth_basic.realm': 'RecaptureDocs admin',
-                'tools.auth_basic.checkpassword':
-                    cherrypy.lib.auth_basic.checkpassword_dict(
-                        dict(admin='g0tch4-h4x0r',)
-                    ),
+                'tools.auth_basic.checkpassword': cherrypy.lib.auth_basic.checkpassword_dict(
+                    dict(admin='g0tch4-h4x0r',)
+                ),
             },
         }
     ]
