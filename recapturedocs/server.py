@@ -98,7 +98,7 @@ class JobServer(object):
         Given a job ID, redirect to a site to initiate payment for that
         job.
         """
-        raise NotImplemented()
+        raise NotImplementedError()
         job = self._get_job_for_id(job_id)
         url = self.construct_payment_url(job)
         raise cherrypy.HTTPRedirect(url)
@@ -110,7 +110,7 @@ class JobServer(object):
         return_url = f'/complete_payment/{job.id}'
         transaction_amount = str(float(job.cost))
         # TODO: construct URL from details
-        raise NotImplemented(locals())
+        raise NotImplementedError(locals())
 
     @cherrypy.expose
     def complete_payment(self, job_id, **params):
@@ -356,9 +356,10 @@ def start_server(configs):
             '/': {
                 'tools.auth_basic.on': True,
                 'tools.auth_basic.realm': 'RecaptureDocs admin',
-                'tools.auth_basic.checkpassword': cherrypy.lib.auth_basic.checkpassword_dict(
-                    dict(admin='g0tch4-h4x0r',)
-                ),
+                'tools.auth_basic.checkpassword':
+                    cherrypy.lib.auth_basic.checkpassword_dict(
+                        dict(admin='g0tch4-h4x0r',)
+                    ),
             },
         }
     ]
@@ -403,7 +404,7 @@ class Command(object):
         }
         static_dir = pkg_resources.resource_filename('recapturedocs', 'static')
         static_config = {
-            '/static': {'tools.staticdir.on': True, 'tools.staticdir.dir': static_dir,},
+            '/static': {'tools.staticdir.on': True, 'tools.staticdir.dir': static_dir},
         }
         self.configs = list(itertools.chain([host_config, static_config], self.configs))
         list(map(cherrypy.config.update, self.configs))
@@ -446,7 +447,7 @@ class Interact(Command):
     def configure(self):
         # change some config that's problemmatic in interactive mode
         g_config = {
-            'global': {'autoreload.on': False, 'log.screen': False,},
+            'global': {'autoreload.on': False, 'log.screen': False},
         }
         self.configs = list(itertools.chain([g_config], self.configs))
         super(Interact, self).configure()
