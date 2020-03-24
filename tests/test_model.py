@@ -1,10 +1,14 @@
 from __future__ import unicode_literals
 
+import pytest
 import pkg_resources
 import boto.mturk.connection
 
 from recapturedocs import model
 from recapturedocs import aws
+
+
+pytestmark = pytest.mark.skip(reason="mechanical turk sandbox is gone")
 
 
 class TestRetypePageHIT(object):

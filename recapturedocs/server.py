@@ -351,14 +351,13 @@ def start_server(configs):
     server._app = app
     list(map(app.merge, configs))
     admin_app = cherrypy.tree.mount(Admin(server), '/admin')
+    passwords = cherrypy.lib.auth_basic.checkpassword_dict(dict(admin='g0tch4-h4x0r',))
     devel_configs = list(configs) + [
         {
             '/': {
                 'tools.auth_basic.on': True,
                 'tools.auth_basic.realm': 'RecaptureDocs admin',
-                'tools.auth_basic.checkpassword': cherrypy.lib.auth_basic.checkpassword_dict(
-                    dict(admin='g0tch4-h4x0r',)
-                ),
+                'tools.auth_basic.checkpassword': passwords,
             },
         }
     ]
