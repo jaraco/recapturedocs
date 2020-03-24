@@ -25,7 +25,6 @@ import boto
 import jaraco.collections as dictlib
 import jaraco.logging
 from jaraco.classes import meta
-from jaraco.text import local_format as lf
 from jaraco.email import notification
 
 import recapturedocs
@@ -82,8 +81,8 @@ class JobServer(object):
 			cherrypy.log(msg.format(**vars(file)), severity=logging.WARNING)
 		job = job_class(file.file, content_type, server_url, file.filename)
 		job.save_if_new()
-		self.send_notice(lf("A new document was uploaded ({job.id})"))
-		raise cherrypy.HTTPRedirect(lf("status/{job.id}"))
+		self.send_notice(f"A new document was uploaded ({job.id})")
+		raise cherrypy.HTTPRedirect(f"status/{job.id}")
 
 	@cherrypy.expose
 	def status(self, job_id):
@@ -107,7 +106,7 @@ class JobServer(object):
 	def construct_payment_url(job):
 		tmpl = 'RecaptureDocs conversion - {n_pages} pages'
 		reason = tmpl.format(n_pages=len(job))
-		return_url = lf('/complete_payment/{job.id}')
+		return_url = f'/complete_payment/{job.id}'
 		transaction_amount = str(float(job.cost))
 		# TODO: construct URL from details
 		raise NotImplemented(locals())
@@ -119,18 +118,18 @@ class JobServer(object):
 		success = params['success'] == 'true'
 		if success:
 			tmpl = self.tl.load('declined.xhtml')
-			params_mk = genshi.Markup(lf('<!-- {params} -->'))
+			params_mk = genshi.Markup(f'<!-- {params} -->')
 			res = tmpl.generate(job=job, params=params_mk)
-			self.send_notice(lf("Payment denied - {job.id}, {params}"))
+			self.send_notice(f"Payment denied - {job.id}, {params}")
 			return res.render('xhtml')
 		# TODO: perform any additional validation and save
 		# any details on the job.
 		try:
 			job.register_hits()
-			target = lf('/status/{job_id}')
+			target = f'/status/{job_id}'
 		except errors.InsufficientFunds:
 			self.send_notice(
-				lf("insufficient funds registering hits for {job_id}"))
+				f"insufficient funds registering hits for {job_id}")
 			target = '/error/our fault'
 		job.save()
 		raise cherrypy.HTTPRedirect(target)
@@ -139,7 +138,7 @@ class JobServer(object):
 	def process_page(self, job_id, page_number):
 		tmpl = self.tl.load('retype page.xhtml')
 		params = dict(
-			assignment_id=lf('{job_id}-{page_number}'),
+			assignment_id=f'{job_id}-{page_number}',
 			submit_url='submit_text',
 		)
 		return tmpl.generate(**params).render('xhtml')
@@ -160,10 +159,10 @@ class JobServer(object):
 			worker_id=workerId,
 			preview=preview,
 			submit_url=submit_url,
-			page_url=lf('/image/{hitId}')
+			page_url=f'/image/{hitId}'
 			if not preview else '/static/Lorem ipsum.pdf',
 		)
-		cherrypy.log(lf("params are {params}"))
+		cherrypy.log(f"params are {params}")
 		tmpl = self.tl.load('retype page.xhtml')
 		return tmpl.generate(**params).render('xhtml')
 
@@ -213,8 +212,8 @@ class JobServer(object):
 	@cherrypy.expose
 	def error(self, why):
 		tmpl = self.tl.load('simple.xhtml')
-		message = lf(
-			"An error has occurred ({why}). We apologize for the "
+		message = (
+			f"An error has occurred ({why}). We apologize for the "
 			"inconvenience. Our staff has "
 			"been notified and should be responding. Please try again "
 			"later, or for immediate assistance, contact our support team.")
@@ -252,7 +251,7 @@ class GGCServer(object):
 		sess = dropbox.get_session()
 		request_token = sess.obtain_request_token()
 		self.tokens[request_token.key] = request_token
-		callback = cherrypy.url(lf('save_token'))
+		callback = cherrypy.url(f'save_token')
 		url = sess.build_authorize_url(request_token, oauth_callback=callback)
 		raise cherrypy.HTTPRedirect(url)
 
@@ -327,8 +326,8 @@ class Admin(object):
 		job = self.server._get_job_for_id(job_id)
 		job.authorized = True
 		job.register_hits()
-		return lf(
-			'<a href="/status/{job_id}">Payment simulated; click here for status.</a>')
+		return (
+			f'<a href="/status/{job_id}">Payment simulated; click here for status.</a>')
 
 
 @contextlib.contextmanager

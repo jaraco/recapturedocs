@@ -9,7 +9,7 @@ import logging
 import math
 
 from jaraco.itertools import one, first
-from jaraco.text import local_format as lf, indent
+from jaraco.text import indent
 import jaraco.modb
 import boto.mturk.connection
 from PyPDF2 import PdfFileReader, PdfFileWriter
@@ -148,7 +148,7 @@ class RetypePageHIT(object):
 		return ExternalQuestion(external_url=self.server_url, frame_height=600)
 
 	def _report(self):
-		yield lf('hit {self.id} ({self.status})')
+		yield f'hit {self.id} ({self.status})'
 		for assignment in self.load_assignments():
 			yield indent(str(assignment))
 
@@ -245,7 +245,7 @@ class ConversionJob(object):
 		result = jaraco.modb.decode(data)
 		if not result.id == id:
 			raise ValueError(
-				lf("ID mutated on load: {id} became {result.id}"))
+				f"ID mutated on load: {id} became {result.id}")
 		return result
 
 
@@ -307,7 +307,7 @@ class MTurkConversionJob(ConversionJob):
 				f.write(page)
 
 	def _report(self):
-		yield lf('Job {self.id}')
+		yield f'Job {self.id}'
 		for hit in self.hits:
 			for line in hit._report():
 				yield indent(line)
@@ -324,10 +324,10 @@ def get_all_hits(conn):
 	def get_page_hits(page):
 		search_rs = conn.search_hits(page_size=page_size, page_number=page)
 		if not search_rs.status:
-			raise Exception(lf(
-				'Error performing search, code:{search_rs.Code}, '
+			raise Exception(
+				f'Error performing search, code:{search_rs.Code}, '
 				'message:{search_rs.Message}'
-			))
+			)
 		return search_rs
 
 	def get_page_numbers(page_size, total_records):
