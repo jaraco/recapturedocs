@@ -1,4 +1,8 @@
-import pkg_resources
+import importlib_resources
+import pytest
 
-def pytest_funcarg__sample_stream(request):
-	return pkg_resources.resource_stream('recapturedocs', 'static/Lorem ipsum.pdf')
+
+@pytest.fixture
+def sample_stream():
+    files = importlib_resources.files('recapturedocs')
+    return files.joinpath('static/Lorem ipsum.pdf').open(mode='rb')
