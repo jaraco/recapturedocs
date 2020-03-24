@@ -50,15 +50,18 @@ def install_service(install_root=install_root):
     assert aws_secret_key, "AWS secret key is null"
     dropbox_access_key = 'ld83qebudvbirmj'
     dropbox_secret_key = keyring.get_password(
-        'Dropbox RecaptureDocs',
-        dropbox_access_key)
+        'Dropbox RecaptureDocs', dropbox_access_key
+    )
     assert dropbox_secret_key, "Dropbox secret key is null"
     new_relic_license_key = input('New Relic license> ')
     sudo(f'mkdir -p {install_root}')
     files.upload_template("newrelic.ini", install_root, use_sudo=True)
     files.upload_template(
-        "ubuntu/recapture-docs.service", "/etc/systemd/system",
-        use_sudo=True, context=locals())
+        "ubuntu/recapture-docs.service",
+        "/etc/systemd/system",
+        use_sudo=True,
+        context=locals(),
+    )
     sudo('systemctl enable recapture-docs')
 
 
@@ -87,9 +90,5 @@ def configure_nginx():
     source = "ubuntu/nginx config"
     target = "/etc/nginx/sites-available/recapturedocs.com"
     files.upload_template(filename=source, destination=target, use_sudo=True)
-    sudo(
-        'ln -sf '
-        '../sites-available/recapturedocs.com '
-        '/etc/nginx/sites-enabled/'
-    )
+    sudo('ln -sf ' '../sites-available/recapturedocs.com ' '/etc/nginx/sites-enabled/')
     sudo('service nginx restart')
