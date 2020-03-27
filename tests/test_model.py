@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 import pytest
 import pkg_resources
 import boto.mturk.connection
@@ -11,7 +9,7 @@ from recapturedocs import aws
 pytestmark = pytest.mark.skip(reason="mechanical turk sandbox is gone")
 
 
-class TestRetypePageHIT(object):
+class TestRetypePageHIT:
     @classmethod
     def setup_class(cls):
         aws.set_connection_environment()
@@ -33,7 +31,7 @@ class TestRetypePageHIT(object):
         assert mturk_hit.HITTypeId == hit.get_hit_type()
 
 
-class TestConversionJob(object):
+class TestConversionJob:
     def test_load_pdf(self):
         lorem_ipsum = pkg_resources.resource_stream(
             'recapturedocs', 'static/Lorem ipsum.pdf'

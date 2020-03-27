@@ -2,8 +2,6 @@
 A few handlers to make sure recapturedocs objects are serializable to JSON
 """
 
-from __future__ import absolute_import
-
 import jsonpickle
 from boto.resultset import ResultSet
 from boto.mturk.connection import HIT

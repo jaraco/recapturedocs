@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-
 import os
 import sys
 import functools
@@ -14,10 +12,8 @@ import importlib
 import code
 import shlex
 import socket
+import urllib.parse
 
-from six.moves import urllib
-
-import six
 import pkg_resources
 import cherrypy
 import genshi.template
@@ -36,7 +32,7 @@ from . import errors
 from . import dropbox
 
 
-class JobServer(object):
+class JobServer:
     """
     The job server is both a CherryPy server and a list of jobs
     """
@@ -76,7 +72,7 @@ class JobServer(object):
                 'application/x-pdf': 'application/pdf',
             },
         )
-        content_type = content_type_map[six.text_type(file.content_type)]
+        content_type = content_type_map[str(file.content_type)]
         if content_type != 'application/pdf':
             msg = "Got content other than PDF: {content_type}"
             cherrypy.log(msg.format(**vars(file)), severity=logging.WARNING)
@@ -227,7 +223,7 @@ class JobServer(object):
         mb.notify(msg)
 
 
-class GGCServer(object):
+class GGCServer:
     """
     Server for Global Giving Community with Dropbox-hosted jobs
     """
@@ -291,7 +287,7 @@ class GGCServer(object):
         return tmpl.generate(lists=lists).render('xhtml')
 
 
-class Admin(object):
+class Admin:
     tl = genshi.template.TemplateLoader(
         [
             genshi.template.loader.package(__name__, 'view/admin'),
@@ -377,8 +373,7 @@ def start_server(configs):
     cherrypy.engine.exit()
 
 
-@six.add_metaclass(meta.LeafClassesMeta)
-class Command(object):
+class Command(metaclass=meta.LeafClassesMeta):
     def __init__(self, *configs):
         self.configs = configs
         self.configure()

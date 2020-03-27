@@ -1,9 +1,6 @@
-from __future__ import print_function
-
 import json
 import pprint
-
-from six.moves import urllib
+import urllib.parse
 
 import requests
 import keyring.http

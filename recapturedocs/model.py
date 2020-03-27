@@ -1,5 +1,3 @@
-from __future__ import print_function, absolute_import, division
-
 import itertools
 import mimetypes
 import hashlib
@@ -30,7 +28,7 @@ class DollarAmount(float):
         return '$' + super(DollarAmount, self).__str__()
 
 
-class RetypePageHIT(object):
+class RetypePageHIT:
     reward_per_page = DollarAmount(1)
 
     type_params = dict(
@@ -151,7 +149,7 @@ class RetypePageHIT(object):
             yield indent(str(assignment))
 
 
-class ConversionJob(object):
+class ConversionJob:
     """
     Conversion Job, a collection of pages to be retyped
     """

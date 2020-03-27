@@ -1,12 +1,10 @@
-import six
-
 import mock
 from jaraco.itertools import first
 
 from recapturedocs import server
 
 
-class TestNotification(object):
+class TestNotification:
     @classmethod
     def setup_class(cls):
         cls.server = server.JobServer()
@@ -24,5 +22,5 @@ class TestNotification(object):
         smtp_ob = smtp_class.return_value
         name, args, kwargs = first(smtp_ob.method_calls)
         assert name == 'sendmail'
-        assert 'test send message' in six.text_type(args)
-        assert isinstance(args[1][0], six.string_types)
+        assert 'test send message' in str(args)
+        assert isinstance(args[1][0], str)

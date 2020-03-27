@@ -23,7 +23,7 @@ def save_credentials(access_key, secret_key):
     keyring.set_password('AWS', access_key, secret_key)
 
 
-class ConnectionFactory(object):
+class ConnectionFactory:
     production = True
 
     @classmethod
