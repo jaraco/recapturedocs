@@ -1,3 +1,3 @@
-import pkg_resources
+from importlib import metadata
 
-version = pkg_resources.require('recapturedocs')[0].version
+version = metadata.version('recapturedocs')
