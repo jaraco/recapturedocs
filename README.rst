@@ -6,8 +6,8 @@
 
 .. _PyPI link: https://pypi.org/project/skeleton
 
-.. image:: https://dev.azure.com/jaraco/recapturedocs/_apis/build/status/jaraco.recapturedocs?branchName=master
-   :target: https://dev.azure.com/jaraco/recapturedocs/_build/latest?definitionId=1&branchName=master
+.. .. image:: https://dev.azure.com/jaraco/recapturedocs/_apis/build/status/jaraco.recapturedocs?branchName=master
+..    :target: https://dev.azure.com/jaraco/recapturedocs/_build/latest?definitionId=1&branchName=master
 
 .. image:: https://img.shields.io/travis/jaraco/recapturedocs/master.svg
    :target: https://travis-ci.org/jaraco/recapturedocs
