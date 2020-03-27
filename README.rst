@@ -4,7 +4,7 @@
 .. image:: https://img.shields.io/pypi/pyversions/recapturedocs.svg
    :target: `PyPI link`_
 
-.. _PyPI link: https://pypi.org/project/skeleton
+.. _PyPI link: https://pypi.org/project/recapturedocs
 
 .. .. image:: https://dev.azure.com/jaraco/recapturedocs/_apis/build/status/jaraco.recapturedocs?branchName=master
 ..    :target: https://dev.azure.com/jaraco/recapturedocs/_build/latest?definitionId=1&branchName=master
