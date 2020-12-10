@@ -15,7 +15,8 @@ def configure_AWS():
     secret_key = keyring.get_password('AWS', access_key)
     assert secret_key, "secret key is null"
     set_env_vars(
-        AWS_ACCESS_KEY_ID=access_key, AWS_SECRET_ACCESS_KEY=secret_key,
+        AWS_ACCESS_KEY_ID=access_key,
+        AWS_SECRET_ACCESS_KEY=secret_key,
     )
 
 

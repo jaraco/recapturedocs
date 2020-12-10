@@ -134,7 +134,8 @@ class JobServer:
     def process_page(self, job_id, page_number):
         tmpl = self.tl.load('retype page.xhtml')
         params = dict(
-            assignment_id=f'{job_id}-{page_number}', submit_url='submit_text',
+            assignment_id=f'{job_id}-{page_number}',
+            submit_url='submit_text',
         )
         return tmpl.generate(**params).render('xhtml')
 
@@ -187,7 +188,9 @@ class JobServer:
         path = 'text/' + name + '.rst'
         rst = pkg_resources.resource_stream('recapturedocs', path)
         parts = docutils.core.publish_parts(
-            source=rst, source_class=docutils.io.FileInput, writer_name='html',
+            source=rst,
+            source_class=docutils.io.FileInput,
+            writer_name='html',
         )
         html = genshi.HTML(parts['html_body'])
         tmpl = self.tl.load('simple.xhtml')
@@ -255,8 +258,14 @@ class GGCServer:
         sess = dropbox.get_session()
         access_token = sess.obtain_access_token(self.tokens[oauth_token])
         persistence.store.dropbox.tokens.update(
-            dict(_id=uid,),
-            dict(_id=uid, key=access_token.key, secret=access_token.secret,),
+            dict(
+                _id=uid,
+            ),
+            dict(
+                _id=uid,
+                key=access_token.key,
+                secret=access_token.secret,
+            ),
             upsert=True,
         )
         info = dropbox.get_client(sess).account_info()
@@ -347,7 +356,11 @@ def start_server(configs):
     server._app = app
     list(map(app.merge, configs))
     admin_app = cherrypy.tree.mount(Admin(server), '/admin')
-    passwords = cherrypy.lib.auth_basic.checkpassword_dict(dict(admin='g0tch4-h4x0r',))
+    passwords = cherrypy.lib.auth_basic.checkpassword_dict(
+        dict(
+            admin='g0tch4-h4x0r',
+        )
+    )
     devel_configs = list(configs) + [
         {
             '/': {

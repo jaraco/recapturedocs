@@ -6,7 +6,8 @@ import dropbox
 
 def get_session(access_key='ld83qebudvbirmj'):
     secret = os.environ.setdefault(
-        'DROPBOX_SECRET_KEY', keyring.get_password('Dropbox RecaptureDocs', access_key),
+        'DROPBOX_SECRET_KEY',
+        keyring.get_password('Dropbox RecaptureDocs', access_key),
     )
     assert secret, "Dropbox secret is null"
     return dropbox.session.DropboxSession(access_key, secret, 'app_folder')

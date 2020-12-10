@@ -11,7 +11,8 @@ class TestNotification:
         cls.server._app = mock.Mock(
             config=dict(
                 notification=dict(
-                    smtp_to='test@example.com', smtp_host='smtp.example.com',
+                    smtp_to='test@example.com',
+                    smtp_host='smtp.example.com',
                 )
             )
         )
