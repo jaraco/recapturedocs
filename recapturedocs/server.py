@@ -13,6 +13,7 @@ import code
 import shlex
 import socket
 import urllib.parse
+from typing import Dict
 
 import pkg_resources
 import cherrypy
@@ -238,7 +239,7 @@ class GGCServer:
         ]
     )
 
-    tokens = dict()
+    tokens: Dict[str, str] = dict()
 
     @cherrypy.expose
     def index(self):

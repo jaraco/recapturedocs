@@ -38,7 +38,7 @@ class OldStyleClassParamsHandler(jsonpickle.handlers.BaseHandler):
 
 
 class OldStyleClassParamsHandler_None(OldStyleClassParamsHandler):
-    params = (None,)
+    params = (None,)  # type: ignore
 
 
 def setup_handlers():
