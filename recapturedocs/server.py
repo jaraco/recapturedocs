@@ -249,7 +249,7 @@ class GGCServer:
         sess = dropbox.get_session()
         request_token = sess.obtain_request_token()
         self.tokens[request_token.key] = request_token
-        callback = cherrypy.url(f'save_token')
+        callback = cherrypy.url('save_token')
         url = sess.build_authorize_url(request_token, oauth_callback=callback)
         raise cherrypy.HTTPRedirect(url)
 
