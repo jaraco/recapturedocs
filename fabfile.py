@@ -7,6 +7,7 @@ fab bootstrap
 
 import itertools
 
+import keyring
 from fabric import task
 from jaraco.fabric import files
 
@@ -56,12 +57,29 @@ def install_env(c):
     c.run(f'{install_root}/bin/python -m pip install -U pip')
 
 
+def _install_service_recapturedocs(c):
+    aws_access_key = '0ZWJV1BMM1Q6GXJ9J2G2'
+    aws_secret_key = keyring.get_password('AWS', aws_access_key)
+    assert aws_secret_key, "AWS secret key is null"
+    dropbox_access_key = 'ld83qebudvbirmj'
+    dropbox_secret_key = keyring.get_password(
+        'Dropbox RecaptureDocs', dropbox_access_key
+    )
+    assert dropbox_secret_key, "Dropbox secret key is null"
+    new_relic_license_key = keyring.get_password(
+        'New Relic License', 'RecaptureDocs')
+    globals().update(locals())
+    c.sudo(f'mkdir -p {install_root}')
+    files.upload_template(c, "newrelic.ini", install_root)
+
+
 @task(hosts=hosts)
 def install_service(c):
+    _install_service_recapturedocs(c)
     files.upload_template(
+        c,
         f"ubuntu/{project}.service",
         "/etc/systemd/system",
-        use_sudo=True,
         context=globals(),
     )
     c.sudo(f'systemctl enable {project}')
