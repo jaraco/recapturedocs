@@ -15,9 +15,9 @@ flatten = itertools.chain.from_iterable
 host = 'spidey'
 hosts = [host]
 
-project = 'jaraco.site'
-site = 'jaraco.com'
-install_root = '/opt/jaraco.com'
+project = 'recapturedocs'
+site = 'recapturedocs.com'
+install_root = '/opt/recapturedocs'
 python = 'python3.8'
 
 
