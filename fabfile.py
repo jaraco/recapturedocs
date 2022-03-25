@@ -49,7 +49,7 @@ def install_dependencies(c):
 
 @task(hosts=hosts)
 def install_env(c):
-    user = c.run('whoami')
+    user = c.run('whoami').stdout.strip()
     c.sudo(f'rm -R {install_root} || echo -n')
     c.sudo(f'mkdir -p {install_root}')
     c.sudo(f'chown {user} {install_root}')
