@@ -103,6 +103,7 @@ def install(c):
 @task(hosts=hosts)
 def remove_all(c):
     c.sudo(f'systemctl stop {project} || echo -n')
+    c.sudo(f'rm /etc/systemd/system/{project}.service')
     c.sudo(f'rm -Rf {install_root}')
 
 
