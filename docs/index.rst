@@ -1,5 +1,5 @@
-Welcome to recapturedocs documentation!
-========================================
+Welcome to |project| documentation!
+===================================
 
 .. toctree::
    :maxdepth: 1
