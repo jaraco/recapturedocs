@@ -1,10 +1,7 @@
 .. image:: https://img.shields.io/pypi/v/recapturedocs.svg
-   :target: `PyPI link`_
+   :target: https://pypi.org/project/recapturedocs
 
 .. image:: https://img.shields.io/pypi/pyversions/recapturedocs.svg
-   :target: `PyPI link`_
-
-.. _PyPI link: https://pypi.org/project/recapturedocs
 
 .. image:: https://github.com/jaraco/recapturedocs/workflows/tests/badge.svg
    :target: https://github.com/jaraco/recapturedocs/actions?query=workflow%3A%22tests%22
