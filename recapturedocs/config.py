@@ -8,7 +8,12 @@ import cherrypy
 
 appname = 'RecaptureDocs'
 
-ensure_dir_exists = jaraco.functools.apply(lambda p: p.makedirs_p())
+
+def _ensure_exists(p: Path) -> Path:
+    return p.makedirs_p()
+
+
+ensure_dir_exists = jaraco.functools.apply(_ensure_exists)
 
 
 def get_log_file():
