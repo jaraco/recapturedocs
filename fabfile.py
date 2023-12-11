@@ -66,8 +66,7 @@ def _install_service_recapturedocs(c):
         'Dropbox RecaptureDocs', dropbox_access_key
     )
     assert dropbox_secret_key, "Dropbox secret key is null"
-    new_relic_license_key = keyring.get_password(
-        'New Relic License', 'RecaptureDocs')
+    new_relic_license_key = keyring.get_password('New Relic License', 'RecaptureDocs')
     globals().update(locals())
     c.sudo(f'mkdir -p {install_root}')
     files.upload_template(c, "newrelic.ini", install_root)
