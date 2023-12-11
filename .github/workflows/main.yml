@@ -26,7 +26,8 @@ jobs:
         python:
         - "3.9"
         - "3.11"
-        - "3.12"
+        # boto/boto#3951
+        # - "3.12"
         platform:
         - ubuntu-latest
         - macos-latest
