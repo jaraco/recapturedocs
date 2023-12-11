@@ -10,7 +10,7 @@ from jaraco.itertools import one, first
 from jaraco.text import indent
 import jaraco.modb
 import boto.mturk.connection
-from PyPDF2 import PdfFileReader, PdfFileWriter
+from PyPDF2 import PdfReader, PdfWriter
 
 from . import aws
 from . import persistence
@@ -193,11 +193,11 @@ class ConversionJob:
 
     @staticmethod
     def split_pdf(source_stream):
-        input = PdfFileReader(source_stream)
+        input = PdfReader(source_stream)
 
         def get_page_data(page):
-            output = PdfFileWriter()
-            output.addPage(page)
+            output = PdfWriter()
+            output.add_page(page)
             stream = io.BytesIO()
             output.write(stream)
             return stream.getvalue()
