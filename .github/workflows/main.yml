@@ -57,7 +57,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        job: [diffcov, docs]
+        job:
+        # boto/boto#3951
+        # - diffcov
+        - docs
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
