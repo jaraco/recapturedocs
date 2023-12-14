@@ -6,10 +6,10 @@ import io
 import logging
 import math
 
+import botocore
+import jaraco.modb
 from jaraco.itertools import one, first
 from jaraco.text import indent
-import jaraco.modb
-import boto.mturk.connection
 from PyPDF2 import PdfReader, PdfWriter
 
 from . import aws
@@ -26,6 +26,29 @@ class ConversionError(BaseException):
 class DollarAmount(float):
     def __str__(self):
         return '$' + super(DollarAmount, self).__str__()
+
+
+# from https://stackoverflow.com/a/56903989/70170
+class ExternalQuestion:
+    """
+    An object for constructing an External Question.
+    """
+
+    schema_url = "http://mechanicalturk.amazonaws.com/AWSMechanicalTurkDataSchemas/2006-07-14/ExternalQuestion.xsd"
+    template = (
+        '<ExternalQuestion xmlns="%(schema_url)s"><ExternalURL>%%(external_url)s</ExternalURL><FrameHeight>%%(frame_height)s</FrameHeight></ExternalQuestion>'
+        % vars()
+    )
+
+    def __init__(self, external_url, frame_height):
+        self.external_url = external_url
+        self.frame_height = frame_height
+
+    def get_as_params(self, label='ExternalQuestion'):
+        return {label: self.get_as_xml()}
+
+    def get_as_xml(self):
+        return self.template % vars(self)
 
 
 class RetypePageHIT:
@@ -48,7 +71,7 @@ class RetypePageHIT:
         Return all HITs that match this HIT type
         """
         conn = aws.ConnectionFactory.get_mturk_connection()
-        all_hits = conn.get_all_hits()
+        all_hits = conn.list_hits()
         hit_type = cls.get_hit_type()
 
         def is_local_hit(h):
@@ -80,7 +103,7 @@ class RetypePageHIT:
     @classmethod
     def get_hit_type(cls):
         conn = aws.ConnectionFactory.get_mturk_connection()
-        result = one(conn.register_hit_type(**cls.type_params))
+        result = one(conn.create_hit_type(**cls.type_params))
         return result.HITTypeId
 
     def register(self):
@@ -89,7 +112,8 @@ class RetypePageHIT:
             res = conn.create_hit(
                 question=self.get_external_question(), **self.type_params
             )
-        except boto.mturk.connection.MTurkRequestError as error:
+        except botocore.exceptions.BotoCoreError as error:
+            # todo: is this the right attribute to check?
             if not error.error_code == 'AWS.MechanicalTurk.InsufficientFunds':
                 raise
             raise errors.InsufficientFunds()
@@ -109,7 +133,7 @@ class RetypePageHIT:
 
     def load_assignments(self):
         conn = aws.ConnectionFactory.get_mturk_connection()
-        return conn.get_assignments(self.id)
+        return conn.list_assignments_for_hit(self.id)
 
     def max_assignments(self):
         res = getattr(self.registration_result[0], 'MaxAssignments', None)
@@ -139,8 +163,6 @@ class RetypePageHIT:
         return self.id == id
 
     def get_external_question(self):
-        from boto.mturk.question import ExternalQuestion
-
         return ExternalQuestion(external_url=self.server_url, frame_height=600)
 
     def _report(self):

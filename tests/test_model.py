@@ -1,20 +1,13 @@
 import pytest
 import pkg_resources
-import boto.mturk.connection
 
 from recapturedocs import model
-from recapturedocs import aws
 
 
 pytestmark = pytest.mark.skip(reason="mechanical turk sandbox is gone")
 
 
 class TestRetypePageHIT:
-    @classmethod
-    def setup_class(cls):
-        aws.set_connection_environment()
-        aws.ConnectionFactory.production = False
-
     def test_get_hit_type(self):
         model.RetypePageHIT.get_hit_type()
 
@@ -24,7 +17,8 @@ class TestRetypePageHIT:
         assert hasattr(hit, 'registration_result')
         assert len(hit.registration_result) == 1
         mturk_hit = hit.registration_result[0]
-        assert isinstance(mturk_hit, boto.mturk.connection.HIT)
+        # TODO: what object is returned?
+        # assert isinstance(mturk_hit, HIT)
         assert mturk_hit.IsValid == 'True'
         assert len(mturk_hit.HITId) == 30
         assert mturk_hit.HITId == hit.id

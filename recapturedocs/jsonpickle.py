@@ -3,8 +3,12 @@ A few handlers to make sure recapturedocs objects are serializable to JSON
 """
 
 import jsonpickle
-from boto.resultset import ResultSet
-from boto.mturk.connection import HIT
+
+# TODO: what types are returned for ResultSet and HIT?
+# from boto.resultset import ResultSet
+# from boto.mturk.connection import HIT
+ResultSet = type('ResultSet')
+HIT = type('HIT')
 
 
 class BotoResultSetHandler(jsonpickle.handlers.BaseHandler):

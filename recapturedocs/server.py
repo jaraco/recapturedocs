@@ -15,10 +15,10 @@ import socket
 import urllib.parse
 from typing import Dict
 
+import boto3
 import pkg_resources
 import cherrypy
 import genshi.template
-import boto
 import jaraco.collections as dictlib
 import jaraco.logging
 from jaraco.classes import meta
@@ -27,7 +27,6 @@ from jaraco.email import notification
 import recapturedocs
 from . import model
 from . import persistence
-from . import aws
 from . import config
 from . import errors
 from . import dropbox
@@ -347,7 +346,6 @@ def start_server(configs):
     cherrypy.config.update.
     """
     importlib.import_module('.agency', __package__)
-    aws.set_connection_environment()
     server = JobServer()
     if hasattr(cherrypy.engine, "signal_handler"):
         cherrypy.engine.signal_handler.subscribe()
@@ -374,8 +372,7 @@ def start_server(configs):
     list(map(admin_app.merge, devel_configs))
     cherrypy.tree.mount(GGCServer(), '/ggc')
     if not cherrypy.config.get('server.production', False):
-        boto.set_stream_logger('recapturedocs')
-        aws.ConnectionFactory.production = False
+        boto3.set_stream_logger('recapturedocs')
     server.send_notice(
         "RecaptureDocs {version} server starting on {hostname}".format(
             hostname=socket.getfqdn(),
