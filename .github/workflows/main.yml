@@ -26,8 +26,7 @@ jobs:
         python:
         - "3.9"
         - "3.11"
-        # boto/boto#3951
-        # - "3.12"
+        - "3.12"
         platform:
         - ubuntu-latest
         - macos-latest
@@ -58,8 +57,7 @@ jobs:
       fail-fast: false
       matrix:
         job:
-        # boto/boto#3951
-        # - diffcov
+        - diffcov
         - docs
     runs-on: ubuntu-latest
     steps:
