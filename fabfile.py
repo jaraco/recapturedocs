@@ -77,7 +77,7 @@ def install_service(c):
     _install_service_recapturedocs(c)
     files.upload_template(
         c,
-        f"ubuntu/{project}.service",
+        f"recapturedocs/ubuntu/{project}.service",
         "/etc/systemd/system",
         context=globals(),
     )
@@ -109,7 +109,7 @@ def remove_all(c):
 @task(hosts=hosts)
 def configure_nginx(c):
     c.sudo('apt install -y nginx')
-    source = "ubuntu/nginx config"
+    source = "recapturedocs/ubuntu/nginx config"
     target = f"/etc/nginx/sites-available/{site}"
     files.upload_template(c, src=source, dest=target)
     c.sudo(f'ln -sf ../sites-available/{site} /etc/nginx/sites-enabled/')
