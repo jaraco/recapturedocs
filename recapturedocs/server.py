@@ -34,9 +34,9 @@ class JobServer:
     The job server is both a CherryPy server and a list of jobs
     """
 
-    tl = genshi.template.TemplateLoader(
-        [genshi.template.loader.package(__name__, 'view')]
-    )
+    tl = genshi.template.TemplateLoader([
+        genshi.template.loader.package(__name__, 'view')
+    ])
 
     @cherrypy.expose
     def index(self):
@@ -228,12 +228,10 @@ class GGCServer:
     Server for Global Giving Community with Dropbox-hosted jobs
     """
 
-    tl = genshi.template.TemplateLoader(
-        [
-            genshi.template.loader.package(__name__, 'view/ggc'),
-            genshi.template.loader.package(__name__, 'view'),
-        ]
-    )
+    tl = genshi.template.TemplateLoader([
+        genshi.template.loader.package(__name__, 'view/ggc'),
+        genshi.template.loader.package(__name__, 'view'),
+    ])
 
     tokens: Dict[str, str] = dict()
 
@@ -294,12 +292,10 @@ class GGCServer:
 
 
 class Admin:
-    tl = genshi.template.TemplateLoader(
-        [
-            genshi.template.loader.package(__name__, 'view/admin'),
-            genshi.template.loader.package(__name__, 'view'),
-        ]
-    )
+    tl = genshi.template.TemplateLoader([
+        genshi.template.loader.package(__name__, 'view/admin'),
+        genshi.template.loader.package(__name__, 'view'),
+    ])
 
     def __init__(self, server):
         self.server = server
