@@ -1,8 +1,7 @@
-import pytest
 import pkg_resources
+import pytest
 
 from recapturedocs import model
-
 
 pytestmark = pytest.mark.skip(reason="mechanical turk sandbox is gone")
 

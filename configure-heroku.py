@@ -2,8 +2,8 @@ import json
 import pprint
 import urllib.parse
 
-import requests
 import keyring.http
+import requests
 
 app_name = 'recapturedocs'
 
@@ -59,7 +59,7 @@ def do(path, method='GET', **kwargs):
 
 
 def install_addon(name):
-    path = 'addons/{name}'.format(name=name)
+    path = f'addons/{name}'
     do(path, method='POST')
 
 

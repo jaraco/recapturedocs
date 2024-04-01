@@ -1,20 +1,18 @@
-import itertools
-import mimetypes
-import hashlib
 import datetime
+import hashlib
 import io
+import itertools
 import logging
 import math
+import mimetypes
 
 import botocore
 import jaraco.modb
-from jaraco.itertools import one, first
+from jaraco.itertools import first, one
 from jaraco.text import indent
 from PyPDF2 import PdfReader, PdfWriter
 
-from . import aws
-from . import persistence
-from . import errors
+from . import aws, errors, persistence
 
 log = logging.getLogger(__name__)
 
@@ -25,7 +23,7 @@ class ConversionError(BaseException):
 
 class DollarAmount(float):
     def __str__(self):
-        return '$' + super(DollarAmount, self).__str__()
+        return '$' + super().__str__()
 
 
 # from https://stackoverflow.com/a/56903989/70170
@@ -35,9 +33,8 @@ class ExternalQuestion:
     """
 
     schema_url = "http://mechanicalturk.amazonaws.com/AWSMechanicalTurkDataSchemas/2006-07-14/ExternalQuestion.xsd"
-    template = (
-        '<ExternalQuestion xmlns="%(schema_url)s"><ExternalURL>%%(external_url)s</ExternalURL><FrameHeight>%%(frame_height)s</FrameHeight></ExternalQuestion>'
-        % vars()
+    template = '<ExternalQuestion xmlns="{schema_url}"><ExternalURL>%(external_url)s</ExternalURL><FrameHeight>%(frame_height)s</FrameHeight></ExternalQuestion>'.format(
+        **vars()
     )
 
     def __init__(self, external_url, frame_height):
@@ -116,7 +113,7 @@ class RetypePageHIT:
             # todo: is this the right attribute to check?
             if not error.error_code == 'AWS.MechanicalTurk.InsufficientFunds':
                 raise
-            raise errors.InsufficientFunds()
+            raise errors.InsufficientFunds() from error
         self.registration_result = res
         return res
 

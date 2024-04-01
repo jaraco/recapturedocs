@@ -1,5 +1,6 @@
-from recapturedocs.model import ConversionJob
 import pickle
+
+from recapturedocs.model import ConversionJob
 
 
 def test_persist_ConversionJob(sample_stream):

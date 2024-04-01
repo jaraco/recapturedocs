@@ -7,8 +7,8 @@ import jsonpickle
 # TODO: what types are returned for ResultSet and HIT?
 # from boto.resultset import ResultSet
 # from boto.mturk.connection import HIT
-ResultSet = type('ResultSet')
-HIT = type('HIT')
+ResultSet = str
+HIT = str
 
 
 class BotoResultSetHandler(jsonpickle.handlers.BaseHandler):

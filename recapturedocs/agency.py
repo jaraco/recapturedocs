@@ -1,5 +1,5 @@
-import httpagentparser
 import cherrypy
+import httpagentparser
 
 
 class AgentHelper(dict):

@@ -1,10 +1,10 @@
-import sys
 import os
 import platform
+import sys
 
-from path import Path
-import jaraco.functools
 import cherrypy
+import jaraco.functools
+from path import Path
 
 appname = 'RecaptureDocs'
 

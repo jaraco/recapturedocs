@@ -1,35 +1,32 @@
-import os
-import sys
-import functools
-import itertools
 import argparse
-import contextlib
-import inspect
-import docutils.io
-import docutils.core
-import logging
-import importlib
 import code
+import contextlib
+import functools
+import importlib
+import inspect
+import itertools
+import logging
+import os
 import shlex
 import socket
+import sys
 import urllib.parse
 from typing import Dict
 
 import boto3
-import pkg_resources
 import cherrypy
+import docutils.core
+import docutils.io
 import genshi.template
 import jaraco.collections as dictlib
 import jaraco.logging
+import pkg_resources
 from jaraco.classes import meta
 from jaraco.email import notification
 
 import recapturedocs
-from . import model
-from . import persistence
-from . import config
-from . import errors
-from . import dropbox
+
+from . import config, dropbox, errors, model, persistence
 
 
 class JobServer:
@@ -454,7 +451,7 @@ class Interact(Command):
             'global': {'autoreload.on': False, 'log.screen': False},
         }
         self.configs = list(itertools.chain([g_config], self.configs))
-        super(Interact, self).configure()
+        super().configure()
 
     def run(self):
         with start_server(self.configs) as server:

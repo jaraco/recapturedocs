@@ -1,7 +1,7 @@
-import keyring
 import os
 
 import boto3
+import keyring
 
 
 def get_session(access_key='0ZWJV1BMM1Q6GXJ9J2G2'):

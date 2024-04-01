@@ -1,8 +1,8 @@
 import cherrypy
 from jaraco.mongodb import helper
 
-from .config import get_config_dir
 from . import jsonpickle
+from .config import get_config_dir
 
 
 def init_mongodb():

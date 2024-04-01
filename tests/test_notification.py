@@ -1,4 +1,5 @@
-import mock
+from unittest import mock
+
 from jaraco.itertools import first
 
 from recapturedocs import server
