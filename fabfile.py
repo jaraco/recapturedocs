@@ -1,7 +1,7 @@
 """
 Routines for installing, staging, and serving jaraco.com on Ubuntu.
 
-To install on a clean Ubuntu Bionic box, simply run
+To install on an Ubuntu box previously bootstrapped with jaraco.site:
 fab bootstrap
 """
 
@@ -10,49 +10,39 @@ import itertools
 import keyring
 from fabric import task
 from jaraco.fabric import files
+from jaraco.fabric import certs
 
 flatten = itertools.chain.from_iterable
 
-host = 'spidey'
+host = 'kelvin'
 hosts = [host]
 
 project = 'recapturedocs'
 site = 'recapturedocs.com'
 install_root = '/opt/recapturedocs'
-python = 'python3.8'
+python = 'python3'
+ubuntu = 'recapturedocs/ubuntu'
 
 
 @task(hosts=hosts)
 def bootstrap(c):
-    install_dependencies(c)
+    # assumes jaraco.site has already been run
     install_env(c)
     install_service(c)
     update(c)
     configure_nginx(c)
-    install_cert(c)
+    install_certs(c)
+    enable_nginx(c)
 
 
 @task(hosts=hosts)
-def install_dependencies(c):
-    # fop required by the resume endpoint
-    c.sudo('apt install -y fop')
-    # certbot for certificates
-    c.sudo('apt-add-repository -y ppa:certbot/certbot')
-    c.sudo('apt update -y')
-    c.sudo('apt install -y python-certbot-nginx')
-
-    c.sudo('apt install -y software-properties-common')
-    c.sudo('add-apt-repository -y ppa:deadsnakes/ppa')
-    c.sudo('apt update -y')
-    c.sudo(f'apt install -y {python} {python}-venv')
+def install_certs(c):
+    certs.install(c, 'recapturedocs.com', 'www.recapturedocs.com')
 
 
 @task(hosts=hosts)
 def install_env(c):
-    user = c.run('whoami').stdout.strip()
-    c.sudo(f'rm -R {install_root} || echo -n')
-    c.sudo(f'mkdir -p {install_root}')
-    c.sudo(f'chown {user} {install_root}')
+    c.run(f'rm -R {install_root} || echo -n')
     c.run(f'{python} -m venv {install_root}')
     c.run(f'{install_root}/bin/python -m pip install -U pip')
 
@@ -68,7 +58,6 @@ def _install_service_recapturedocs(c):
     assert dropbox_secret_key, "Dropbox secret key is null"
     new_relic_license_key = keyring.get_password('New Relic License', 'RecaptureDocs')
     globals().update(locals())
-    c.sudo(f'mkdir -p {install_root}')
     files.upload_template(c, "newrelic.ini", install_root)
 
 
@@ -77,7 +66,7 @@ def install_service(c):
     _install_service_recapturedocs(c)
     files.upload_template(
         c,
-        f"recapturedocs/ubuntu/{project}.service",
+        f"{ubuntu}/{project}.service",
         "/etc/systemd/system",
         context=globals(),
     )
@@ -94,9 +83,9 @@ def install(c):
     """
     Install project to environment at root.
     """
-    c.run(f'git clone https://github.com/jaraco/{project} || echo -n')
-    c.run(f'git -C {project} pull')
-    c.run(f'{install_root}/bin/python -m pip install -U ./{project}')
+    c.run(
+        f'{install_root}/bin/python -m pip install git+https://github.com/jaraco/{project}'
+    )
 
 
 @task(hosts=hosts)
@@ -109,31 +98,14 @@ def remove_all(c):
 @task(hosts=hosts)
 def configure_nginx(c):
     c.sudo('apt install -y nginx')
-    source = "recapturedocs/ubuntu/nginx config"
+    source = f"{ubuntu}/nginx config"
     target = f"/etc/nginx/sites-available/{site}"
     files.upload_template(c, src=source, dest=target)
-    c.sudo(f'ln -sf ../sites-available/{site} /etc/nginx/sites-enabled/')
     c.sudo('service nginx restart')
 
 
 @task(hosts=hosts)
-def install_cert(c):
-    cmd = [
-        'certbot',
-        '--agree-tos',
-        '--email',
-        'jaraco@jaraco.com',
-        '--non-interactive',
-        '--nginx',
-        'certonly',
-    ]
-    sites = (
-        'jaraco.com',
-        'www.jaraco.com',
-        'blog.jaraco.com',
-        'www.recapturedocs.com',
-        'scicomm.pro',
-        'www.scicomm.pro',
-    )
-    cmd += list(flatten(['--domain', name] for name in sites))
-    c.sudo(' '.join(cmd))
+def enable_nginx(c):
+    # only enable after certificates are installed
+    c.sudo(f'ln -sf ../sites-available/{site} /etc/nginx/sites-enabled/')
+    c.sudo('service nginx restart')
