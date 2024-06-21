@@ -42,7 +42,7 @@ dependencies = [
 dynamic = ["version"]
 
 [project.urls]
-Homepage = "https://github.com/jaraco/recapturedocs"
+Source = "https://github.com/jaraco/recapturedocs"
 
 [project.optional-dependencies]
 test = [
