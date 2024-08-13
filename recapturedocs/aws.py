@@ -6,10 +6,7 @@ import keyring
 
 def get_session(access_key='0ZWJV1BMM1Q6GXJ9J2G2'):
     """
-    boto requires the credentials to be either passed to the connection,
-    stored in a unix-like config file unencrypted, or available in
-    the environment, so pull the encrypted key out and put it in the
-    environment.
+    Construct a boto session for the given access key.
     """
     if 'AWS_SECRET_ACCESS_KEY' in os.environ:
         return
