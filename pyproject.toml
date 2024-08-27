@@ -86,6 +86,8 @@ type = [
 	"pytest-mypy",
 
 	# local
+	"boto3-stubs",
+	"botocore-stubs",
 	"types-requests",
 	"types-boto",
 	"types-docutils",
@@ -99,7 +101,3 @@ recapture-docs = "recapturedocs.server:handle_command_line"
 
 
 [tool.setuptools_scm]
-
-
-[tool.pytest-enabler.mypy]
-# Disabled due to jaraco/skeleton#143
