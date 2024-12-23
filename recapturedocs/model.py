@@ -53,7 +53,7 @@ class RetypePageHIT:
 
     type_params = dict(
         title="Type a Page",
-        description="You will read a scanned page and retype its textual " "contents.",
+        description="You will read a scanned page and retype its textual contents.",
         keywords='typing page rekey retype'.split(),
         reward=float(reward_per_page),
         duration=datetime.timedelta(hours=2),
