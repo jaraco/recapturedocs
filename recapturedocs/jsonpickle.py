@@ -2,6 +2,10 @@
 A few handlers to make sure recapturedocs objects are serializable to JSON
 """
 
+from __future__ import annotations
+
+from typing import ClassVar
+
 import jsonpickle
 
 # TODO: what types are returned for ResultSet and HIT?
@@ -28,7 +32,7 @@ class BotoResultSetHandler(jsonpickle.handlers.BaseHandler):
 
 
 class OldStyleClassParamsHandler(jsonpickle.handlers.BaseHandler):
-    params = ()
+    params: ClassVar[tuple[object, ...]] = ()
 
     def flatten(self, obj, data):
         data.update(self._base.flatten(vars(obj)))
@@ -42,7 +46,7 @@ class OldStyleClassParamsHandler(jsonpickle.handlers.BaseHandler):
 
 
 class OldStyleClassParamsHandler_None(OldStyleClassParamsHandler):
-    params = (None,)  # type: ignore
+    params = (None,)
 
 
 def setup_handlers():
