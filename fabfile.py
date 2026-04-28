@@ -9,8 +9,7 @@ import itertools
 
 import keyring
 from fabric import task
-from jaraco.fabric import files
-from jaraco.fabric import certs
+from jaraco.fabric import certs, files
 
 flatten = itertools.chain.from_iterable
 
