@@ -333,7 +333,7 @@ def get_all_hits(conn):
         if not search_rs.status:
             raise Exception(
                 f'Error performing search, code:{search_rs.Code}, '
-                'message:{search_rs.Message}'
+                f'message:{search_rs.Message}'
             )
         return search_rs
 
