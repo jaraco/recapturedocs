@@ -12,7 +12,7 @@ import shlex
 import socket
 import sys
 import urllib.parse
-from typing import Dict
+from typing import ClassVar
 
 import boto3
 import cherrypy
@@ -233,7 +233,7 @@ class GGCServer:
         genshi.template.loader.package(__name__, 'view'),
     ])
 
-    tokens: Dict[str, str] = dict()
+    tokens: ClassVar[dict[str, str]] = {}
 
     @cherrypy.expose
     def index(self):

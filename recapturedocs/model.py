@@ -5,6 +5,7 @@ import itertools
 import logging
 import math
 import mimetypes
+from typing import ClassVar
 
 import botocore
 import jaraco.modb
@@ -51,10 +52,10 @@ class ExternalQuestion:
 class RetypePageHIT:
     reward_per_page = DollarAmount(1)
 
-    type_params = dict(
+    type_params: ClassVar = dict(
         title="Type a Page",
         description="You will read a scanned page and retype its textual contents.",
-        keywords='typing page rekey retype'.split(),
+        keywords=['typing', 'page', 'rekey', 'retype'],
         reward=float(reward_per_page),
         duration=datetime.timedelta(hours=2),
     )
@@ -152,7 +153,7 @@ class RetypePageHIT:
         assignments = self.assignments_cache
         assignment = first(assignments)
         answers_set = one(assignment.answers)
-        answer = dict((answer.qid, one(answer.fields)) for answer in answers_set)
+        answer = {answer.qid: one(answer.fields) for answer in answers_set}
         return answer['content']
 
     def matches(self, id):
@@ -198,7 +199,7 @@ class ConversionJob:
 
     @classmethod
     def _from_file(cls_, filename):
-        content_type, encoding = mimetypes.guess_type(filename)
+        content_type, _encoding = mimetypes.guess_type(filename)
         return cls_(open(filename, 'rb'), content_type, filename)
 
     @property
@@ -298,7 +299,7 @@ class MTurkConversionJob(ConversionJob):
         return next(hit for hit in self.hits if hit.id == hit_id)
 
     def page_for_hit(self, hit_id):
-        pages = dict((hit.id, page) for hit, page in zip(self.hits, self.pages))
+        pages = {hit.id: page for hit, page in zip(self.hits, self.pages)}
         return pages[hit_id]
 
     @classmethod
@@ -331,7 +332,7 @@ def get_all_hits(conn):
     def get_page_hits(page):
         search_rs = conn.search_hits(page_size=page_size, page_number=page)
         if not search_rs.status:
-            raise Exception(
+            raise RuntimeError(
                 f'Error performing search, code:{search_rs.Code}, '
                 f'message:{search_rs.Message}'
             )
