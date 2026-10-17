@@ -472,6 +472,13 @@ class Daemon(Command):
 
 
 def get_package_config(name):
+    """
+    Resolve the path to a config file bundled with the package.
+
+    >>> import os
+    >>> os.path.isfile(get_package_config('prod'))
+    True
+    """
     name = name if name.endswith('.conf') else name + '.conf'
     return str(importlib.resources.files('recapturedocs') / name)
 
