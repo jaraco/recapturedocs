@@ -1,4 +1,5 @@
-import pkg_resources
+import importlib.resources
+
 import pytest
 
 from recapturedocs import model
@@ -26,8 +27,11 @@ class TestRetypePageHIT:
 
 class TestConversionJob:
     def test_load_pdf(self):
-        lorem_ipsum = pkg_resources.resource_stream(
-            'recapturedocs', 'static/Lorem ipsum.pdf'
+        lorem_ipsum = (
+            importlib.resources
+            .files('recapturedocs')
+            .joinpath('static/Lorem ipsum.pdf')
+            .open('rb')
         )
         job = model.ConversionJob(lorem_ipsum, 'application/pdf', 'http://localhost/')
         assert len(job.pages) == 4

@@ -1,8 +1,9 @@
 import argparse
 import code
 import contextlib
-import functools
 import importlib
+import importlib.metadata
+import importlib.resources
 import inspect
 import itertools
 import logging
@@ -20,7 +21,6 @@ import docutils.io
 import genshi.template
 import jaraco.collections as dictlib
 import jaraco.logging
-import pkg_resources
 from jaraco.classes import meta
 from jaraco.email import notification
 
@@ -183,7 +183,7 @@ class JobServer:
     @cherrypy.expose
     def text(self, name):
         path = 'text/' + name + '.rst'
-        rst = pkg_resources.resource_stream('recapturedocs', path)
+        rst = importlib.resources.files('recapturedocs').joinpath(path).open('rb')
         parts = docutils.core.publish_parts(
             source=rst,
             source_class=docutils.io.FileInput,
@@ -369,7 +369,7 @@ def start_server(configs):
     server.send_notice(
         "RecaptureDocs {version} server starting on {hostname}".format(
             hostname=socket.getfqdn(),
-            version=pkg_resources.require('recapturedocs')[0].version,
+            version=importlib.metadata.version('recapturedocs'),
         )
     )
     cherrypy.engine.start()
@@ -399,7 +399,7 @@ class Command(metaclass=meta.LeafClassesMeta):
                 'tools.agent_parser.on': True,
             },
         }
-        static_dir = pkg_resources.resource_filename('recapturedocs', 'static')
+        static_dir = str(importlib.resources.files('recapturedocs') / 'static')
         static_config = {
             '/static': {'tools.staticdir.on': True, 'tools.staticdir.dir': static_dir},
         }
@@ -473,8 +473,7 @@ class Daemon(Command):
 
 def get_package_config(name):
     name = name if name.endswith('.conf') else name + '.conf'
-    pkg_res = functools.partial(pkg_resources.resource_filename, 'recapturedocs')
-    return pkg_res(name)
+    return str(importlib.resources.files('recapturedocs') / name)
 
 
 def command_line():
